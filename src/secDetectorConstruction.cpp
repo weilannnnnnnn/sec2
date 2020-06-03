@@ -11,17 +11,6 @@
     2019/12/3 18:00
     place aluminum foil, SiPM
 
-    2019/12/4 16:33
-    set colors of world, iron plate, aluminum foil, scintillators
-
-    2019/12/14 15:55
-    set the properties of the scintillator
-    light emission: Scintillation + Cerenkov light
-    absorption: raylaigh scattering
-
-    2020/1/23 9:17
-    finished the color setting of the entire detectors
-
     2020/3/16 11:20
     reconstructed the aluminum foil
     
@@ -30,6 +19,10 @@
 
     2020/4/19
     set both the SiPMs as sensitive detector
+
+    2020/5/12
+    set the user limits in the Scintillator
+    create a region for setting cuts of the muons
 */
 #include "secDetectorConstruction.hh"
 #include "secScintSD.hh"
@@ -87,7 +80,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto Al_ele = new G4Element("Aluminum",  "Al", 17.,  26.98*g/mole);
     auto Fe_ele = new G4Element("Iron",      "Fe", 26.,  55.85*g/mole);
 
-    //geometry size{length, width, height};
+    //geometry size(half X, half Y, half Z);
     const G4double World_Size[3] = {10.*cm, 10.*cm, 10.*cm};
     const G4double Scint_Size[3] = {5.*cm, 5*cm, 0.5*cm};
     const G4double Plate_Size[3] = {5.*cm, 5*cm, 2.*cm};
@@ -144,7 +137,6 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto sci_log1 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     auto sci_log2 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     
-    //region for setting the cuts of Muons
     
     
     //user limits in the region
@@ -159,6 +151,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     new G4PVPlacement(0, G4ThreeVector(0., 0.,  4.*cm), sci_log1, "sci_phy1", world_log, false, 1, OverLapCheck);
     new G4PVPlacement(0, G4ThreeVector(0., 0., -4.*cm), sci_log2, "sci_phy2", world_log, false, 2, OverLapCheck);
     
+    //region for setting the cuts of Muons
     auto sci_reg2 = new G4Region("sci_reg2");
     sci_log2 -> SetRegion(sci_reg2);
     sci_reg2 -> AddRootLogicalVolume(sci_log2); 
@@ -175,7 +168,6 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     //geometry
     auto pm_geo = new G4Box("pm_geo", SiPM_Size[0], SiPM_Size[1], SiPM_Size[2]);
     
-
     //logical volume
     auto pm_log1 = new G4LogicalVolume(pm_geo, pm_mat, "pm_log");
     auto pm_log2 = new G4LogicalVolume(pm_geo, pm_mat, "pm_log");
@@ -233,7 +225,6 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     return world_phy;
 }
 
-inline 
 void secDetectorConstruction::ConstructOpticalScint(G4Material *& mat, G4OpticalSurface *&)
 {
 
@@ -284,7 +275,6 @@ void secDetectorConstruction::ConstructOpticalScint(G4Material *& mat, G4Optical
 
 }
 
-inline
 void secDetectorConstruction::ConstructOpticalFoil(G4Material *&, G4OpticalSurface *& surface)
 {
     G4double FoilReflectEneg[6]  = {2.*eV, 3.*eV, 4.*eV, 5.*eV, 6.*eV, 7.*eV};
@@ -294,7 +284,7 @@ void secDetectorConstruction::ConstructOpticalFoil(G4Material *&, G4OpticalSurfa
 
     surface->SetMaterialPropertiesTable(FoilTable);
 }
-inline 
+
 void secDetectorConstruction::ConstructOpticalSiPM(G4Material *&, G4OpticalSurface *& surface)
 {  
     G4double SiPMReflectEneg[6] = {2.*eV, 3.*eV, 4.*eV, 5.*eV, 6.*eV, 7.*eV};
@@ -304,13 +294,13 @@ void secDetectorConstruction::ConstructOpticalSiPM(G4Material *&, G4OpticalSurfa
     surface->SetMaterialPropertiesTable(SiPMTable);
 }
 
-inline
 void secDetectorConstruction::ConstructOpticalPlate(G4Material *&, G4OpticalSurface *&)
 {
 
 }
 void secDetectorConstruction::ConstructSDandField()
 {
+    //construct sensitive detector!
     std::vector<G4String> ScintHCnameVect = {"Upper Photon HC", "Lower Photon HC", "Upper Muon HC", "Lower Muon HC"};
     auto ScintSD = new secScintSD("ScintSD", ScintHCnameVect);
     G4SDManager::GetSDMpointer()->AddNewDetector(ScintSD);

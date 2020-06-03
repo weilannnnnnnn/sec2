@@ -1,3 +1,4 @@
+
 /control/verbose 2
 /run/verbose 2
 /run/initialize
@@ -5,13 +6,10 @@
 /vis/verbose errors
 /vis/drawVolume
 /vis/geometry/set/visibility world_log 0 false
+
 #/vis/filtering/trajectories/create/particleFilter
 #/vis/filtering/trajectories/particleFilter-0/add mu+
 #/vis/filtering/trajectories/particleFilter-0/add mu-
-/gps/position 0 0 10 cm
-/gps/direction 0 0 -1
-/gps/energy 1 GeV 
-/gps/particle mu+
 
 /vis/scene/add/trajectories smooth
 /vis/modeling/trajectories/create/drawByCharge

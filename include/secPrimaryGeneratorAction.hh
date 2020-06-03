@@ -2,7 +2,6 @@
 #define secPrimaryGeneratorAction_hh
 
 #include "G4VUserPrimaryGeneratorAction.hh"
-#include "G4GeneralParticleSource.hh"
 
 class G4GeneralParticleSource;
 class G4Event;

@@ -36,7 +36,7 @@ secSteppingAction::~secSteppingAction()
 void secSteppingAction::UserSteppingAction(const G4Step* /*step*/ )
 {
 /*  
- *  //print the decay Event
+	//print the decay Event
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();
     if( *ParticleNow == *G4NeutrinoMu::Definition() ||
         *ParticleNow == *G4AntiNeutrinoMu::Definition() )

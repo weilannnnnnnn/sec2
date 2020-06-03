@@ -1,21 +1,28 @@
 #include "secScintSD.hh"
 #include "secAnalysis.hh"
+
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
-#include "G4VProcess.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
+
+#include "G4VProcess.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
 #include "G4NeutrinoMu.hh"
 #include "G4AntiNeutrinoMu.hh"
+
 #include "G4Threading.hh"
 #include "globals.hh"
+#include "G4SystemOfUnits.hh"
+
+#include "tools/histo/h1d"
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cassert>
+#include <cmath>
 
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
@@ -91,14 +98,14 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
             const G4double GlobalTime = step->GetPreStepPoint()->GetGlobalTime();
             if( VolumeCpyNb == 1 )
-                {
-                    auto pPhotonHitUp = new secScintHit();
-                    pPhotonHitUp->SetPhotonEneg(aPhotonEneg).SetPhotonGlobalTime(GlobalTime);
-                    pPhotonHCup->insert(pPhotonHitUp);
-                    PhotonsGenUp++;
-                    PhotonEnegUp += aPhotonEneg;
-                    AnalysisMgr->FillH1(4, aPhotonEneg);
-                }
+            {
+                auto pPhotonHitUp = new secScintHit();
+                pPhotonHitUp->SetPhotonEneg(aPhotonEneg).SetPhotonGlobalTime(GlobalTime);
+                pPhotonHCup->insert(pPhotonHitUp);
+                PhotonsGenUp++;
+                PhotonEnegUp += aPhotonEneg;
+                AnalysisMgr->FillH1(4, aPhotonEneg);
+            }
             else if( VolumeCpyNb == 2 )
             {
                 auto pPhotonHitDown = new secScintHit();
@@ -109,7 +116,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
                 AnalysisMgr->FillH1(5, aPhotonEneg);
             }
             //update the id
-            //FormerID = step->GetTrack()->GetTrackID();
+            FormerID = step->GetTrack()->GetTrackID();
             step->GetTrack()->SetTrackStatus(fStopAndKill);
             return false;
         }
@@ -135,57 +142,20 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitDown = new secScintHit();
             pMuonHitDown->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
             pMuonHCdown->insert(pMuonHitDown);
-            //step->GetPostStepPoint()->SetKineticEnergy(0.);	    
-	}
+	    }
     }
     else if( *ParticleNow == *G4NeutrinoMu::Definition() || 
-	     *ParticleNow == *G4AntiNeutrinoMu::Definition() )
+	         *ParticleNow == *G4AntiNeutrinoMu::Definition() )
     {
-	if( step->IsFirstStepInVolume() )
-	{   
-	    std::cout << "****Decayed!!****" << '\n';
-	    DecayFlagScint = true;
-	    DecayTime = step->GetPreStepPoint()->GetGlobalTime();
-	    step->GetTrack()->SetTrackStatus(fStopAndKill);
-	}
-	/*
-	if( VolumeCpyNb == 2 )
-	{
-            if( step->IsFirstStepInVolume() )
-            {
-		DecayFlagScint = true;
-		DecayFlagSiPM  = true;
-		DecayTime = step->GetPreStepPoint()->GetProperTime();
-	    }
-	}
-	*/
-    }
-    
-//Neutrino Generated, decay event!
-    /*
-    else if( *ParticleNow == *G4NeutrinoMu::Definition() ||
-             *ParticleNow == *G4AntiNeutrinoMu::Definition() )
-    {
-        if( VolumeCpyNb == 2)
+        if( step->IsFirstStepInVolume() && VolumeCpyNb == 2)
         {
+            //std::cout << "****Decayed!!****" << '\n';
             DecayFlagScint = true;
-            DecayFlagSiPM  = true;
-            DecayTime = step->GetPreStepPoint()->GetGlobalTime();
+            DecayFlagSiPM = true;
+            DecayTime = step->GetPreStepPoint()->GetProperTime();
             step->GetTrack()->SetTrackStatus(fStopAndKill);
-            //std::cout << "decayed!" << '\n';
         }
     }
-    */
-
-/*
-    another method of discovering the decay event
-    const G4String DecayName = "Decay";
-    else if( step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessTypeName() == DecayName )
-
-    if a detailed process name is needed, u can invoke: GetProcessName() method, which is defined
-    in "G4VProcess.hh", for instance:
-    step->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName();
-*/
     return true;
     
 }
@@ -195,13 +165,13 @@ void secScintSD::EndOfEvent(G4HCofThisEvent*)
     
     if( !pMuonHCup->GetSize() || !pMuonHCdown->GetSize() )
     {
-	std::cout << "****no in 1****" << '\n';
-	return;
+	    //std::cout << "****no in 1****" << '\n';
+	    return;
     }
     else if( !pPhotonHCup->GetSize() || !pPhotonHCdown->GetSize() )
     {
-	std::cout << "++++no in 2++++" << '\n';
-	return;
+	    //std::cout << "++++no in 2++++" << '\n';
+	    return;
     }
     
     //fill histograms
@@ -215,75 +185,86 @@ void secScintSD::EndOfEvent(G4HCofThisEvent*)
     AnalysisMgr->FillP1(0, MuonEdepUp, PhotonsGenUp);
     AnalysisMgr->FillP1(1, MuonEdepDown, PhotonsGenDown);
     
-
-    //std::cout << "PhotonsGenUp = " << PhotonsGenUp << '\n';
-    //std::cout << "PhotonsGenDown = " << PhotonsGenDown << '\n'; 
-    //print the decay event
     if( DecayFlagScint )
     {   
         //reset the flag
         DecayFlagScint = false;
         DecayEventID++;
-	//std::cout << "Decay Time " << DecayTime << '\n';	
-        //PrintHC("ScintMuonDecayEventData", 
-        //        pMuonHCup, pMuonHCdown, 
-	//	{&secScintHit::GetMuonGlobalTime, &secScintHit::GetMuonVelocity});
 
-        PrintHC("ScintPhotonDecayEventData.dat", 
-                pPhotonHCup, pPhotonHCdown, 
-		{&secScintHit::GetPhotonGlobalTime});
-        
-	std::ostringstream sstrm;
-        sstrm << "DecayTime" << "_t" << G4Threading::G4GetThreadId();
+        //fill the data in hit collections into 1-D histogram and print its edges and entries
+        PrintHC("UpScintResponse.dat",      // file name
+                pPhotonHCup,                // hits collection's pointer
+	            &secScintHit::GetPhotonEneg,// data getter function's pointer
+                4000, 0.*ns, 10000.*ns);    // number-of-bins, lower limit, upper limit
 
-        std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
-        fstrm << DecayTime << '\n';
+        PrintHC("DownScintResponse.dat", 
+                pPhotonHCdown,
+		        &secScintHit::GetPhotonGlobalTime,
+                4000, 0.*ns, 10000.*ns);
 
+        //print the decay time
+        PrintData("DecayTime.dat", DecayTime);
     }
 
     Reset();
-    
 }
 
-void secScintSD::PrintHC(G4String FileName, secScintHitsCollection* pHC1, secScintHitsCollection* pHC2, std::initializer_list<secScintHit::DataGetter> GetterLst)
+void secScintSD::PrintHC(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+                         unsigned int nbins, G4double Xmin, G4double Xmax)
 {
+    //fill histogram
+    tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
+    for( size_t i = 0; i != pHC->GetSize(); ++i )
+    {   
+        G4double val = ( ( (*pHC)[i] ) ->* (Getter) )();
+        hist.fill(val);
+    }
+
     //create files
-    std::ostringstream StrStrm;
-
-    StrStrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    std::ostringstream sstrm;
+    sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary);
     
-    //input data
-    std::ofstream fStrm(StrStrm.str(), std::ofstream::app | std::ofstream::binary);
-    assert( fStrm.is_open() );
-/*
-    fStrm << "DecayEventID_t" << G4Threading::G4GetThreadId() << ": " << DecayEventID << '\n';
-    //upper Scint's data        
-    fStrm << "Upper Scint" << '\n';
+    if( !fstrm.is_open() )
+    {
+        std::cerr << "***Unable to open file: " << FileName << " ***" << '\n';
+        std::cerr << "***The generated data will not be recorded!***" << '\n';
+    }
 
-    for( size_t i = 0; i != pHC1->GetSize(); ++i )
+    //assert( fstrm.is_open() );
+    fstrm << "Decay Event ID_t" << G4Threading::G4GetThreadId() << "= " << DecayEventID << '\n';
+    
+    //write file
+    const std::vector<unsigned int>& entries = hist.bins_entries();
+    std::vector<G4double> edges;
+    edges.push_back(-1.);
+    const G4double binw = (Xmax - Xmin) / nbins;
+    for( size_t i = 0; i != nbins + 1; ++i )
     {
-        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc)
-        {
-            fStrm << ( ( (*pHC1)[i] ) ->* (*pfunc) )() << '\t';
-        }
-        fStrm << '\n' ;
+	const G4double edge = Xmin + i * binw;
+        edges.push_back( edge );
     }
-    //lower Scint's data
-    fStrm << "Lower Scint" << '\n';
-    fStrm << "Decay Time: " << '\n';
-    fStrm << DecayTime << '\n';
-*/
-    for( size_t i = 0; i != pHC2->GetSize(); ++i )
+    //std::cout << "entries size = " << entries.size() << " edges size = " << edges.size() << '\n';
+    size_t sz = entries.size() <= edges.size() ? entries.size() : edges.size();
+    
+    for( size_t i = 0; i != sz; ++i )
     {
-        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc )
-        {
-	    G4double val = ( ( (*pHC2)[i] ) ->* (*pfunc) )();
-            fStrm.write(reinterpret_cast<char *>( &val ), sizeof(val));
-	    //fStrm <<       ( ( (*pHC2)[i] ) ->* (*pfunc) )() << '\t';
-        }
-        //fStrm << '\n';
+        if( entries[i] == 0 )
+	{
+            continue;
+	}
+        fstrm << edges[i] << '\t' << entries[i] << '\n';
     }
-    fStrm.flush();
+
+    fstrm.flush();
     //close files
-    fStrm.close();
+    fstrm.close();
+}
+void secScintSD::PrintData(G4String FileName, G4double val)
+{
+    	std::ostringstream sstrm;
+        sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
+
+        std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
+        fstrm << val << '\n';
 }

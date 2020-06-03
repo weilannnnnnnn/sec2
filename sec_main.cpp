@@ -33,9 +33,7 @@ int main(int argc, char** argv)
 
     runManager -> SetUserInitialization( new secDetectorConstruction() );
 //---------------------------------------------------------------------
-    
     runManager -> SetUserInitialization( new secPhysicsList() );
-
 //---------------------------------------------------------------------
     runManager -> SetUserInitialization( new secActionInitialization() );
 //---------------------------------------------------------------------

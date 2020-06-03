@@ -18,7 +18,6 @@
 secPhysicsList::secPhysicsList(void) : 
 G4VModularPhysicsList()
 {
-    //SetDefaultCutValue(0.*mm);
     auto pOptical = OpticalPhysics_init();
     auto pDecay   = DecayPhysics_init();
     auto pEm      = EmPhysics_init();
@@ -32,8 +31,6 @@ G4VModularPhysicsList()
     RegisterPhysics( pHadron );
     RegisterPhysics( pIon );
     RegisterPhysics( pLimiter );
-    
-    
 }
 
 //dtor
@@ -45,7 +42,8 @@ secPhysicsList::~secPhysicsList()
 void secPhysicsList::SetCuts()
 {
     G4VUserPhysicsList::SetCuts();
-
+    
+    //set the production cuts of muons in the down scintillator
     auto pRegion = G4RegionStore::GetInstance()->GetRegion("sci_reg2");
     SetParticleCuts(0., G4MuonPlus::Definition(), pRegion);
     SetParticleCuts(0., G4MuonMinus::Definition(), pRegion); 
@@ -69,8 +67,6 @@ G4OpticalPhysics* secPhysicsList::OpticalPhysics_init()
 
 //wave length shifting (WLS)
     pOptical->SetWLSTimeProfile("delta");
-
-//Boundary( Rayleigh/Mie Scattering)
 
     return pOptical;
 }

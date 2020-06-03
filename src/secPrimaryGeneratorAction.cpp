@@ -1,15 +1,15 @@
 #include "secPrimaryGeneratorAction.hh"
-#include "secAnalysis.hh"
+
+#include "G4GeneralParticleSource.hh"
 #include "G4SPSEneDistribution.hh"
 #include "G4SPSAngDistribution.hh"
 #include "G4SPSPosDistribution.hh"
 
-#include "G4RunManager.hh"
-
 #include "G4ParticleGun.hh"
+
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
-#include "G4ParticleDefinition.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <iostream>

@@ -4,7 +4,6 @@
 #include "secScintHit.hh"
 #include "secSiPMSD.hh"
 #include "globals.hh"
-#include <initializer_list>
 
 class G4Step;
 class G4HCofThisEvent;
@@ -23,12 +22,17 @@ class secScintSD : public G4VSensitiveDetector
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
 
     private:
-        void     Reset(void);
-        void     PrintHC(G4String FileName, secScintHitsCollection* pHC1, secScintHitsCollection* pHC2, std::initializer_list<secScintHit::DataGetter> GetterLst);
+        void     Reset(void);//user should not invoke this method!!
+
+        void     PrintHC(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+                         unsigned int nbins, G4double Xmin, G4double Mmax);
+                         
+        void     PrintData(G4String FileName, G4double val);
+
         G4bool   DecayFlagSiPM;
         G4bool   DecayFlagScint;
         G4int    DecayEventID;
-	G4double DecayTime;
+	    G4double DecayTime;
         G4int    PhotonsGenUp;
         G4int    PhotonsGenDown;
         G4double PhotonEnegUp;
@@ -36,6 +40,7 @@ class secScintSD : public G4VSensitiveDetector
         G4double MuonEdepUp;
         G4double MuonEdepDown;
 	    G4int    FormerID;
+
         secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
         secScintHitsCollection *pPhotonHCdown; //photons's hitscollection in the lower scintillator
         secScintHitsCollection *pMuonHCup;     //Muon's HC up
