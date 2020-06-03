@@ -3,7 +3,7 @@
 
 #include "G4VModularPhysicsList.hh"
 
-class G4OpticalPhysics;
+class secOpticalPhysics;
 class G4DecayPhysics;
 class G4EmStandardPhysics;
 class G4HadronElasticPhysics;
@@ -21,12 +21,12 @@ class secPhysicsList : public G4VModularPhysicsList
         virtual void SetCuts();
         
     private:
-        G4OpticalPhysics*       OpticalPhysics_init(void);
-        G4DecayPhysics*         DecayPhysics_init(void);
-        G4EmStandardPhysics*    EmPhysics_init(void);
-        G4HadronElasticPhysics* HadronElasticPhysics_init(void);
-        G4IonPhysics*           IonPhysics_init(void);
-        G4StepLimiterPhysics*   StepLimiter_init(void);
+        secOpticalPhysics*       OpticalPhysics_init(void);
+        G4DecayPhysics*          DecayPhysics_init(void);
+        G4EmStandardPhysics*     EmPhysics_init(void);
+        G4HadronElasticPhysics*  HadronElasticPhysics_init(void);
+        G4IonPhysics*            IonPhysics_init(void);
+        G4StepLimiterPhysics*    StepLimiter_init(void);
 };
 
 #endif

@@ -1,7 +1,6 @@
 #include "secPhysicsList.hh"
 
-#include "G4OpticalPhysics.hh"
-#include "G4SpinDecayPhysics.hh"
+#include "secOpticalPhysics.hh"
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
@@ -21,21 +20,19 @@
 secPhysicsList::secPhysicsList(void) : 
 G4VModularPhysicsList()
 {
-    //auto pOptical = OpticalPhysics_init();
+    auto pOptical = OpticalPhysics_init();
     auto pDecay   = DecayPhysics_init();
     auto pEm      = EmPhysics_init();
     auto pHadron  = HadronElasticPhysics_init();
     auto pIon     = IonPhysics_init();
     auto pLimiter = StepLimiter_init();
-    auto pSpinDecay = new G4SpinDecayPhysics();
 
-    //RegisterPhysics( pOptical );
+    RegisterPhysics( pOptical );
     RegisterPhysics( pDecay );
     RegisterPhysics( pEm );
     RegisterPhysics( pHadron );
     RegisterPhysics( pIon );
     RegisterPhysics( pLimiter );
-    RegisterPhysics( pSpinDecay );
 }
 
 //dtor
@@ -60,9 +57,9 @@ void secPhysicsList::SetCuts()
 }
 
 
-G4OpticalPhysics* secPhysicsList::OpticalPhysics_init()
+secOpticalPhysics* secPhysicsList::OpticalPhysics_init()
 {
-    auto pOptical = new G4OpticalPhysics;
+    auto pOptical = new secOpticalPhysics;
 
     pOptical->SetTrackSecondariesFirst(kScintillation, true);
     pOptical->SetTrackSecondariesFirst(kCerenkov,      true);
