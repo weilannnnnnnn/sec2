@@ -24,12 +24,13 @@ class secScintSD : public G4VSensitiveDetector
     private:
         void     Reset(void);//user should not invoke this method!!
 
-        void     PrintHC(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+        void     PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
                          unsigned int nbins, G4double Xmin, G4double Mmax);
                          
+        void     PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter);
+
         void     PrintData(G4String FileName, G4double val);
-        
-	void     Print(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter);
+
         G4bool   DecayFlagSiPM;
         G4bool   DecayFlagScint;
         G4int    DecayEventID;
@@ -40,6 +41,7 @@ class secScintSD : public G4VSensitiveDetector
         G4double PhotonEnegDown;
         G4double MuonEdepUp;
         G4double MuonEdepDown;
+        G4double MuonArriveTime;
 	    G4int    FormerID;
 
         secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
