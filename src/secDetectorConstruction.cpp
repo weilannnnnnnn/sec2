@@ -36,6 +36,7 @@
 #include "secSiPMSD.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
+#include "G4UserLimits.hh"
 //material
 #include "G4NistManager.hh"
 #include "G4Material.hh"
@@ -49,6 +50,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4RotationMatrix.hh"
 #include "G4VisAttributes.hh"
+#include "G4Region.hh"
 //optical properties
 #include "G4MaterialPropertiesTable.hh"
 #include "G4LogicalSkinSurface.hh"
@@ -88,7 +90,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     //geometry size{length, width, height};
     const G4double World_Size[3] = {10.*cm, 10.*cm, 10.*cm};
     const G4double Scint_Size[3] = {5.*cm, 5*cm, 0.5*cm};
-    const G4double Plate_Size[3] = {5.*cm, 5*cm, 2.5*cm};
+    const G4double Plate_Size[3] = {5.*cm, 5*cm, 2.*cm};
     const G4double  Foil_Size[3] = {5.1*cm, 5.1*cm, 0.6*cm};
     const G4double  SiPM_Size[3] = {0.5*cm, 0.5*cm, 0.05*cm};
 
@@ -131,21 +133,35 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto sci_mat = new G4Material("scintillator", 1.032*g/cm3, 2, kStateSolid);
     sci_mat->AddElement(C_ele, 9);
     sci_mat->AddElement(H_ele, 10);
-
+    //surface(mainly for the reflection of Optical Photons!)
     auto _ScintSurface =  new G4OpticalSurface("scint_surface", unified, polished, dielectric_metal);    
     ConstructOpticalScint(sci_mat, _ScintSurface);
-
+    
+    //geometry(shape)
     auto sci_geo = new G4Box("sci_geo", Scint_Size[0], Scint_Size[1], Scint_Size[2]);
-
+    
+    //logical volume
     auto sci_log1 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     auto sci_log2 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
-
+    
+    //region for setting the cuts of Muons
+    
+    
+    //user limits in the region
+    auto sci_limits = new G4UserLimits(0.1*mm);
+    sci_log1->SetUserLimits(sci_limits);
+    sci_log2->SetUserLimits(sci_limits);
+    
+    //logical surface
     auto  ScintSurface1 = new G4LogicalSkinSurface("sci_surface1", sci_log1, _ScintSurface);
     auto  ScintSurface2 = new G4LogicalSkinSurface("sci_surface2", sci_log2, _ScintSurface);
-
     
     new G4PVPlacement(0, G4ThreeVector(0., 0.,  4.*cm), sci_log1, "sci_phy1", world_log, false, 1, OverLapCheck);
     new G4PVPlacement(0, G4ThreeVector(0., 0., -4.*cm), sci_log2, "sci_phy2", world_log, false, 2, OverLapCheck);
+    
+    auto sci_reg2 = new G4Region("sci_reg2");
+    sci_log2 -> SetRegion(sci_reg2);
+    sci_reg2 -> AddRootLogicalVolume(sci_log2); 
 //=======================================================================
 
 //SiPM
@@ -265,6 +281,7 @@ void secDetectorConstruction::ConstructOpticalScint(G4Material *& mat, G4Optical
 	mat->SetMaterialPropertiesTable(MPTscint);
 
 	mat->GetIonisation()->SetBirksConstant(0.15*mm/MeV);  
+
 }
 
 inline

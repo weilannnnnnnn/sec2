@@ -1,9 +1,11 @@
-#run macro for sec detector
+#/run/numberOfThreads 48
+/run/useMaximumLogicalCores
 /run/initialize
 
-/control/verbose 2
 /run/verbose 2
+/control/verbose 2
 /event/verbose 0
-/tracking/verbose 1
+/tracking/verbose 0
+#/run/printProgress 100
+/run/beamOn 1000000
 
-/run/beamOn 100

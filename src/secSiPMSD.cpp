@@ -122,44 +122,60 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //create the Decay Event's files
     if( IsADecayEvent() )
     {
+	DecayEventID++;
 	//std::cout << "decayed!!" << '\n';
         ResetDecayFlag();
-    //create files
-        std::ostringstream StrStrm;
-
-        StrStrm << "DecayEventData" << "_t" << G4Threading::G4GetThreadId();
-        
-    //input data
-        std::ofstream fStrm(StrStrm.str(), std::ofstream::app);
-        assert( fStrm.is_open() );
-        
-        fStrm << "DecayEventID_t" << G4Threading::G4GetThreadId() << ": " << ++DecayEventID << '\n';
-        //upper SiPM's data        
-        fStrm << "Upper SiPM" << '\n';
-        fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
-        for( size_t i = 0; i != pHCup->GetSize(); ++i )
-        {
-            fStrm << ( (*pHCup)[i] )->GetGlobalTime() << '\t' 
-		  << ( (*pHCup)[i] )->GetPhotonEneg() << '\n';
-        }
-        //lower SiPM's data
-        fStrm << "Lower SiPM" << '\n';
-        fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
-        for( size_t i = 0; i != pHCdown->GetSize(); ++i )
-        {
-            fStrm << ( (*pHCdown)[i] )->GetGlobalTime() << '\t' 
-		  << ( (*pHCdown)[i] )->GetPhotonEneg() << '\n';
-        }
-    //close files
-        fStrm.close();
+        PrintHC("SiPMDecayEventData", 
+                        pHCup, pHCdown,
+                        {&secSiPMHit::GetGlobalTime, &secSiPMHit::GetPhotonEneg});
     }
 }
 
 G4bool secSiPMSD::IsADecayEvent()
 {
-    return pScintSD->aDecayEvent;    
+    return pScintSD->DecayFlagSiPM;    
 }
 void secSiPMSD::ResetDecayFlag()
 {
-    pScintSD->aDecayEvent = false;
+    pScintSD->DecayFlagSiPM = false;
+}
+
+void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC1, secSiPMHitsCollection* pHC2, std::initializer_list<secSiPMHit::DataGetter> GetterLst)
+{
+    //create files
+    std::ostringstream StrStrm;
+
+    StrStrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    
+    //input data
+    std::ofstream fStrm(StrStrm.str(), std::ofstream::app | std::ofstream::binary);
+    assert( fStrm.is_open() );
+    
+    fStrm << "DecayEventID_t" << G4Threading::G4GetThreadId() << ": " << DecayEventID << '\n';
+    //upper SiPM's data        
+    fStrm << "Upper SiPM" << '\n';
+    fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
+    
+    for( size_t i = 0; i != pHC1->GetSize(); ++i )
+    {
+        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc )
+        {
+            fStrm << ( ( (*pHC1)[i] ) ->* (*pfunc) )() << '\t';
+        }
+        fStrm << '\n';
+    }
+    //lower SiPM's data
+    fStrm << "Lower SiPM" << '\n';
+    fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
+    for( size_t i = 0; i != pHC2->GetSize(); ++i )
+    {
+        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc )
+        {
+            fStrm << ( ( (*pHC2)[i] ) ->* (*pfunc) )() << '\t';
+        }
+        fStrm << '\n';
+    }
+    fStrm.flush();
+    //close files
+    fStrm.close();
 }

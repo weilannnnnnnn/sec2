@@ -4,6 +4,7 @@
 #include "G4VSensitiveDetector.hh"
 #include "secSiPMHit.hh"
 #include "globals.hh"
+#include <initializer_list>
 
 class secScintSD;
 class G4Step;
@@ -12,6 +13,7 @@ class G4HCofThisEvent;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
+
     public:
         
         secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);
@@ -27,6 +29,7 @@ class secSiPMSD : public G4VSensitiveDetector
         
     private:
         
+        void PrintHC(G4String FileName, secSiPMHitsCollection* pHC1, secSiPMHitsCollection* pHC2, std::initializer_list<secSiPMHit::DataGetter> GetterLst);
         G4int DecayEventID;
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;

@@ -8,6 +8,7 @@ class G4DecayPhysics;
 class G4EmStandardPhysics;
 class G4HadronElasticPhysics;
 class G4IonPhysics;
+class G4StepLimiterPhysics;
 
 class secPhysicsList : public G4VModularPhysicsList
 {
@@ -25,6 +26,7 @@ class secPhysicsList : public G4VModularPhysicsList
         G4EmStandardPhysics*    EmPhysics_init(void);
         G4HadronElasticPhysics* HadronElasticPhysics_init(void);
         G4IonPhysics*           IonPhysics_init(void);
+        G4StepLimiterPhysics*   StepLimiter_init(void);
 };
 
 #endif

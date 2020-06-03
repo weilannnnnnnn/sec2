@@ -10,6 +10,7 @@
 class secSiPMHit : public G4VHit
 {  
     public:
+        using DataGetter = G4double (secSiPMHit::*)(void) const;
         secSiPMHit();
         secSiPMHit(const secSiPMHit& rhs);
         virtual ~secSiPMHit();

@@ -82,45 +82,50 @@ void secRunAction::EndOfRunAction(const G4Run* )
     AnalysisMgr->CloseFile();
     //merge the decay data files
     
-    if( !G4Threading::IsMasterThread() )
+    if( !isMaster )
     {
         //only use one thread to merge the file.
         return;
     }
     else
     {
-        std::ofstream FinalDataStrm;
-        std::ifstream TempDataStrm;
-        std::ostringstream sstrm;
-
-        //open data files
-        FinalDataStrm.open("DecayEventData", std::ofstream::app);
-	
-        for(G4int i = 0; i != G4Threading::GetNumberOfRunningWorkerThreads(); ++i)
-        {
-	    sstrm << "DecayEventData_t" << i;
-	    TempDataStrm.open(sstrm.str(), std::ifstream::in);
-	    if(TempDataStrm.eof())
-	    {  
-		TempDataStrm.close(); 
-		remove(sstrm.str().c_str());
-		sstrm.str("");
-		continue;
-	    }
-            //copy file
-            std::string line;
-            while( getline(TempDataStrm, line) )
-            {
-                FinalDataStrm << line << '\n';
-            }
-            
-            //close and delete the temporary file
-            TempDataStrm.close();
-            remove(sstrm.str().c_str());
-            sstrm.str("");
-        }
-        FinalDataStrm.close();
+        //MergeFile("ScintMuonDecayEventData");
+        MergeFile("ScintPhotonDecayEventData.dat");
+        MergeFile("SiPMDecayEventData");
+        MergeFile("DecayTime");
     }
     
+}
+
+void secRunAction::MergeFile(G4String FileName)
+{
+    std::ofstream FinalDataStrm;
+    std::ifstream TempDataStrm;
+    std::ostringstream sstrm;
+
+    //open data files
+    FinalDataStrm.open(FileName, std::ofstream::app | std::ofstream::binary);
+
+    for(G4int i = 0; i != G4Threading::GetNumberOfRunningWorkerThreads(); ++i)
+    {
+        sstrm <<  FileName << "_t" << i;
+        TempDataStrm.open(sstrm.str(), std::ifstream::in | std::ifstream::binary);
+        
+        if(TempDataStrm.eof())
+        {  
+            TempDataStrm.close(); 
+            remove(sstrm.str().c_str());
+            sstrm.str("");
+            continue;
+        }
+        //copy file
+        FinalDataStrm << TempDataStrm.rdbuf();
+        FinalDataStrm.flush();
+        //close and delete the temporary file
+        TempDataStrm.close();
+        remove(sstrm.str().c_str());
+        sstrm.str("");
+    }
+    FinalDataStrm.close();
 }
 

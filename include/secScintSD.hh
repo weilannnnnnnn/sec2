@@ -4,6 +4,7 @@
 #include "secScintHit.hh"
 #include "secSiPMSD.hh"
 #include "globals.hh"
+#include <initializer_list>
 
 class G4Step;
 class G4HCofThisEvent;
@@ -12,7 +13,7 @@ class secScintSD : public G4VSensitiveDetector
 {
     friend G4bool secSiPMSD::IsADecayEvent();
     friend void secSiPMSD::ResetDecayFlag();
-    
+
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
         virtual ~secScintSD();
@@ -21,18 +22,17 @@ class secScintSD : public G4VSensitiveDetector
         virtual G4bool ProcessHits(G4Step *step, G4TouchableHistory *history);
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
 
-
     private:
         void     Reset(void);
-        G4bool   aDecayEvent;
+        void     PrintHC(G4String FileName, secScintHitsCollection* pHC1, secScintHitsCollection* pHC2, std::initializer_list<secScintHit::DataGetter> GetterLst);
+        G4bool   DecayFlagSiPM;
+        G4bool   DecayFlagScint;
+        G4int    DecayEventID;
+	G4double DecayTime;
         G4int    PhotonsGenUp;
         G4int    PhotonsGenDown;
         G4double PhotonEnegUp;
         G4double PhotonEnegDown;
-        /*
-            Currently, PhotonEneg Saves the TOTAL ENERGY of generated photons
-            in a scintillator in a single event.
-         */
         G4double MuonEdepUp;
         G4double MuonEdepDown;
 	    G4int    FormerID;

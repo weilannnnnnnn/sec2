@@ -11,11 +11,14 @@
 #include "G4OpticalPhoton.hh"
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
+
+#include "G4VProcess.hh"
 #include "G4AntiNeutrinoMu.hh"
 #include "G4NeutrinoMu.hh"
-
-class G4OpticalPhoton;
-class G4ParticleDefinition;
+#include "G4Threading.hh"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 //constructor
 secSteppingAction::secSteppingAction(secEventAction* eventAction) :
@@ -30,31 +33,23 @@ secSteppingAction::~secSteppingAction()
 {/*nothing here*/}
 
 
-void secSteppingAction::UserSteppingAction(const G4Step*)
-{/*
-    const G4VPhysicalVolume* VolumeNow = step->GetPreStepPoint()->GetPhysicalVolume();
-    const G4ParticleDefinition* ParticleNow = step->GetTrack()->GetParticleDefinition();
+void secSteppingAction::UserSteppingAction(const G4Step* /*step*/ )
+{
+/*  
+ *  //print the decay Event
+    auto ParticleNow = step->GetTrack()->GetParticleDefinition();
+    if( *ParticleNow == *G4NeutrinoMu::Definition() ||
+        *ParticleNow == *G4AntiNeutrinoMu::Definition() )
+    {
+	if( step->IsFirstStepInVolume() )
+	{
+	    std::ostringstream sstrm;
+	    sstrm << "DecayTime" << "_t" << G4Threading::G4GetThreadId();
 
-    static const G4VPhysicalVolume* SiPMPV1 = G4PhysicalVolumeStore::GetInstance()->GetVolume("SiPM1");
-    static const G4VPhysicalVolume* SiPMPV2 = G4PhysicalVolumeStore::GetInstance()->GetVolume("SiPM2");
-    
-    if( VolumeNow == SiPMPV1 )
-    {
-        if( *ParticleNow == *G4OpticalPhoton::Definition() )
-        {   //case that photons reach the surface of the upper SiPM
-            //kill the photons reached the SiPM1!
-	        EventAction->AddPhotonsRecvUp();
-            step->GetTrack()->SetTrackStatus(fStopAndKill);
-        }
+	    std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
+	    fstrm << step->GetPreStepPoint()->GetGlobalTime() << '\n';
+	    step->GetTrack()->SetTrackStatus(fStopAndKill);
+	}
     }
-    else if( VolumeNow == SiPMPV2 )
-    {
-        if( *ParticleNow == *G4OpticalPhoton::Definition() )
-        {   //case that the photons reach the surface of the lower SiPM
-            //kill the photons reached the SiPM2!
-	        EventAction->AddPhotonsRecvDown();
-            step->GetTrack()->SetTrackStatus(fStopAndKill);
-        }
-    }
-*/
+*/ 
 }

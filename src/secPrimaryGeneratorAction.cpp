@@ -58,20 +58,23 @@ void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
     
     //G4double Eneg = ( 0.1 + (1000. - 0.1) * G4UniformRand() ) * GeV;
-    G4double Eneg = 150.*MeV;
-    pMuonGun->SetParticleEnergy(Eneg);
+    //G4double Eneg = 10.*MeV;
+    //pMuonGun->SetParticleEnergy(Eneg);
 
-    G4double PosX = G4UniformRand() * 5. * cm;
-    G4double PosY = G4UniformRand() * 5. * cm;
+    G4double PosX = (10. * G4UniformRand() - 5.) * cm;
+    G4double PosY = (10. * G4UniformRand() - 5.) * cm;
     G4ThreeVector PosVect(PosX, PosY, 4.6 * cm);
+
+    //G4ThreeVector PosVect(0., 0., 4.6 * cm);
     pMuonGun->SetParticlePosition( PosVect );
 
-    G4double Theta = PI - G4UniformRand() * PI / 2;
-    G4double Phi  = G4UniformRand() * 2 * PI;
-    G4ThreeVector MomentumVect(1, 0, 0);
-    MomentumVect.setTheta(Theta);
-    MomentumVect.setPhi(Phi);
+    //G4double Theta = PI - G4UniformRand() * PI / 2;
+    //G4double Phi  = G4UniformRand() * 2 * PI;
     //G4ThreeVector MomentumVect(0, 0, -1);
+    //MomentumVect.setTheta(Theta);
+    //MomentumVect.setPhi(Phi);
+
+    G4ThreeVector MomentumVect(0, 0, -1);
     pMuonGun->SetParticleMomentumDirection( MomentumVect );
     
     //auto AnalysisMgr = G4AnalysisManager::Instance();

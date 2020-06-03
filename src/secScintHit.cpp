@@ -5,7 +5,10 @@ G4ThreadLocal G4Allocator<secScintHit> *secScintHitAllocator = 0;
 secScintHit::secScintHit() :
 G4VHit(),
 PhotonEneg(0.),
+PhotonGlobalTime(0.),
 MuonEnegDeposit(0.),
+MuonGlobalTime(0.),
+MuonVelocity(0.),
 GenPhotons(-1)
 {
 

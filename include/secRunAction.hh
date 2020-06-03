@@ -17,7 +17,7 @@ public:
     virtual void EndOfRunAction(const G4Run*);
 
 private:
-
+    void MergeFile(G4String FileName);
 };
 
 #endif
