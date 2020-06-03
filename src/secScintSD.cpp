@@ -12,9 +12,9 @@
 #include "G4AntiNeutrinoMu.hh"
 #include "globals.hh"
 #include <iostream>
-
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
+    aDecayEvent(false),
     PhotonsGenUp(0),
     PhotonsGenDown(0),
     PhotonEnegUp(0.),
@@ -62,52 +62,62 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
 //the return value of this function is currently researved and
 //it may be used in the future update of Geant4 application.
+    
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();
-    G4double ParticlePosZ = step->GetPreStepPoint()->GetPosition().getZ();
-    //G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
+    const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     auto AnalysisMgr = G4AnalysisManager::Instance();
     //the case that a opticalphoton generated in the scintillator
-    
-    if( *ParticleNow == *G4NeutrinoMu::Definition() || *ParticleNow == *G4AntiNeutrinoMu::Definition() )
-    {
-	if( ParticlePosZ < 0 )
-	    std::cout << "Decayed!" << '\n';
-    }
-    
+/*
+    Notice: When optical photons Generated in the Scintillator hits the aluminum foil, 
+    which means the boundary process has happened, and G4 considered that the optical
+    photon has entered the foil(PostStepPoint) and will be reflected in the Scintillator
+    in the next step or will be absorbed by the foil.
+        As a result, the IsFirstStepInVolume() method will not work!
+*/
     if( *ParticleNow == *G4OpticalPhoton::Definition() )
     {
-	 if( step->GetTrack()->GetTrackID() != FormerID )
-	 {
-	     const G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy();
-	     if( ParticlePosZ > 0 )
-             {
-                 PhotonsGenUp++;
-                 PhotonEnegUp += aPhotonEneg;
-	       	 AnalysisMgr->FillH1(4, aPhotonEneg);
-	     }
-             else
-             {
-                 PhotonsGenDown++;
-                 PhotonEnegDown += aPhotonEneg;
-	   	 AnalysisMgr->FillH1(5, aPhotonEneg);
-             }
-	     //step->GetTrack()->SetTrackStatus(fStopAndKill);
-    	     FormerID = step->GetTrack()->GetTrackID();
-	     return false;
-	 }
+        if( step->GetTrack()->GetTrackID() != FormerID )
+        {
+            const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
+            if( VolumeCpyNb == 1 )
+                {
+                    PhotonsGenUp++;
+                    PhotonEnegUp += aPhotonEneg;
+                    AnalysisMgr->FillH1(4, aPhotonEneg);
+                }
+            else if( VolumeCpyNb == 2 )
+            {
+                PhotonsGenDown++;
+                PhotonEnegDown += aPhotonEneg;
+                AnalysisMgr->FillH1(5, aPhotonEneg);
+            }
+            //update the id
+            FormerID = step->GetTrack()->GetTrackID();
+            return false;
+        }
     }
-    //the case that a muon hit the scintillator
+//the case that a muon hit the scintillator
     else if( *ParticleNow == *G4MuonPlus::Definition() ||
              *ParticleNow == *G4MuonMinus::Definition() )
     {
         G4double MuonEneg = step->GetTotalEnergyDeposit();
-        if( ParticlePosZ > 0 )
+        if( VolumeCpyNb == 1 )
         {
             MuonEdepUp += MuonEneg;
         }
-        else
+        else if( VolumeCpyNb == 2 )
         {
             MuonEdepDown += MuonEneg;
+        }
+    }
+//Neutrino Generated, decay event!
+    else if( *ParticleNow == *G4NeutrinoMu::Definition() ||
+             *ParticleNow == *G4AntiNeutrinoMu::Definition() )
+    {
+        if( VolumeCpyNb == 2)
+        {
+            aDecayEvent = true;
+	    //std::cout << "decayed!" << '\n';
         }
     }
     return true;
@@ -116,54 +126,43 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
 void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {   
-    
-        std::cout << 1.*CLHEP::ns << '\n'; 
-        //create new hits
-        auto PhotonHitUp   = new secScintHit();
-        auto PhotonHitDown = new secScintHit();
-        auto MuonHitUp     = new secScintHit();
-        auto MuonHitDown   = new secScintHit();
-        
-        //set the parameters of hits
-        PhotonHitUp->SetGenPhotons(PhotonsGenUp).SetPhotonEneg(PhotonEnegUp);
-        PhotonHitDown->SetGenPhotons(PhotonsGenDown).SetPhotonEneg(PhotonEnegDown);
+    //create new hits
+    auto PhotonHitUp   = new secScintHit();
+    auto PhotonHitDown = new secScintHit();
+    auto MuonHitUp     = new secScintHit();
+    auto MuonHitDown   = new secScintHit();
 
-        MuonHitUp->SetMuonEdep(MuonEdepUp);
-        MuonHitDown->SetMuonEdep(MuonEdepDown);
-        
-        //save the hits
-        pPhotonHCup->insert(PhotonHitUp);
-        pPhotonHCdown->insert(PhotonHitDown);
-        pMuonHCup->insert(MuonHitUp);
-        pMuonHCdown->insert(MuonHitDown);
+    //set parameters of hits
+    PhotonHitUp  ->SetGenPhotons(PhotonsGenUp).SetPhotonEneg(PhotonEnegUp);
+    PhotonHitDown->SetGenPhotons(PhotonsGenDown).SetPhotonEneg(PhotonEnegDown);
 
-        //fill histograms
-        //Analysis Manager and Sensitive Detector Manager.
-        auto AnalysisMgr = G4AnalysisManager::Instance();
+    MuonHitUp  ->SetMuonEdep(MuonEdepUp);
+    MuonHitDown->SetMuonEdep(MuonEdepDown);
 
-        PhotonsGenUp   = ((*pPhotonHCup)  [ pPhotonHCup->GetSize()-1 ])  ->GetGenPhotons();
-        PhotonsGenDown = ((*pPhotonHCdown)[ pPhotonHCdown->GetSize()-1 ])->GetGenPhotons();
-        PhotonEnegUp   = ((*pPhotonHCup)  [ pPhotonHCup->GetSize()-1 ])  ->GetPhotonEneg();
-        PhotonEnegDown = ((*pPhotonHCdown)[ pPhotonHCdown->GetSize()-1 ])->GetPhotonEneg();
-        MuonEdepUp     = ((*pMuonHCup)    [ pMuonHCup->GetSize()-1 ])    ->GetMuonEdep();
-        MuonEdepDown   = ((*pMuonHCdown)  [ pMuonHCdown->GetSize()-1 ])  ->GetMuonEdep();
-        
-        /*	
-	std::cout << '\n' << "PhotonsGenUp = " << PhotonsGenUp << '\n';
-	std::cout << "PhotonsGenDown = " <<PhotonsGenDown << '\n';
-	std::cout << "PhotonEnegUp = " << PhotonEnegUp << '\n';
-	std::cout << "PhotonEnegDown = " << PhotonEnegDown << '\n';
-	std::cout << "MuonEdepUp = " << MuonEdepUp << '\n';
-	std::cout << "MuonEdepDown = " << MuonEdepDown << '\n' << '\n';
-        */
+    //save the hits
+    pPhotonHCup  ->insert(PhotonHitUp);
+    pPhotonHCdown->insert(PhotonHitDown);
+    pMuonHCup    ->insert(MuonHitUp);
+    pMuonHCdown  ->insert(MuonHitDown);
 
-	//fill the histograms
-        AnalysisMgr->FillH1(0, PhotonsGenUp);
-        AnalysisMgr->FillH1(1, PhotonsGenDown);
+    //fill histograms
+    //Analysis Manager and Sensitive Detector Manager.
+    auto AnalysisMgr = G4AnalysisManager::Instance();
 
-        AnalysisMgr->FillP1(0, MuonEdepUp, PhotonsGenUp);
-        AnalysisMgr->FillP1(1, MuonEdepDown, PhotonsGenDown);
-    
-        Reset();
+    PhotonsGenUp   = ((*pPhotonHCup)  [ pPhotonHCup->GetSize()  -1 ])->GetGenPhotons();
+    PhotonsGenDown = ((*pPhotonHCdown)[ pPhotonHCdown->GetSize()-1 ])->GetGenPhotons();
+    PhotonEnegUp   = ((*pPhotonHCup)  [ pPhotonHCup->GetSize()  -1 ])->GetPhotonEneg();
+    PhotonEnegDown = ((*pPhotonHCdown)[ pPhotonHCdown->GetSize()-1 ])->GetPhotonEneg();
+    MuonEdepUp     = ((*pMuonHCup)    [ pMuonHCup->GetSize()    -1 ])->GetMuonEdep();
+    MuonEdepDown   = ((*pMuonHCdown)  [ pMuonHCdown->GetSize()  -1 ])->GetMuonEdep();
+
+    //fill the histograms
+    AnalysisMgr->FillH1(0, PhotonsGenUp);
+    AnalysisMgr->FillH1(1, PhotonsGenDown);
+
+    AnalysisMgr->FillP1(0, MuonEdepUp, PhotonsGenUp);
+    AnalysisMgr->FillP1(1, MuonEdepDown, PhotonsGenDown);
+
+    Reset();
     
 }

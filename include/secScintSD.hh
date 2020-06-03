@@ -2,6 +2,7 @@
 #define secScintSD_hh
 #include "G4VSensitiveDetector.hh"
 #include "secScintHit.hh"
+#include "secSiPMSD.hh"
 #include "globals.hh"
 
 class G4Step;
@@ -9,6 +10,9 @@ class G4HCofThisEvent;
 
 class secScintSD : public G4VSensitiveDetector
 {
+    friend G4bool secSiPMSD::IsADecayEvent();
+    friend void secSiPMSD::ResetDecayFlag();
+    
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
         virtual ~secScintSD();
@@ -19,9 +23,10 @@ class secScintSD : public G4VSensitiveDetector
 
 
     private:
-        void Reset(void);
-        G4int PhotonsGenUp;
-        G4int PhotonsGenDown;
+        void     Reset(void);
+        G4bool   aDecayEvent;
+        G4int    PhotonsGenUp;
+        G4int    PhotonsGenDown;
         G4double PhotonEnegUp;
         G4double PhotonEnegDown;
         /*
@@ -30,7 +35,7 @@ class secScintSD : public G4VSensitiveDetector
          */
         G4double MuonEdepUp;
         G4double MuonEdepDown;
-	G4int    FormerID;
+	    G4int    FormerID;
         secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
         secScintHitsCollection *pPhotonHCdown; //photons's hitscollection in the lower scintillator
         secScintHitsCollection *pMuonHCup;     //Muon's HC up

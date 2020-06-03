@@ -23,6 +23,7 @@ const secScintHit& secScintHit::operator=(const secScintHit& rhs)
 {
     PhotonEneg = rhs.PhotonEneg;
     GenPhotons = rhs.GenPhotons;
+    return *this;
 }
 G4bool secScintHit::operator==(const secScintHit& rhs) const
 {

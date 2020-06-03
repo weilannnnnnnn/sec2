@@ -13,7 +13,7 @@
 #include "G4MuonMinus.hh"
 #include "G4AntiNeutrinoMu.hh"
 #include "G4NeutrinoMu.hh"
-#include <iostream>
+
 class G4OpticalPhoton;
 class G4ParticleDefinition;
 
@@ -30,9 +30,8 @@ secSteppingAction::~secSteppingAction()
 {/*nothing here*/}
 
 
-void secSteppingAction::UserSteppingAction(const G4Step* step)
-{
-    /*
+void secSteppingAction::UserSteppingAction(const G4Step*)
+{/*
     const G4VPhysicalVolume* VolumeNow = step->GetPreStepPoint()->GetPhysicalVolume();
     const G4ParticleDefinition* ParticleNow = step->GetTrack()->GetParticleDefinition();
 
@@ -56,14 +55,6 @@ void secSteppingAction::UserSteppingAction(const G4Step* step)
 	        EventAction->AddPhotonsRecvDown();
             step->GetTrack()->SetTrackStatus(fStopAndKill);
         }
-    }
-*/
-
-/*
-    auto ParticleNow = step->GetTrack()->GetParticleDefinition();
-    if( *ParticleNow == *G4NeutrinoMu::Definition() || *ParticleNow == *G4AntiNeutrinoMu::Definition())
-    {
-	std::cout << "Decayed!" << '\n';
     }
 */
 }

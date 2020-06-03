@@ -63,14 +63,15 @@ void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
     G4double PosX = G4UniformRand() * 5. * cm;
     G4double PosY = G4UniformRand() * 5. * cm;
-    G4ThreeVector PosVect(PosX, PosY, 3.5 * cm);
+    G4ThreeVector PosVect(PosX, PosY, 4.6 * cm);
     pMuonGun->SetParticlePosition( PosVect );
 
-    G4double Theta = PI - G4UniformRand() * PI / 2.;
+    G4double Theta = PI - G4UniformRand() * PI / 2;
     G4double Phi  = G4UniformRand() * 2 * PI;
     G4ThreeVector MomentumVect(1, 0, 0);
     MomentumVect.setTheta(Theta);
     MomentumVect.setPhi(Phi);
+    //G4ThreeVector MomentumVect(0, 0, -1);
     pMuonGun->SetParticleMomentumDirection( MomentumVect );
     
     //auto AnalysisMgr = G4AnalysisManager::Instance();
