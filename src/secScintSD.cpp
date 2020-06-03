@@ -16,7 +16,7 @@
 #include "G4Threading.hh"
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
-#include "randomize.hh"
+#include "Randomize.hh"
 
 #include "tools/histo/h1d"
 #include <iostream>

@@ -4,6 +4,7 @@
 #include "G4Scintillation.hh"
 #include "G4ProcessType.hh"
 #include "G4ForceCondition.hh"
+#include "G4Track.hh"
 #include "globals.hh"
 
 /*
@@ -24,7 +25,7 @@ class secScintillation : public G4Scintillation
         secScintillation& operator=(const secScintillation& rhs) = delete;
     
     public:
-        virtual G4double GetMeanLifeTime(G4Track* aTrack, 
+        virtual G4double GetMeanLifeTime(const G4Track& aTrack, 
                                          G4ForceCondition* Condition) override;
 
 };

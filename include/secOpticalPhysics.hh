@@ -2,7 +2,6 @@
 #define secOpticalPhysics_hh
 
 #include "G4OpticalProcessIndex.hh"
-#include "G4OpticalPhysicsMessenger.hh"
 #include "G4OpticalSurface.hh"
 #include "G4VPhysicsConstructor.hh"
 #include "globals.hh"
@@ -19,7 +18,6 @@ class G4OpMieHG;
 class G4OpBoundaryProcess;
 class G4OpAbsorption;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class secOpticalPhysics : public G4VPhysicsConstructor
 {
@@ -37,9 +35,9 @@ class secOpticalPhysics : public G4VPhysicsConstructor
   private:
 
     /// Not implemented
-    secOpticalPhysics(const G4OpticalPhysics& right);
+    secOpticalPhysics(const secOpticalPhysics& right);
     /// Not implemented
-    secOpticalPhysics& operator=(const G4OpticalPhysics& right);
+    secOpticalPhysics& operator=(const secOpticalPhysics& right);
 
   public:
 
@@ -82,9 +80,6 @@ class secOpticalPhysics : public G4VPhysicsConstructor
 
     // methods
     void PrintStatistics() const;
-
-    // messenger
-    G4OpticalPhysicsMessenger* fMessenger;
 
     // The vector of process configuration
     std::vector<G4bool>         fProcessUse;
