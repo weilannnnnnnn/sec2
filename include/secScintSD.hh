@@ -28,7 +28,8 @@ class secScintSD : public G4VSensitiveDetector
                          unsigned int nbins, G4double Xmin, G4double Mmax);
                          
         void     PrintData(G4String FileName, G4double val);
-
+        
+	void     Print(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter);
         G4bool   DecayFlagSiPM;
         G4bool   DecayFlagScint;
         G4int    DecayEventID;

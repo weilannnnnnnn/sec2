@@ -51,5 +51,11 @@ void secSteppingAction::UserSteppingAction(const G4Step* /*step*/ )
 	    step->GetTrack()->SetTrackStatus(fStopAndKill);
 	}
     }
-*/ 
+*//* 
+    auto ParticleNow = step->GetTrack()->GetParticleDefinition();
+    if( *ParticleNow == *G4MuonPlus::Definition() )
+    {
+        std::cout << step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() << '\n';
+    }
+    */
 }

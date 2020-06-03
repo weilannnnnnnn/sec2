@@ -1,6 +1,7 @@
 #include "secPhysicsList.hh"
 
 #include "G4OpticalPhysics.hh"
+#include "G4SpinDecayPhysics.hh"
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
@@ -9,6 +10,8 @@
 
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
+#include "G4Electron.hh"
+#include "G4Positron.hh"
 #include "G4Region.hh"
 #include "G4RegionStore.hh"
 #include "G4SystemOfUnits.hh"
@@ -18,19 +21,21 @@
 secPhysicsList::secPhysicsList(void) : 
 G4VModularPhysicsList()
 {
-    auto pOptical = OpticalPhysics_init();
+    //auto pOptical = OpticalPhysics_init();
     auto pDecay   = DecayPhysics_init();
     auto pEm      = EmPhysics_init();
     auto pHadron  = HadronElasticPhysics_init();
     auto pIon     = IonPhysics_init();
     auto pLimiter = StepLimiter_init();
+    auto pSpinDecay = new G4SpinDecayPhysics();
 
-    RegisterPhysics( pOptical );
+    //RegisterPhysics( pOptical );
     RegisterPhysics( pDecay );
     RegisterPhysics( pEm );
     RegisterPhysics( pHadron );
     RegisterPhysics( pIon );
     RegisterPhysics( pLimiter );
+    RegisterPhysics( pSpinDecay );
 }
 
 //dtor
@@ -45,8 +50,13 @@ void secPhysicsList::SetCuts()
     
     //set the production cuts of muons in the down scintillator
     auto pRegion = G4RegionStore::GetInstance()->GetRegion("sci_reg2");
+    
     SetParticleCuts(0., G4MuonPlus::Definition(), pRegion);
-    SetParticleCuts(0., G4MuonMinus::Definition(), pRegion); 
+    SetParticleCuts(0., G4MuonMinus::Definition(), pRegion);
+    //SetParticleCuts(0.1*mm, "e+", pRegion);
+    //SetParticleCuts(0.1*mm, "e-", pRegion); 
+    
+    //SetCutsForRegion(0., "sci_reg2");
 }
 
 

@@ -92,12 +92,12 @@ void secRunAction::EndOfRunAction(const G4Run* )
         MergeFile("UpScintResponse.dat");
         MergeFile("DownScintResponse.dat");
 
-        MergeFile("UpSiPMResponse.dat");
-        MergeFile("DownSiPMResponse.dat");
-        
+        //MergeFile("UpSiPMResponse.dat");
+        //MergeFile("DownSiPMResponse.dat");
+        MergeFile("DownMuonVelocity.dat");       
         MergeFile("DecayTime.dat");
     }
-    
+    std::cout << "***1m/s = " << m / s << " ***\n"; 
 }
 
 void secRunAction::MergeFile(G4String FileName)
