@@ -3,8 +3,11 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4GeneralParticleSource.hh"
+
+class G4GeneralParticleSource;
 class G4Event;
 class G4ParticleDefinition;
+class G4ParticleGun;
 
 class secPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
@@ -17,7 +20,8 @@ public:
 
 private:
 
-    G4GeneralParticleSource* pMuonGun;
+    G4ParticleGun* pMuonGun;
+    //G4GeneralParticleSource* pMuonGun;
     /*
     G4SPSPosDistribution* PosMgr;
     G4SPSEneDistribution* EnegMgr;

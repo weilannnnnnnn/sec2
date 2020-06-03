@@ -1,5 +1,5 @@
 #include "secPrimaryGeneratorAction.hh"
-
+#include "secAnalysis.hh"
 #include "G4SPSEneDistribution.hh"
 #include "G4SPSAngDistribution.hh"
 #include "G4SPSPosDistribution.hh"
@@ -7,11 +7,12 @@
 #include "G4RunManager.hh"
 
 #include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
+#include "G4MuonPlus.hh"
+#include "G4MuonMinus.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
-
+#include <iostream>
 #define PI 3.14159256359
 
 //ctor
@@ -21,15 +22,15 @@ secPrimaryGeneratorAction::secPrimaryGeneratorAction(void) :
     mu_p(nullptr),
     mu_n(nullptr)
 {
-    pMuonGun = new G4GeneralParticleSource();//one particle at a time
+    pMuonGun = new G4ParticleGun();
+    //pMuonGun = new G4GeneralParticleSource();
     /*
     PosMgr = new G4SPSPosDistribution();
     EnegMgr = new G4SPSEneDistribution();
     AngMgr = new G4SPSAngDistribution();
     */
-    auto table = G4ParticleTable::GetParticleTable();
-    mu_p = table -> FindParticle("mu+");
-    mu_n = table -> FindParticle("mu-");
+    mu_p = G4MuonPlus::Definition();
+    mu_n = G4MuonMinus::Definition();
 }
 
 //dtor
@@ -55,6 +56,27 @@ void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
         pMuonGun -> SetParticleDefinition(mu_n);
     }
+    
+    //G4double Eneg = ( 0.1 + (1000. - 0.1) * G4UniformRand() ) * GeV;
+    G4double Eneg = 150.*MeV;
+    pMuonGun->SetParticleEnergy(Eneg);
+
+    G4double PosX = G4UniformRand() * 5. * cm;
+    G4double PosY = G4UniformRand() * 5. * cm;
+    G4ThreeVector PosVect(PosX, PosY, 3.5 * cm);
+    pMuonGun->SetParticlePosition( PosVect );
+
+    G4double Theta = PI - G4UniformRand() * PI / 2.;
+    G4double Phi  = G4UniformRand() * 2 * PI;
+    G4ThreeVector MomentumVect(1, 0, 0);
+    MomentumVect.setTheta(Theta);
+    MomentumVect.setPhi(Phi);
+    pMuonGun->SetParticleMomentumDirection( MomentumVect );
+    
+    //auto AnalysisMgr = G4AnalysisManager::Instance();
+    //AnalysisMgr->FillH1(6, Eneg);
+    
+    
     /*
     pMuonGun->SetParticleEnergy(10*GeV);
     pMuonGun->SetParticlePosition(G4ThreeVector(0., 0., 10*cm));

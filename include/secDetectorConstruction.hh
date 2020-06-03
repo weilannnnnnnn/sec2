@@ -19,7 +19,7 @@ public:
 
     //construct method
     virtual G4VPhysicalVolume* Construct(void);
-
+    virtual void ConstructSDandField();
 private:
 
     void ConstructOpticalScint (G4Material *&, G4OpticalSurface *&);
