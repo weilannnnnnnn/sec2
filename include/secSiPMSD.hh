@@ -29,7 +29,8 @@ class secSiPMSD : public G4VSensitiveDetector
         
     private:
         
-        void PrintHC(G4String FileName, secSiPMHitsCollection* pHC1, secSiPMHitsCollection* pHC2, std::initializer_list<secSiPMHit::DataGetter> GetterLst);
+        void PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter GetterLst,
+                     unsigned int bins, G4double Xmin, G4double Xmax);
         G4int DecayEventID;
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;

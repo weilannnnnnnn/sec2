@@ -5,8 +5,7 @@
 
 class G4GeneralParticleSource;
 class G4Event;
-class G4ParticleDefinition;
-class G4ParticleGun;
+//class G4ParticleGun;
 
 class secPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
@@ -19,15 +18,7 @@ public:
 
 private:
 
-    G4ParticleGun* pMuonGun;
-    //G4GeneralParticleSource* pMuonGun;
-    /*
-    G4SPSPosDistribution* PosMgr;
-    G4SPSEneDistribution* EnegMgr;
-    G4SPSAngDistribution* AngMgr;
-    */
-    G4ParticleDefinition* mu_p;
-    G4ParticleDefinition* mu_n;
+    G4GeneralParticleSource* pMuonGun;
 
 };
 

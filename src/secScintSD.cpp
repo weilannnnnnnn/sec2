@@ -152,7 +152,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             //std::cout << "****Decayed!!****" << '\n';
             DecayFlagScint = true;
             DecayFlagSiPM = true;
-            DecayTime = step->GetPreStepPoint()->GetProperTime();
+            DecayTime = step->GetPreStepPoint()->GetGlobalTime();
             step->GetTrack()->SetTrackStatus(fStopAndKill);
         }
     }
@@ -195,12 +195,12 @@ void secScintSD::EndOfEvent(G4HCofThisEvent*)
         PrintHC("UpScintResponse.dat",      // file name
                 pPhotonHCup,                // hits collection's pointer
 	            &secScintHit::GetPhotonEneg,// data getter function's pointer
-                4000, 0.*ns, 10000.*ns);    // number-of-bins, lower limit, upper limit
+                8000, 0.*ns, 20000.*ns);    // number-of-bins, lower limit, upper limit
 
         PrintHC("DownScintResponse.dat", 
                 pPhotonHCdown,
 		        &secScintHit::GetPhotonGlobalTime,
-                4000, 0.*ns, 10000.*ns);
+                8000, 0.*ns, 20000.*ns);
 
         //print the decay time
         PrintData("DecayTime.dat", DecayTime);

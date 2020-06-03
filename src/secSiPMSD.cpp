@@ -8,6 +8,7 @@
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4PhysicalVolumeStore.hh"
+#include "G4SystemOfUnits.hh"
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -125,9 +126,14 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 	DecayEventID++;
 	//std::cout << "decayed!!" << '\n';
         ResetDecayFlag();
-        PrintHC("SiPMDecayEventData", 
-                        pHCup, pHCdown,
-                        {&secSiPMHit::GetGlobalTime, &secSiPMHit::GetPhotonEneg});
+        PrintHC("UpSiPMResponse.dat", 
+                pHCup,
+                &secSiPMHit::GetGlobalTime,
+                8000, 0.*ns, 20000*ns);
+        PrintHC("DownSiPMResponse.dat",
+                pHCdown,
+                &secSiPMHit::GetGlobalTime,
+                8000, 0.*ns, 20000.*ns);
     }
 }
 
@@ -140,42 +146,54 @@ void secSiPMSD::ResetDecayFlag()
     pScintSD->DecayFlagSiPM = false;
 }
 
-void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC1, secSiPMHitsCollection* pHC2, std::initializer_list<secSiPMHit::DataGetter> GetterLst)
+void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
+                        unsigned int nbins, G4double Xmin, G4double Xmax)
 {
-    //create files
-    std::ostringstream StrStrm;
+    //fill histogram
+    tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
+    for( size_t i = 0; i != pHC->GetSize(); ++i )
+    {   
+        G4double val = ( ( (*pHC)[i] ) ->* (Getter) )();
+        hist.fill(val);
+    }
 
-    StrStrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    //create files
+    std::ostringstream sstrm;
+    sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary);
     
-    //input data
-    std::ofstream fStrm(StrStrm.str(), std::ofstream::app | std::ofstream::binary);
-    assert( fStrm.is_open() );
-    
-    fStrm << "DecayEventID_t" << G4Threading::G4GetThreadId() << ": " << DecayEventID << '\n';
-    //upper SiPM's data        
-    fStrm << "Upper SiPM" << '\n';
-    fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
-    
-    for( size_t i = 0; i != pHC1->GetSize(); ++i )
+    if( !fstrm.is_open() )
     {
-        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc )
-        {
-            fStrm << ( ( (*pHC1)[i] ) ->* (*pfunc) )() << '\t';
-        }
-        fStrm << '\n';
+        std::cerr << "***Unable to open file: " << FileName << " ***" << '\n';
+        std::cerr << "***The generated data will not be recorded!***" << '\n';
     }
-    //lower SiPM's data
-    fStrm << "Lower SiPM" << '\n';
-    fStrm << "Global time" << '\t' << "Photon Energy" <<'\n';
-    for( size_t i = 0; i != pHC2->GetSize(); ++i )
+
+    //assert( fstrm.is_open() );
+    fstrm << "Decay Event ID_t" << G4Threading::G4GetThreadId() << "= " << DecayEventID << '\n';
+    
+    //write file
+    const std::vector<unsigned int>& entries = hist.bins_entries();
+    std::vector<G4double> edges;
+    edges.push_back(-1.);
+    const G4double binw = (Xmax - Xmin) / nbins;
+    for( size_t i = 0; i != nbins + 1; ++i )
     {
-        for( auto pfunc = GetterLst.begin(); pfunc != GetterLst.end(); ++pfunc )
-        {
-            fStrm << ( ( (*pHC2)[i] ) ->* (*pfunc) )() << '\t';
-        }
-        fStrm << '\n';
+	const G4double edge = Xmin + i * binw;
+        edges.push_back( edge );
     }
-    fStrm.flush();
+    //std::cout << "entries size = " << entries.size() << " edges size = " << edges.size() << '\n';
+    size_t sz = entries.size() <= edges.size() ? entries.size() : edges.size();
+    
+    for( size_t i = 0; i != sz; ++i )
+    {
+        if( entries[i] == 0 )
+	{
+            continue;
+	}
+        fstrm << edges[i] << '\t' << entries[i] << '\n';
+    }
+
+    fstrm.flush();
     //close files
-    fStrm.close();
+    fstrm.close();
 }

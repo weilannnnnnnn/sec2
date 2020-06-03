@@ -1,0 +1,48 @@
+#/run/numberOfThreads 24
+/run/useMaximumLogicalCores
+/run/initialize
+
+#configure the mu+ and mu- source 
+#mu+ source
+/gps/source add 1.2
+/gps/particle mu+
+
+#position distribution
+/gps/pos/type Surface
+/gps/pos/shape Sphere
+/gps/pos/centre 0 0 0 
+/gps/pos/radius 10 cm
+
+#angular distribution
+/gps/ang/type cos
+/gps/ang/mintheta 0  deg
+/gps/ang/maxtheta 90 deg
+
+#energy distribution
+/gps/ene/type Pow
+#------------------------
+#mu- source
+/gps/source add 1
+/gps/particle mu-
+
+#position distribution
+/gps/pos/type Surface
+/gps/pos/shape Sphere
+/gps/pos/centre 0 0 0 
+/gps/pos/radius 10 cm
+
+#angular distribution
+/gps/ang/type cos
+/gps/ang/mintheta 0  deg
+/gps/ang/maxtheta 90 deg
+
+#energy distribution
+/gps/ene/type Pow
+#========================
+
+/run/verbose 2
+/control/verbose 2
+/event/verbose 0
+/tracking/verbose 0
+#/run/printProgress 100
+/run/beamOn 1

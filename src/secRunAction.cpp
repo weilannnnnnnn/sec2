@@ -89,9 +89,12 @@ void secRunAction::EndOfRunAction(const G4Run* )
     }
     else
     {
-        //MergeFile("ScintMuonDecayEventData");
         MergeFile("UpScintResponse.dat");
         MergeFile("DownScintResponse.dat");
+
+        MergeFile("UpSiPMResponse.dat");
+        MergeFile("DownSiPMResponse.dat");
+        
         MergeFile("DecayTime.dat");
     }
     

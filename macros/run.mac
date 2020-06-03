@@ -7,5 +7,5 @@
 /event/verbose 0
 /tracking/verbose 0
 #/run/printProgress 100
-/run/beamOn 1000000
+/run/beamOn 1
 
