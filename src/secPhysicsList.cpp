@@ -48,15 +48,8 @@ void secPhysicsList::SetCuts()
 {
     G4VUserPhysicsList::SetCuts();
     
-    //set the production cuts of muons in the down scintillator
-    auto pRegion = G4RegionStore::GetInstance()->GetRegion("sci_reg2");
-    
-    SetParticleCuts(0., G4MuonPlus::Definition(), pRegion);
-    SetParticleCuts(0., G4MuonMinus::Definition(), pRegion);
-    //SetParticleCuts(0.1*mm, "e+", pRegion);
-    //SetParticleCuts(0.1*mm, "e-", pRegion); 
-    
-    //SetCutsForRegion(0., "sci_reg2");
+    SetCutValue(0.1*mm, "e+", "sci_reg2");
+    SetCutValue(0.1*mm, "e-", "sci_reg2");
 }
 
 
