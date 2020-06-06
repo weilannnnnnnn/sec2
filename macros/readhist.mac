@@ -17,6 +17,7 @@
 #position distribution
 /gps/pos/type Surface
 /gps/pos/shape Sphere
+/gps/pos/radius 11.18 m
 /gps/hist/type biaspt
 /gps/hist/file FILENAME1
 /gps/hist/inter Lin
@@ -33,6 +34,7 @@
 #position distribution
 /gps/pos/type Surface
 /gps/pos/shape Sphere
+/gps/pos/radius 11.18 m
 /gps/hist/type biaspt
 /gps/hist file FILENAME1
 /gps/hist inter Lin
