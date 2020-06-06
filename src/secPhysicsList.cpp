@@ -2,6 +2,7 @@
 
 #include "secOpticalPhysics.hh"
 #include "G4DecayPhysics.hh"
+#include "G4SpinDecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
 #include "G4IonPhysics.hh"
@@ -28,7 +29,12 @@ G4VModularPhysicsList()
     auto pLimiter = StepLimiter_init();
 
     RegisterPhysics( pOptical );
+
+    //G4SpinDecayPhysics depends on G4DecayPhysics.
     RegisterPhysics( pDecay );
+    auto DecayWithSpin = new G4SpinDecayPhysics();
+    RegisterPhysics(DecayWithSpin);
+
     RegisterPhysics( pEm );
     RegisterPhysics( pHadron );
     RegisterPhysics( pIon );
