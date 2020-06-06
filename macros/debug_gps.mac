@@ -1,0 +1,14 @@
+#/run/useMaximumLogicalCores
+/run/initialize
+
+/gps/particle mu+
+/gps/position 0 0 10 m
+/gps/direction 0 0 -1
+/gps/energy 2.2 GeV
+
+/run/verbose 2
+/control/verbose 2
+/event/verbose 1
+/tracking/verbose 1
+#/run/printProgress 100
+/run/beamOn 1
