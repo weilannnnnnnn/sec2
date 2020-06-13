@@ -20,7 +20,7 @@
 /gps/pos/radius 11.18 m
 /gps/pos/centre -5.18 m
 /gps/hist/type biaspt
-/control/execute Posdist.mac
+/control/execute PosDist.mac
 
 #energy distribution
 /gps/hist/type energy
@@ -39,7 +39,7 @@
 /gps/pos/radius 11.18 m
 /gps/pos/centre -5.18 m
 /gps/hist/type biaspt
-/control/execute/ Posdist.mac
+/control/execute/ PosDist.mac
 
 #energy distribution
 /gps/hist/type energy
