@@ -20,7 +20,15 @@ public:
     //construct method
     virtual G4VPhysicalVolume* Construct(void);
     virtual void ConstructSDandField();
+
+    void SetLVOpticalProperties(G4LogicalVolume* LV, G4String& FileName);
+/*
+    this function is used to configure the optical properties (e.g. scintillation)
+    of logical volume. The properties are discribed as functions of optical photons'
+    energy. 
+*/
 private:
+
 
     void ConstructOpticalScint (G4Material *&, G4OpticalSurface *&);
     void ConstructOpticalFoil  (G4Material *&, G4OpticalSurface *&);

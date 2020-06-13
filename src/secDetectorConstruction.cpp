@@ -27,7 +27,13 @@
 #include "secDetectorConstruction.hh"
 #include "secScintSD.hh"
 #include "secSiPMSD.hh"
-#include "G4RunManager.hh"
+
+#ifdef G4MULTITHREADED
+    #include "G4MTRunManager.hh"
+#else
+    #include "G4RunManager.hh"
+#endif
+
 #include "G4SDManager.hh"
 #include "G4UserLimits.hh"
 //material
@@ -341,4 +347,18 @@ void secDetectorConstruction::ConstructSDandField()
     auto SiPMSD = new secSiPMSD("SiPMSD", SiPMHCnameVect, ScintSD);
     G4SDManager::GetSDMpointer()->AddNewDetector(SiPMSD);
     SetSensitiveDetector("pm_log", SiPMSD, true);
+}
+
+void secDetectorConstruction::SetLVOpticalProperties(G4LogicalVolume* LV, G4String& FileName)
+{
+    #ifdef G4MULTITHREADED
+        auto RunMgr = G4MTRunManager::GetRunManager();
+    #else
+        auto RunMgr = G4RunManager::GetRunManager();
+    #endif
+    
+    //read from the file
+
+    //inform the run manager
+    RunMgr->GeometryHasBeenModified();    
 }

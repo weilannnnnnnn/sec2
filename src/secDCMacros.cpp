@@ -1,5 +1,6 @@
 #include "secDCMacros.hh"
 #include "secDetectorConstruction.hh"
+
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -9,9 +10,10 @@
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
+#include "G4UIcmdWith3Vector.hh"
 
 #include "G4ThreeVector.hh"
-#include "globals.hh"
+#include "G4RotationMatrix.hh"
 
 secDCMacros::secDCMacros(secDetectorConstruction* secDC) :
     DetectorConstruction(secDC),
@@ -43,11 +45,15 @@ secDCMacros::secDCMacros(secDetectorConstruction* secDC) :
     cmd_FileName->SetGuidence("Specify the data file's name");
     cmd_FileName->SetParameterName("FileName");
 
-    //command for changing Physical Volume
-    cmd_VolumeSize = new G4UIcmdWith3VectorAndUnit("/sec/DC/SetVolumeSize");
-    cmd_VolumeSize->SetGuidence("Set The Geometry, three parameters correspond to G4's");
-    cmd_VolumeSize->SetParameterName("Par1", "Par2", "Par3", false);
+    //command for translating the Physical Volume
+    cmd_PVPos = new G4UIcmdWith3VectorAndUnit("/sec/DC/Translation");
+    cmd_PVPos->SetGuidence("Translate the Physical Volume to a new position");
+    cmd_PVPos->SetParameterName("PosX", "PosY", "PosZ", false);
 
+    //command for rotating the Physical Volume
+    cmd_PVRotate = new G4UIcmdWith3Vector("/sec/DC/Rotation");
+    cmd_PVRotate->SetGuidence("Rotate the Physical Volume according to Euler Angles (rad)");
+    cmd_PVRotate->SetParameterName("alpha", "beta", "gamma", false);
 }
 secDCMacros::~secDCMacros()
 {
@@ -56,57 +62,76 @@ secDCMacros::~secDCMacros()
     delete cmd_SpecifyLV;
     delete cmd_SpecifyPV;
     delete cmd_FileName;
-    delete cmd_VolumeSize;
+    delete cmd_PVPos;
+    delete cmd_PVRotate;
 }
 
-void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewValue)
+void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
     if( cmd == cmd_OverLapCheck )
     {
-        IsOverLapCheck = cmd->ConvertToBool(NewValue);
+        IsOverLapCheck = cmd->ConvertToBool(NewVal);
     }
     else if( cmd == cmd_SpecifyLV )
     {
         //not the store selling LVs! But the logical volume store!!
         auto LVStore = G4LogicalVolumeStore::GetInstance();
-        LVNow = LVStore->GetVolume(NewValue);
+        LVNow = LVStore->GetVolume(NewVal);
         
         // if the volume doesn't exist, always set the volume "world_log"( world volume of the detector )
         if(LVNow = nullptr)
         {
             LVStore->GetVolume("world_log");
+            std::cerr << "===========================================================\n"
+                      << "                   Warning From sec2"
+                      << "Logical volume called " << NewVal << " NOT FOUND!"
+                      << "Probably wrong name, current Logical Volume is world volume"
+                      << std::endl;
         }
     }
     else if( cmd == cmd_SpecifyPV )
     {
         auto PVStore = G4PhysicalVolume::GetInstance();
-        PVNow = PVStore->GetVolume(NewValue);
+        PVNow = PVStore->GetVolume(NewVal);
 
         if( PVNow = nullptr )
         {
             //always set the volume "world_phy" if the volume doesn't exist.
             PVStore->GetVolume("world_phy");
+            if(PVNow = nullptr)
+            {
+                PVStore->GetVolume("world_log");
+                std::cerr << "===========================================================\n"
+                            << "                   Warning From sec2"
+                            << "Physical volume called " << NewVal << " NOT FOUND!"
+                            << "Probably wrong name, current Logical Volume is world volume"
+                            << std::endl;
+            }
         }
     }
     else if ( cmd == cmd_FileName )
     {
         //unfinished!
         //register the data file in the detector construction
+        DetectorConstruction->SetLVOpticalProperties(LVNow, NewVal);
     }
-    else if( cmd == cmd_VolumeSize )
+    else if( cmd == cmd_PVPos )
     {
-        //unfinished! 
-        //need to parameterize the detectore construction
-
-        //if the Physical is changed by user, an overlap checking procedure will be invoke
-        //when the toggle is set true
-        if( IsOverLapCheck == true )
-        {
-            if( PVNow->CheckOverLaps() )
-            {
-                //overlap happened! error message!!
-            }
-        }
+        //Move the Physical Volume to a new place.
+        PVNow->SetTranslation( cmd->ConvertTo3Vector(NewVal) );
+        //inform the run manager
+        InformRunMgr();
+        DumpOverLapInfo(IsOverLapCheck, PVNow)
     }
-    
+    else if( cmd == cmd_PVRotate )
+    {
+        //rotate the Physical Volume accoring to the Euler Angle.
+        G4ThreeVector EulerVect = cmd->ConvertTo3Vector(NewVal);
+        PVNow->SetObjectRotation( G4RotationMatrix(EulerVect.x(),
+                                                   EulerVect.y(), 
+                                                   EulerVect.z()) );
+        //inform the run manager
+        InformRunMgr();
+        DumpOverLapInfo(IsOverLapCheck, PVNow);
+    }    
 }
