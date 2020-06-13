@@ -7,7 +7,7 @@
 /tracking/verbose 0
 
 
-#add the particle sources specify their intensity 
+#add the particle sources, specify their intensity 
 #energy distribution, position distribution and 
 #angular distribution
 #=========================mu+======================
@@ -19,14 +19,16 @@
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
 /gps/hist/type biaspt
-/gps/hist/file FILENAME1
-/gps/hist/inter Lin
+/gps/hist/file PosDist.dat
 
 #energy distribution
-/gps/ene/type User
+/gps/ene/type Epn
 /gps/hist/type ene
 /gps/hist/file FILENAME2
-/gps/hist/inter Lin
+
+#angular distribution
+/gps/ang/type focused
+/gps/ang/focuspoint -5.18 m
 #=========================mu-======================
 /gps/source/add 1
 /gps/particle mu-
@@ -36,11 +38,13 @@
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
 /gps/hist/type biaspt
-/gps/hist file FILENAME1
-/gps/hist inter Lin
+/gps/hist/file PosDist.dat
 
 #energy distribution
-/gps/ene/type User
+/gps/ene/type Epn
 /gps/hist/type ene
 /gps/hist/file FILENAME2
-/gps/hist/inter Lin
+
+#angular distribution
+/gps/ang/type focused
+/gps/ang/focuspoint -5.18 m
