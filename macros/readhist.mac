@@ -18,13 +18,13 @@
 /gps/pos/type Surface
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
+/gps/pos/centre -5.18 m
 /gps/hist/type biaspt
-/gps/hist/file PosDist.dat
+/control/execute Posdist.mac
 
 #energy distribution
-/gps/ene/type Epn
-/gps/hist/type ene
-/gps/hist/file FILENAME2
+/gps/hist/type energy
+/gps/hist/file Spectrum.dat
 
 #angular distribution
 /gps/ang/type focused
@@ -37,13 +37,13 @@
 /gps/pos/type Surface
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
+/gps/pos/centre -5.18 m
 /gps/hist/type biaspt
-/gps/hist/file PosDist.dat
+/control/execute/ Posdist.mac
 
 #energy distribution
-/gps/ene/type Epn
-/gps/hist/type ene
-/gps/hist/file FILENAME2
+/gps/hist/type energy
+/gps/hist/file Spectrum.dat
 
 #angular distribution
 /gps/ang/type focused
