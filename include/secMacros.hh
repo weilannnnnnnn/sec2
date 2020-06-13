@@ -1,5 +1,6 @@
 #ifndef secMacros_hh
 #define secMacros_hh
+#include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
 #include "globals.hh"
 /*
@@ -11,12 +12,12 @@ class description:
     (DC means detector construction) and 
     secSDMacroManager. (SD means sensitive detector)
 
-    All macro commands defined by sec begin with: /sec
+    All macro commands defined by sec begin with: /sec/
 ===================================================    
 */
 class G4UIdirectory;
 
-class secMacros : public G4UImanager
+class secMacros : public G4UImessenger
 {
     public:
         //ctor and dtor
