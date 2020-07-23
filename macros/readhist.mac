@@ -1,3 +1,4 @@
+#basic setup
 #/run/numberOfThreads 4
 /run/initialize
 
@@ -11,36 +12,53 @@
 #energy distribution, position distribution and 
 #angular distribution
 #=========================mu+======================
+#add mu+ source and sepcify source intensity
 /gps/source/add 1.2
 /gps/particle mu+
 
-#position distribution
+#specify position distribution 
+#both the mu+ and mu- will originate from the surface of a sphere, whose
+#centering at (X, Y, Z) (0, 0, -5.18)m, or (0, 0, 6 - 5*sqrt(5))m to be excate.
+
 /gps/pos/type Surface
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
-/gps/hist/type biaspt
-/gps/hist/file FILENAME1
-/gps/hist/inter Lin
+/gps/pos/centre -5.18 m
+/gps/hist/type bispt
+/gps/hist/file PosDist.dat
 
-#energy distribution
+#specify the angular distribution
+#all the events will be focused at the centre (0, 0, 6 - 5*sqrt(5)) of the sphere
+/gps/ang/type focused
+/gps/ang/focuspoint 0 0 -5.18 m
+
+#specify the energy distribution
 /gps/ene/type User
 /gps/hist/type ene
-/gps/hist/file FILENAME2
-/gps/hist/inter Lin
+/gps/hist/file EnegDist.dat
+
 #=========================mu-======================
+#add mu- source and sepcify source intensity
 /gps/source/add 1
 /gps/particle mu-
 
-#position distribution
+#specify position distribution 
+#both the mu+ and mu- will originate from the surface of a sphere, whose
+#centering at (X, Y, Z) (0, 0, -5.18)m, or (0, 0, 6 - 5*sqrt(5))m to be excate.
+
 /gps/pos/type Surface
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
-/gps/hist/type biaspt
-/gps/hist file FILENAME1
-/gps/hist inter Lin
+/gps/pos/centre -5.18 m
+/gps/hist/type bispt
+/gps/hist/file PosDist.dat
 
-#energy distribution
+#specify the angular distribution
+#all the events will be focused at the centre (0, 0, 6 - 5*sqrt(5)) of the sphere
+/gps/ang/type focused
+/gps/ang/focuspoint 0 0 -5.18 m
+
+#specify the energy distribution
 /gps/ene/type User
 /gps/hist/type ene
-/gps/hist/file FILENAME2
-/gps/hist/inter Lin
+/gps/hist/file EnegDist.dat

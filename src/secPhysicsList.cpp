@@ -50,9 +50,6 @@ secPhysicsList::~secPhysicsList()
 void secPhysicsList::SetCuts()
 {
     G4VUserPhysicsList::SetCuts();
-    
-    SetCutValue(0.1*mm, "e+", "sci_reg2");
-    SetCutValue(0.1*mm, "e-", "sci_reg2");
 }
 
 

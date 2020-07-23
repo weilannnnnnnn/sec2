@@ -38,7 +38,7 @@ secDCMacros::secDCMacros(secDetectorConstruction* secDC) :
     //command for specifing the logical volume
     cmd_SpecifyPV = new G4UIcmdWithAString("/sec/DC/PhysicalVolume", this);
     cmd_SpecifyPV->SetGuidence("Specify the Solid to further set parameter");
-    cmd_SpecifyPV->SetGuidence("PhysicalVolumeName");
+    cmd_SpecifyPV->SetParameterName("PhysicalVolumeName");
 
     //command for loading the data files for logical volume
     cmd_FileName = new G4UIcmdWithAString("/sec/DC/LoadFileForLV");
@@ -100,12 +100,12 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
             PVStore->GetVolume("world_phy");
             if(PVNow = nullptr)
             {
-                PVStore->GetVolume("world_log");
+                PVStore->GetVolume("world_phy");
                 std::cerr << "===========================================================\n"
-                            << "                   Warning From sec2"
-                            << "Physical volume called " << NewVal << " NOT FOUND!"
-                            << "Probably wrong name, current Logical Volume is world volume"
-                            << std::endl;
+                          << "                   Warning From sec2"
+                          << "Physical volume called " << NewVal << " NOT FOUND!"
+                          << "Probably wrong name, current Physical Volume is world volume"
+                          << std::endl;
             }
         }
     }
@@ -121,7 +121,7 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         PVNow->SetTranslation( cmd->ConvertTo3Vector(NewVal) );
         //inform the run manager
         InformRunMgr();
-        DumpOverLapInfo(IsOverLapCheck, PVNow)
+        DumpOverLapInfo(IsOverLapCheck, PVNow);
     }
     else if( cmd == cmd_PVRotate )
     {
