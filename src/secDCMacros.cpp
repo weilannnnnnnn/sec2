@@ -18,48 +18,48 @@
 secDCMacros::secDCMacros(secDetectorConstruction* secDC) :
     DetectorConstruction(secDC),
     LVNow(nullptr),
-    PVNow(nullptr)
-    IsOverLapCheck(true)
+    PVNow(nullptr),
+    IsOverlapCheck(true)
 {
 /*
     create commands for detector construction. ALL COMMAND BEGINS WITH /sec/DC
 */
     //command for toggling the overlap checking
-    cmd_OverLapCheck = new G4UIcmdWithABool("/sec/DC/IsOverLapCheck", this);
-    cmd_OverLapCheck->SetGuidence("Enable/Disable Detector Overlap Checking");
-    cmd_OverLapCheck->SetParameterName("Flag", false); 
-    cmd_OverLapCheck->SetDefaultValue(true);
+    cmd_OverlapCheck = new G4UIcmdWithABool("/sec/DC/IsOverLapCheck", this);
+    cmd_OverlapCheck->SetGuidance("Enable/Disable Detector Overlap Checking");
+    cmd_OverlapCheck->SetParameterName("Flag", false); 
+    cmd_OverlapCheck->SetDefaultValue(true);
 
     //command for specifing the logical volume
     cmd_SpecifyLV = new G4UIcmdWithAString("/sec/DC/LogicalVolume", this);
-    cmd_SpecifyLV->SetGuidence("Specify the LogicalVolume to further set parmeter");
-    cmd_SpecifyLV->SetParameterName("LogicalVolumeName");
+    cmd_SpecifyLV->SetGuidance("Specify the LogicalVolume to further set parmeter");
+    cmd_SpecifyLV->SetParameterName("LogicalVolumeName", false);
 
     //command for specifing the logical volume
     cmd_SpecifyPV = new G4UIcmdWithAString("/sec/DC/PhysicalVolume", this);
-    cmd_SpecifyPV->SetGuidence("Specify the Solid to further set parameter");
-    cmd_SpecifyPV->SetParameterName("PhysicalVolumeName");
+    cmd_SpecifyPV->SetGuidance("Specify the Solid to further set parameter");
+    cmd_SpecifyPV->SetParameterName("PhysicalVolumeName", false);
 
     //command for loading the data files for logical volume
-    cmd_LoadFile = new G4UIcmdWithAString("/sec/DC/LoadFileForLV");
-    cmd_LoadFile->SetGuidence("Specify the data file's name");
-    cmd_LoadFile->SetParameterName("FileName");
+    cmd_LoadFile = new G4UIcmdWithAString("/sec/DC/LoadFileForLV", this);
+    cmd_LoadFile->SetGuidance("Specify the data file's name");
+    cmd_LoadFile->SetParameterName("FileName", false);
     cmd_LoadFile->AvailableForStates(G4State_PreInit,G4State_Idle);
 
     //command for translating the Physical Volume
-    cmd_PVPos = new G4UIcmdWith3VectorAndUnit("/sec/DC/Translation");
-    cmd_PVPos->SetGuidence("Translate the Physical Volume to a new position");
+    cmd_PVPos = new G4UIcmdWith3VectorAndUnit("/sec/DC/Translation", this);
+    cmd_PVPos->SetGuidance("Translate the Physical Volume to a new position");
     cmd_PVPos->SetParameterName("PosX", "PosY", "PosZ", false);
 
     //command for rotating the Physical Volume
-    cmd_PVRotate = new G4UIcmdWith3Vector("/sec/DC/Rotation");
-    cmd_PVRotate->SetGuidence("Rotate the Physical Volume according to Euler Angles (rad)");
+    cmd_PVRotate = new G4UIcmdWith3Vector("/sec/DC/Rotation", this);
+    cmd_PVRotate->SetGuidance("Rotate the Physical Volume according to Euler Angles (rad)");
     cmd_PVRotate->SetParameterName("alpha", "beta", "gamma", false);
 }
 secDCMacros::~secDCMacros()
 {
     //delete the commands!!
-    delete cmd_OverLapCheck;
+    delete cmd_OverlapCheck;
     delete cmd_SpecifyLV;
     delete cmd_SpecifyPV;
     delete cmd_LoadFile;
@@ -69,9 +69,9 @@ secDCMacros::~secDCMacros()
 
 void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
-    if( cmd == cmd_OverLapCheck )
+    if( cmd == cmd_OverlapCheck )
     {
-        IsOverLapCheck = cmd->ConvertToBool(NewVal);
+        IsOverlapCheck = cmd->ConvertToBool(NewVal);
     }
     else if( cmd == cmd_SpecifyLV )
     {
@@ -80,7 +80,7 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         LVNow = LVStore->GetVolume(NewVal);
         
         // if the volume doesn't exist, always set the volume "world_log"( world volume of the detector )
-        if(LVNow = nullptr)
+        if(LVNow == nullptr)
         {
             LVStore->GetVolume("world_log");
             std::cerr << "===========================================================\n"
@@ -92,14 +92,14 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
     }
     else if( cmd == cmd_SpecifyPV )
     {
-        auto PVStore = G4PhysicalVolume::GetInstance();
+        auto PVStore = G4PhysicalVolumeStore::GetInstance();
         PVNow = PVStore->GetVolume(NewVal);
 
-        if( PVNow = nullptr )
+        if( PVNow == nullptr )
         {
             //always set the volume "world_phy" if the volume doesn't exist.
             PVStore->GetVolume("world_phy");
-            if(PVNow = nullptr)
+            if(PVNow == nullptr)
             {
                 PVStore->GetVolume("world_phy");
                 std::cerr << "===========================================================\n"
@@ -122,17 +122,21 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         PVNow->SetTranslation( cmd->ConvertTo3Vector(NewVal) );
         //inform the run manager
         InformRunMgr();
-        DumpOverLapInfo(IsOverLapCheck, PVNow);
+        DumpOverlapInfo(IsOverlapCheck, PVNow);
     }
     else if( cmd == cmd_PVRotate )
     {
         //rotate the Physical Volume accoring to the Euler Angle.
         G4ThreeVector EulerVect = cmd->ConvertTo3Vector(NewVal);
-        PVNow->SetObjectRotation( G4RotationMatrix(EulerVect.x(),
-                                                   EulerVect.y(), 
-                                                   EulerVect.z()) );
+        G4RotationMatrix RotMat(EulerVect.x(), EulerVect.y(), EulerVect.z());
+	PVNow->SetRotation( &RotMat );
         //inform the run manager
         InformRunMgr();
-        DumpOverLapInfo(IsOverLapCheck, PVNow);
+        DumpOverlapInfo(IsOverlapCheck, PVNow);
     }    
+}
+
+G4String secDCMacros::GetCurrentValue(G4UIcommand*)
+{
+    return "";
 }

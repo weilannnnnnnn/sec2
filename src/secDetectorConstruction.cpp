@@ -435,7 +435,7 @@ void secDetectorConstruction::SetOpticalProperties(G4LogicalVolume* LV, G4String
                 //non const surface
                 G4int sz = ConstLabel.size() + SurfaceLabel.size();
                 PropertyName = (buf[0]).substr(sz - 1, (buf[0]).size() - sz);
-                NonConstSurfaceNameSize[PropertyName] = 0
+                NonConstSurfaceNameSize[PropertyName] = 0;
             }
             else
             {
@@ -479,7 +479,7 @@ void secDetectorConstruction::SetOpticalProperties(G4LogicalVolume* LV, G4String
     for(const auto& NS : NonConstNameSize)
     {
         MatTable->AddProperty(NS.first.c_str(), &(EnegVect[pos]), &(ValVect[pos]), NS.second);
-        pos += NS.second();
+        pos += NS.second;
     }
 
     //loop to add the const property

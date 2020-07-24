@@ -4,7 +4,7 @@
 secMacros::secMacros()
 {
     CmdBaseDir = new G4UIdirectory("/sec/");
-    CmdBaseDir->SetGuidence("Macro Commands for sec detector");
+    CmdBaseDir->SetGuidance("Macro Commands for sec detector");
 }
 
 secMacros::~secMacros()

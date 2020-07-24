@@ -22,14 +22,10 @@ class discription:
 =======================================================
 */
 class secDetectorConstruction;
-class G4LogicalVolume;
-class G4VPhysicalVolume;
-class G4UIdirectory;
-class G4UIcmdWithoutParameter;
-class G4UIcmdWithABool;
 class G4UIcmdWithAString;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWith3Vector;
+class G4UIcmdWithABool;
 
 class secDCMacros : public secMacros
 {
@@ -39,7 +35,7 @@ class secDCMacros : public secMacros
         virtual ~secDCMacros();
 
         virtual void SetNewValue(G4UIcommand* cmd, G4String NewVal) override;
-        virtual G4String GetNewValue(G4UIcommand* command) override;
+        virtual G4String GetCurrentValue(G4UIcommand* command) override;
     private:
 
         secDetectorConstruction* DetectorConstruction;
@@ -51,7 +47,7 @@ class secDCMacros : public secMacros
 
         G4bool IsOverlapCheck;
         G4UIdirectory* secDCdir;
-        G4UIcmdWithABool*          cmd_OverLapCheck;
+        G4UIcmdWithABool*          cmd_OverlapCheck;
         G4UIcmdWithAString*        cmd_SpecifyLV;
         G4UIcmdWithAString*        cmd_SpecifyPV;
         G4UIcmdWithAString*        cmd_LoadFile;
@@ -65,14 +61,14 @@ class secDCMacros : public secMacros
         void InformRunMgr();
 };
 
-inline void secDCMacros::DumpOverlapInfo(G4bool IsOverLapCheck, G4VPhysicalVolume* PVNow)
+inline void secDCMacros::DumpOverlapInfo(G4bool IsOverLapCheck, G4VPhysicalVolume* PV)
 {
     //if overlapping happened, throw a warning
-    if( IsOverLapCheck && PVNow->CheckOverLaps() )
+    if( IsOverLapCheck && PV->CheckOverlaps() )
     {
         std::cerr << "===========================================================\n"
                   << "                   Warning From sec2"
-                  << "Overlap happened when changing " << PVNow->GetName() << std::endl;
+                  << "Overlap happened when changing " << PV->GetName() << std::endl;
     }
 }
 
