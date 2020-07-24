@@ -51,12 +51,12 @@ class secDCMacros : public secMacros
 
         G4bool IsOverlapCheck;
         G4UIdirectory* secDCdir;
-        G4UIcmdWithABool* cmd_OverLapCheck;
-        G4UIcmdWithAString* cmd_SpecifyLV;
-        G4UIcmdWithAString* cmd_SpecifyPV;
-        G4UIcmdWithAString* cmd_FileName;
+        G4UIcmdWithABool*          cmd_OverLapCheck;
+        G4UIcmdWithAString*        cmd_SpecifyLV;
+        G4UIcmdWithAString*        cmd_SpecifyPV;
+        G4UIcmdWithAString*        cmd_LoadFile;
         G4UIcmdWith3VectorAndUnit* cmd_PVPos;
-        G4UIcmdWith3Vector* cmd_PVRotate;
+        G4UIcmdWith3Vector*        cmd_PVRotate;
 
         //to warn user if overlap happened after changing the geometry
         void DumpOverlapInfo(G4bool IsOverLap, G4VPhysicalVolume* PVnow);

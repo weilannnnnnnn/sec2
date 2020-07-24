@@ -31,6 +31,7 @@ Member functions:
 #define secDetectorConstruction_hh
 
 #include "G4VUserDetectorConstruction.hh"
+#include "secDCMacros.hh"
 #include "globals.hh"
 
 class G4VPhysicalVolume;
@@ -50,7 +51,7 @@ public:
     virtual G4VPhysicalVolume* Construct(void);
     virtual void ConstructSDandField();
 
-    void SetLVOpticalProperties(G4LogicalVolume* LV, G4String& FileName);
+    void SetOpticalProperties(G4LogicalVolume* LV, G4String& FileName);
 /*
     this function is used to configure the optical properties (e.g. scintillation)
     of logical volume. The properties are discribed as functions of optical photons'
@@ -58,6 +59,7 @@ public:
 */
 private:
 
+    secDCMacros* mac;
     void ConstructOpticalScint (G4Material *&, G4OpticalSurface *&);
     void ConstructOpticalFoil  (G4Material *&, G4OpticalSurface *&);
     void ConstructOpticalSiPM  (G4Material *&, G4OpticalSurface *&);

@@ -57,15 +57,21 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 //ohters
+#include "G4UnitsTable.hh"
 #include <vector>
 #include <cmath>
+#include <map>
+#include <fstream>
+#include <cstdlib>
 #include "globals.hh"
 
 #define PI 3.141592653589793
 //ctor
 secDetectorConstruction::secDetectorConstruction() :
         G4VUserDetectorConstruction()
-{/*nothing here*/}
+{
+    mac = new secDCMacros(this);
+}
 
 //dtor
 secDetectorConstruction::~secDetectorConstruction()
@@ -136,7 +142,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto world_phy = new G4PVPlacement(0, G4ThreeVector(), world_log, "world_phy", nullptr, false, 0, OverLapCheck);
 
 //=======================================================================
- //concrete
+ //concrete cylinder
 
     //material
     auto conc_mat = nist->FindOrBuildMaterial("G4_CONCRETE");
@@ -188,9 +194,8 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto sci_log1 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     auto sci_log2 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     
-    
-    
     //user limits in the region
+    //only the charged particle will be limited!
     auto sci_limits = new G4UserLimits(0.1*mm);
     sci_log1->SetUserLimits(sci_limits);
     sci_log2->SetUserLimits(sci_limits);
@@ -202,10 +207,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     new G4PVPlacement(0, G4ThreeVector(0., 0., Scint1_Z), sci_log1, "sci_phy1", world_log, false, 1, OverLapCheck);
     new G4PVPlacement(0, G4ThreeVector(0., 0., Scint2_Z), sci_log2, "sci_phy2", world_log, false, 2, OverLapCheck);
     
-    //region for setting the cuts of Muons
-    auto sci_reg2 = new G4Region("sci_reg2");
-    sci_log2 -> SetRegion(sci_reg2);
-    sci_reg2 -> AddRootLogicalVolume(sci_log2); 
+
 //=======================================================================
 
 //SiPM
@@ -374,14 +376,133 @@ void secDetectorConstruction::ConstructSDandField()
     SetSensitiveDetector("pm_log", SiPMSD, true);
 }
 
-void secDetectorConstruction::SetLVOpticalProperties(G4LogicalVolume* LV, G4String& FileName)
-{
-    #ifdef G4MULTITHREADED
-        auto RunMgr = G4MTRunManager::GetRunManager();
-    #else
-        auto RunMgr = G4RunManager::GetRunManager();
-    #endif
-    
+void secDetectorConstruction::SetOpticalProperties(G4LogicalVolume* LV, G4String& FileName)
+{   
     //read from the file
-  
+    std::ifstream fstrm(FileName, std::ifstream::in);
+    std::istringstream istrstrm;
+    std::string line;
+    const std::string ConstLabel = "CONST_";
+    const std::string SurfaceLabel = "SURFACE_";
+
+    std::map<std::string, size_t> NonConstNameSize;// to save the property name - data size 
+    std::map<std::string, G4double> ConstNameVal;//to save the const property name - value
+    std::vector<G4double> EnegVect;//photon energy vector, in eV
+    std::vector<G4double> ValVect;//property value vector, in default unit.
+
+    std::map<std::string, size_t> NonConstSurfaceNameSize;
+    std::map<std::string, G4double> ConstSurfaceNameVal;
+    std::vector<G4double> SurfaceEnegVect;
+    std::vector<G4double> SurfaceValVect;
+
+    std::string PropertyName;
+
+    G4bool IsSurface = 0;
+    G4bool IsConst = 0;
+    while( getline(fstrm, line) )
+    {
+        istrstrm.clear();
+        istrstrm.str(line);
+        //read the line to the buffer
+        std::string buf[4];
+        for(std::string::size_type i = 0; i != 4; ++i)
+        {
+            istrstrm >> buf[i];
+        }
+
+        //a property name line 
+        if( (buf[2]).empty() )
+        {
+            IsConst = (buf[0]).find(ConstLabel) != std::string::npos;
+            IsSurface = (buf[0]).find(SurfaceLabel) != std::string::npos;
+
+            if( IsConst && IsSurface )
+            {
+                //const surface
+                G4int sz = ConstLabel.size() + SurfaceLabel.size();
+                PropertyName = (buf[0]).substr(sz - 1, (buf[0]).size() - sz);
+                ConstSurfaceNameVal[PropertyName] = atof( (buf[1]).c_str() );
+            }
+            else if( IsConst )
+            {
+                //const material
+                G4int sz = ConstLabel.size() + SurfaceLabel.size();
+                PropertyName = (buf[0]).substr(sz - 1, (buf[0]).size() - sz);
+                ConstNameVal[PropertyName] = atof( (buf[1]).c_str() );
+            }
+            else if( IsSurface )
+            {
+                //non const surface
+                G4int sz = ConstLabel.size() + SurfaceLabel.size();
+                PropertyName = (buf[0]).substr(sz - 1, (buf[0]).size() - sz);
+                NonConstSurfaceNameSize[PropertyName] = 0
+            }
+            else
+            {
+                //non const material
+                PropertyName = buf[0];
+                NonConstNameSize[PropertyName] = 0;
+            }
+        }
+        //a data line
+        else
+        {
+            if( IsSurface )
+            {
+                ++NonConstSurfaceNameSize[PropertyName];
+                //convert string to double
+                G4double val1 = 0, val2 = 0;
+                val1 = atof( (buf[0]).c_str() ) * G4UnitDefinition::GetValueOf(buf[1]);
+                val2 = atof( (buf[2]).c_str() ) * G4UnitDefinition::GetValueOf(buf[3]);
+                SurfaceEnegVect.push_back( val1 );
+                SurfaceValVect. push_back( val2 );
+            }
+            else
+            {
+                //non const material data
+                ++NonConstNameSize[PropertyName];
+                //convert string to double
+                G4double val1 = 0, val2 = 0;
+                val1 = atof( (buf[0]).c_str() ) * G4UnitDefinition::GetValueOf(buf[1]);
+                val2 = atof( (buf[2]).c_str() ) * G4UnitDefinition::GetValueOf(buf[3]);
+                EnegVect.push_back( val1 );
+                ValVect. push_back( val2 );
+            }
+        }
+    }
+
+    //register properties
+    size_t pos = 0;
+    auto MatTable = new G4MaterialPropertiesTable();
+    auto SurTable = new G4MaterialPropertiesTable();
+    //loop to add the non const property
+    for(const auto& NS : NonConstNameSize)
+    {
+        MatTable->AddProperty(NS.first.c_str(), &(EnegVect[pos]), &(ValVect[pos]), NS.second);
+        pos += NS.second();
+    }
+
+    //loop to add the const property
+    for(const auto& NV : ConstNameVal)
+    {
+        MatTable->AddConstProperty(NV.first.c_str(), NV.second);
+    }
+
+    pos = 0;
+    for(const auto& NS : NonConstSurfaceNameSize)
+    {
+        SurTable->AddProperty(NS.first.c_str(), &(SurfaceEnegVect[pos]), &(SurfaceValVect[pos]), NS.second);
+        pos += NS.second;
+    }
+
+    for(const auto& NV : ConstSurfaceNameVal)
+    {
+        SurTable->AddConstProperty(NV.first.c_str(), NV.second);
+    }
+    //set material property table for the logical volume
+    auto OpticalSurface = new G4OpticalSurface(LV->GetName() + "_Optical", unified, polished, dielectric_metal);
+    LV->GetMaterial()->SetMaterialPropertiesTable(MatTable);
+    OpticalSurface->SetMaterialPropertiesTable(SurTable);
+    auto SkinSurface = new G4LogicalSkinSurface(LV->GetName() + "_Skin", LV, OpticalSurface);
+
 }

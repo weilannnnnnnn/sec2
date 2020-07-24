@@ -41,9 +41,10 @@ secDCMacros::secDCMacros(secDetectorConstruction* secDC) :
     cmd_SpecifyPV->SetParameterName("PhysicalVolumeName");
 
     //command for loading the data files for logical volume
-    cmd_FileName = new G4UIcmdWithAString("/sec/DC/LoadFileForLV");
-    cmd_FileName->SetGuidence("Specify the data file's name");
-    cmd_FileName->SetParameterName("FileName");
+    cmd_LoadFile = new G4UIcmdWithAString("/sec/DC/LoadFileForLV");
+    cmd_LoadFile->SetGuidence("Specify the data file's name");
+    cmd_LoadFile->SetParameterName("FileName");
+    cmd_LoadFile->AvailableForStates(G4State_PreInit,G4State_Idle);
 
     //command for translating the Physical Volume
     cmd_PVPos = new G4UIcmdWith3VectorAndUnit("/sec/DC/Translation");
@@ -61,7 +62,7 @@ secDCMacros::~secDCMacros()
     delete cmd_OverLapCheck;
     delete cmd_SpecifyLV;
     delete cmd_SpecifyPV;
-    delete cmd_FileName;
+    delete cmd_LoadFile;
     delete cmd_PVPos;
     delete cmd_PVRotate;
 }
@@ -109,11 +110,11 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
             }
         }
     }
-    else if ( cmd == cmd_FileName )
+    else if ( cmd == cmd_LoadFile )
     {
         //unfinished!
         //register the data file in the detector construction
-        DetectorConstruction->SetLVOpticalProperties(LVNow, NewVal);
+        DetectorConstruction->SetOpticalProperties(LVNow, NewVal);
     }
     else if( cmd == cmd_PVPos )
     {
