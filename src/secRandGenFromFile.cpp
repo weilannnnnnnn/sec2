@@ -15,6 +15,12 @@ secRandGenFromFile::~secRandGenFromFile()
 
 }
 
+static secRandGenFromFile* secRandGenFromFile::GetInstance()
+{
+    static secRandGenFromFile Instance;
+    return &Instance;
+}
+
 void secRandGenFromFile::LoadFile(const std::string& Name)
 {   
     G4PhysicsFreeVector XYparis; //save the x-y data pairs
@@ -22,12 +28,17 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     std::istringstream istrstrm;
     std::vector<G4double> Xval;
     std::vector<G4double> Yval;
+
     ifstrm.open(Name, std::ifstream::in | std::ifstream::binary);
 
     if( !ifstrm.is_open() )
     {
         //error msg!!
-        std::cerr << "error!" << std::endl;
+        G4cerr << "===========================================================\n"
+               << "                   Warning From sec2\n"
+               << "In function secRandGenFromFile::LoadFile() FileName called \n" 
+               << Name << "Not found!, probably wrong name.\n"
+               << G4endl;
         return;
     }
     else
@@ -59,17 +70,21 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     
     XminVect.push_back( XYpairs.GetEnergy(0) );
     XmaxVect.push_back( XYparis.GetMaxEnergy() );
-    XYvectors.push_back(XYparis);
+    XYvectors.push_back( XYparis );
 }
 
-G4double secRandGenFromFile::PDF(G4double X, size_t PDFidx)
+G4double secRandGenFromFile::PDF(G4double X, size_t i)
 {
-    if( XYvectors.size() - 1 < PDFidx )
+    if( XYvectors.size() - 1 < i )
     {
         //error msg!!
-        std::cerr << "error" << std::endl;
+        G4cerr << "===========================================================\n"
+               << "                   Warning From sec2\n"
+               << "In function secRandGenFromFile::PDF(), Index OverFlow!\n"
+               << G4endl;
+
         return 0.;
     }
 
-    return ( XYvectors[PDFidx] ).Value(X);
+    return ( XYvectors[i] ).Value(X);
 }

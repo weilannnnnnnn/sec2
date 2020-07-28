@@ -2,6 +2,7 @@
 #include "secActionInitialization.hh"
 #include "secDetectorConstruction.hh"
 #include "secPhysicsList.hh"
+#include "secRandGenFromFile.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -30,6 +31,10 @@ int main(int argc, char** argv)
 #else
     G4RunManager* runManager = new G4RunManager;
 #endif
+
+    auto RandGen = secRandGenFromFile::GetInstance();
+
+    RandGen->LoadFile("FileName.txt");
 
     runManager -> SetUserInitialization( new secDetectorConstruction() );
 //---------------------------------------------------------------------

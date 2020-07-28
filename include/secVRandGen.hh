@@ -11,7 +11,8 @@ class secVRandGen
 
         secVRandGen();
         virtual ~secVRandGen();    
-        //file loader
+        
+        //method for generate sample!
         virtual G4double Shoot(size_t PDFidx);
 
         //Two Dimention probably density function

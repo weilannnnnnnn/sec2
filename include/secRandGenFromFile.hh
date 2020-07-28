@@ -13,14 +13,18 @@ class G4PhysicsFreeVector;
 class secRandGenFromFile : public secVRandGen
 {
     public:
-        secRandGenFromFile();
-        virtual ~secRandGenFromFile();
+        static secRandGenFromFile* GetInstance();
         void LoadFile(const std::string& Name);
-    
+
+        secRandGenFromFile(secRandGenFromFile const&) = delete;
+        void operator=(secRandGenFromFile const&)     = delete;
+
     protected:
         virtual G4double PDF(G4double X, size_t PDFidx);
 
     private:
+        secRandGenFromFile();
+        virtual ~secRandGenFromFile();
         std::vector<G4PhysicsFreeVector> XYvectors;
 };
 
