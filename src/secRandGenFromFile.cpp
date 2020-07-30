@@ -1,10 +1,12 @@
 #include "secRandGenFromFile.hh"
 #include "globals.hh"
+#include "G4ios.hh"
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
-secRandGenFromFile::secRandGenFromFile()
+secRandGenFromFile::secRandGenFromFile() : 
     secVRandGen()
 {
 
@@ -15,15 +17,15 @@ secRandGenFromFile::~secRandGenFromFile()
 
 }
 
-static secRandGenFromFile* secRandGenFromFile::GetInstance()
+secRandGenFromFile* secRandGenFromFile::GetInstance()
 {
     static secRandGenFromFile Instance;
+    std::cout << "In GetInstance()" << std::endl;
     return &Instance;
 }
 
 void secRandGenFromFile::LoadFile(const std::string& Name)
-{   
-    G4PhysicsFreeVector XYparis; //save the x-y data pairs
+{  
     std::ifstream ifstrm;
     std::istringstream istrstrm;
     std::vector<G4double> Xval;
@@ -34,12 +36,12 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     if( !ifstrm.is_open() )
     {
         //error msg!!
-        G4cerr << "===========================================================\n"
+        std::cerr << "===========================================================\n"
                << "                   Warning From sec2\n"
                << "In function secRandGenFromFile::LoadFile() FileName called \n" 
-               << Name << "Not found!, probably wrong name.\n"
-               << G4endl;
-        return;
+               << Name << " Not found!, probably wrong name.\n"
+               << std::endl;
+	return;
     }
     else
     {
@@ -48,12 +50,19 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
 
         while( getline(ifstrm, line) )
         {
-            istrstrm.clear();
+	    istrstrm.clear();
             istrstrm.str(line);
             
-            G4double X = 0, Y = 0;
+            G4double X = NAN, Y = NAN;
             istrstrm >> X >> Y;
-            Xval.push_back(X);
+            
+	    if( std::isnan(X) || std::isnan(Y) )
+	    {
+                break;
+	    } 
+
+	    std::cout << "X = " << X << " " << "Y = " << Y << std::endl;
+	    Xval.push_back(X);
             Yval.push_back(Y);
             if( Y > Max )
             {
@@ -62,28 +71,29 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
         }
         YmaxVect.push_back(Max);
     }
+    
+    G4PhysicsFreeVector XYpairs( Xval.size() );//set the x - y data pairs
 
     for(size_t i = 0; i != Xval.size(); ++i)
     {
         XYpairs.PutValue(i, Xval[i], Yval[i]);
     }
     
-    XminVect.push_back( XYpairs.GetEnergy(0) );
-    XmaxVect.push_back( XYparis.GetMaxEnergy() );
-    XYvectors.push_back( XYparis );
+    XminVect.push_back( XYpairs.Energy(0) );
+    XmaxVect.push_back( XYpairs.GetMaxEnergy() );
+    XYvectors.push_back( XYpairs );
 }
 
 G4double secRandGenFromFile::PDF(G4double X, size_t i)
 {
-    if( XYvectors.size() - 1 < i )
+    if( XYvectors.empty() || XYvectors.size() - 1 < i )
     {
-        //error msg!!
-        G4cerr << "===========================================================\n"
+        std::cerr << "===========================================================\n"
                << "                   Warning From sec2\n"
                << "In function secRandGenFromFile::PDF(), Index OverFlow!\n"
-               << G4endl;
-
-        return 0.;
+               << std::endl;
+          
+        return 1. ;
     }
 
     return ( XYvectors[i] ).Value(X);

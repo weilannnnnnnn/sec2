@@ -4,8 +4,10 @@
 #include "G4GeneralParticleSource.hh"
 //#include "G4ParticleGun.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include "Randomize.hh"
 #include <iostream>
+#include <fstream>
 #define PI 3.14159256359
 
 //ctor
@@ -25,7 +27,6 @@ secPrimaryGeneratorAction::~secPrimaryGeneratorAction()
 void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {  
     //the configuration of the source is achieved in macro file run.mac!
-    auto RandGen = secRandGenFromFile::GetInstance();
-    std::cout << "Test Gen" << RandGen->Shoot(0);
+    
     pMuonGun -> GeneratePrimaryVertex(anEvent);
 }

@@ -1,11 +1,8 @@
 #include "secVRandGen.hh"
 #include "Randomize.hh"
+#include <iostream>
 
-
-secVRandGen::secVRandGen() : 
-    pdfXmin(0.),
-    pdfXmax(1.),
-    pdfYmax(1.)
+secVRandGen::secVRandGen()
 {
 
 }

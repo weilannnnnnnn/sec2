@@ -20,7 +20,7 @@ class secVRandGen
     
     protected:
         std::vector<G4double> XminVect;
-        std::vector<G4double> YminVect;
+        std::vector<G4double> XmaxVect;
         std::vector<G4double> YmaxVect;
 
     private:
