@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 secRandGenFromFile::secRandGenFromFile()
     secVRandGen()
@@ -35,7 +36,7 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     {
         //error msg!!
         G4cerr << "===========================================================\n"
-               << "                   Warning From sec2\n"
+               << "                   Error From sec2\n"
                << "In function secRandGenFromFile::LoadFile() FileName called \n" 
                << Name << "Not found!, probably wrong name.\n"
                << G4endl;
@@ -79,10 +80,11 @@ G4double secRandGenFromFile::PDF(G4double X, size_t i)
     {
         //error msg!!
         G4cerr << "===========================================================\n"
-               << "                   Warning From sec2\n"
+               << "                   Error From sec2\n"
                << "In function secRandGenFromFile::PDF(), Index OverFlow!\n"
                << G4endl;
 
+        assert( true );
         return 0.;
     }
 

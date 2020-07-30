@@ -17,7 +17,6 @@ public:
 
 
 private:
-
     G4GeneralParticleSource* pMuonGun;
 
 };

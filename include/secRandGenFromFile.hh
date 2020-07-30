@@ -8,6 +8,13 @@
 #include <vector>
 #include "globals.hh"
 
+/*
+    class discription: 
+        this class is used to generate the random samples from the data points
+        in the loaded file. Appropriate interpolation method( default: liner )
+        has been used.
+*/
+
 class G4PhysicsFreeVector;
 
 class secRandGenFromFile : public secVRandGen

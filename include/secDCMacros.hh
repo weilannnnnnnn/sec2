@@ -1,8 +1,6 @@
 #ifndef secDCMacros_hh
 #define secDCMacros_hh
 
-#include "secMacros.hh"
-
 #ifdef G4MULTITHREADED
     #include "G4MTRunManager.hh"
 #else
@@ -21,13 +19,15 @@ class discription:
     Commands begin with /sec/DC
 =======================================================
 */
+
 class secDetectorConstruction;
+class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWith3Vector;
 class G4UIcmdWithABool;
 
-class secDCMacros : public secMacros
+class secDCMacros : public G4UImessenger
 {
     public:
         //ctor and dtor

@@ -1,4 +1,14 @@
-/*
+
+
+#ifndef secDetectorConstruction_hh
+#define secDetectorConstruction_hh
+
+#include "G4VUserDetectorConstruction.hh"
+#include "secDCMacros.hh"
+#include "globals.hh"
+
+
+/*===========================================================================================
 Class Description:
         This class is used to conctruct the geometry, logical volume, physical volume of the 
         detector.
@@ -25,14 +35,9 @@ Member functions:
     //to photons' energy.
 
     2020/7/19
+==============================================================================================
 */
 
-#ifndef secDetectorConstruction_hh
-#define secDetectorConstruction_hh
-
-#include "G4VUserDetectorConstruction.hh"
-#include "secDCMacros.hh"
-#include "globals.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

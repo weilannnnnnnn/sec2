@@ -1,6 +1,10 @@
 #include "secDCMacros.hh"
 #include "secDetectorConstruction.hh"
 
+#include "G4UIdirectory"
+#include "G4UImessenger.hh"
+#include "G4UIcommand.hh"
+
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolumeStore.hh"

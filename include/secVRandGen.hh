@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 
+/*
+    class discription: 
+        Base class for random generator.
+*/
+
 class secVRandGen
 {
     public:
