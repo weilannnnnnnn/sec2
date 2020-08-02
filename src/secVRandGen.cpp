@@ -1,17 +1,9 @@
 #include "secVRandGen.hh"
 #include "Randomize.hh"
 #include <iostream>
-<<<<<<< HEAD
 #include <cassert>
 
-secVRandGen::secVRandGen() : 
-    pdfXmin(0.),
-    pdfXmax(1.),
-    pdfYmax(1.)
-=======
-
 secVRandGen::secVRandGen()
->>>>>>> eeefe2836e3bdac5673369bf3bc7880d17750860
 {
 
 }
@@ -23,7 +15,7 @@ secVRandGen::~secVRandGen()
 
 
 
-G4double secVRandGen::Shoot(size_t PDFidx)
+G4double secVRandGen::Shoot(size_t idx, DistFuncType Method = PDF_TYPE)
 {
     //using the slice sampling method to shoot samples!
     //using slice sampling method can guarantee that using 
@@ -52,16 +44,34 @@ G4double secVRandGen::Shoot(size_t PDFidx)
         assert( true );
     }
 
-    G4double samp = 0, AcptProb = 0;
-    G4double pdfXmin = XminVect[PDFidx];
-    G4double pdfXmax = XmaxVect[PDFidx];
-    G4double pdfYmax = YmaxVect[PDFidx];
-
-    do
+    if( Method == PDF_TYPE )
     {
-        samp = (pdfXmax - pdfXmin) * G4UniformRand() + pdfXmin;
-        AcptProb = PDF(samp, PDFidx) / pdfYmax;
-    } while ( G4UniformRand() > AcptProb );
-    
-    return samp;
+        G4double samp = 0, AcptProb = 0;
+        G4double pdfXmin = XminVect[PDFidx];
+        G4double pdfXmax = XmaxVect[PDFidx];
+        G4double pdfYmax = YmaxVect[PDFidx];
+
+        do
+        {
+            samp = (pdfXmax - pdfXmin) * G4UniformRand() + pdfXmin;
+            AcptProb = PDF(samp, idx) / pdfYmax;
+        } while ( G4UniformRand() > AcptProb );
+        
+        return samp;
+    }
+    else if( Method == CDF_TYPE )
+    {
+        return InverseCDF(G4UniformRand(), idx);
+    }
+    else
+    {
+        G4cerr << "===========================================================\n"
+               << "                    Error From sec2\n"
+               << "In function secVRandGen::Shoot(), Illegal distribution fun-\n"
+               << "ction Type\n"
+               << G4endl;
+
+        assert( true );
+    }
+
 }

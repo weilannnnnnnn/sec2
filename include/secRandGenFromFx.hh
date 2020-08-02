@@ -18,11 +18,12 @@ class secRandGenFromFx : public secVRandGen
 
         secRandGenFromFx* GetInstance();
 
-        virtual G4double Shoot(size_t CDFidx);
+        virtual G4double Shoot(size_t idx, secVRandGen::DistFuncType Type = secVRandGen::PDF_TYPE);
         
         //users can set there own probability density function here and 
         //Shoot() method here.
-        virtual G4double PDF(G4double X, size_t CDFidx);
+        virtual G4double PDF(G4double X, size_t idx);
+        virtual G4double InverseCDF(G4double Y, size_t idx);
         
         secRandGenFromFx(secRandGenFromFx const&) = delete;
         void operator=(secRandGenFromFx const&) = delete;

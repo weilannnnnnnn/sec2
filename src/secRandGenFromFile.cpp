@@ -25,7 +25,7 @@ secRandGenFromFile* secRandGenFromFile::GetInstance()
     return &Instance;
 }
 
-void secRandGenFromFile::LoadFile(const std::string& Name)
+void secRandGenFromFile::LoadFile(const std::string& Name, secVRandGen::DistFuncType Type = secVRandGen::PDF_TYPE)
 {  
     std::ifstream ifstrm;
     std::istringstream istrstrm;
@@ -37,17 +37,12 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     if( !ifstrm.is_open() )
     {
         //error msg!!
-<<<<<<< HEAD
         G4cerr << "===========================================================\n"
                << "                   Error From sec2\n"
-=======
-        std::cerr << "===========================================================\n"
-               << "                   Warning From sec2\n"
->>>>>>> eeefe2836e3bdac5673369bf3bc7880d17750860
                << "In function secRandGenFromFile::LoadFile() FileName called \n" 
                << Name << " Not found!, probably wrong name.\n"
                << std::endl;
-	return;
+	    return;
     }
     else
     {
@@ -56,20 +51,18 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
 
         while( getline(ifstrm, line) )
         {
-	    istrstrm.clear();
+	        istrstrm.clear();
             istrstrm.str(line);
             
             G4double X = NAN, Y = NAN;
             istrstrm >> X >> Y;
             
-	    if( std::isnan(X) || std::isnan(Y) )
-	    {
+	        if( std::isnan(X) || std::isnan(Y) )
+	        {
                 break;
-	    } 
+	        }    
 
-	    std::cout << "X = " << X << " " << "Y = " << Y << std::endl;
-	    Xval.push_back(X);
-            Yval.push_back(Y);
+            //record the max val of the PDF
             if( Y > Max )
             {
                 Max = Y;
@@ -87,14 +80,32 @@ void secRandGenFromFile::LoadFile(const std::string& Name)
     
     XminVect.push_back( XYpairs.Energy(0) );
     XmaxVect.push_back( XYpairs.GetMaxEnergy() );
-    XYvectors.push_back( XYpairs );
+
+    if(Type == secVRandGen::PDF_TYPE )
+    {
+        PDFXYvectors.push_back( XYpairs );
+    }
+    else if( Type == secVRandGen::CDF_TYPE )
+    {
+        CDFXYvectors.push_back( XYpairs );
+    }
+    else
+    {
+        G4cerr << "===========================================================\n"
+               << "                   Error From sec2\n"
+               << "In function secRandGenFromFile::LoadFile(), Illegal distri-!\n"
+               << "bution function type\n"
+               << G4endl;
+               
+        assert( true );
+    }
+    
 }
 
 G4double secRandGenFromFile::PDF(G4double X, size_t i)
 {
-    if( XYvectors.empty() || XYvectors.size() - 1 < i )
+    if( PDFXYvectors.empty() || PDFXYvectors.size() - 1 < i )
     {
-<<<<<<< HEAD
         //error msg!!
         G4cerr << "===========================================================\n"
                << "                   Error From sec2\n"
@@ -103,15 +114,24 @@ G4double secRandGenFromFile::PDF(G4double X, size_t i)
 
         assert( true );
         return 0.;
-=======
-        std::cerr << "===========================================================\n"
-               << "                   Warning From sec2\n"
-               << "In function secRandGenFromFile::PDF(), Index OverFlow!\n"
-               << std::endl;
-          
-        return 1. ;
->>>>>>> eeefe2836e3bdac5673369bf3bc7880d17750860
     }
 
-    return ( XYvectors[i] ).Value(X);
+    return ( PDFXYvectors[i] ).Value(X);
+}
+
+G4double secRandGenFromFile::InverseCDF(G4double Y, size_t i)
+{
+    if( PDFXYvectors.empty() || PDFXYvectors.size() - 1 < i )
+    {
+        //error msg!!
+        G4cerr << "===========================================================\n"
+               << "                   Error From sec2\n"
+               << "In function secRandGenFromFile::InverseCDF(), Index OverFlow!\n"
+               << G4endl;
+
+        assert( true );
+        return 0.;
+    }
+
+    return ( CDFXYvectors[i] ).GetEnergy(Y);
 }
