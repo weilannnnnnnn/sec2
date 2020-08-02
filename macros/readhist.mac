@@ -1,3 +1,4 @@
+#basic setup
 #/run/numberOfThreads 4
 /run/initialize
 
@@ -11,40 +12,19 @@
 #energy distribution, position distribution and 
 #angular distribution
 #=========================mu+======================
+#add mu+ source and sepcify source intensity
 /gps/source/add 1.2
 /gps/particle mu+
 
-#position distribution
+#specify position distribution 
+#both the mu+ and mu- will originate from the surface of a sphere, whose
+#centering at (X, Y, Z) (0, 0, -5.18)m, or (0, 0, 6 - 5*sqrt(5))m to be excate.
+
 /gps/pos/type Surface
 /gps/pos/shape Sphere
 /gps/pos/radius 11.18 m
 /gps/pos/centre -5.18 m
+
 /gps/hist/type biaspt
 /control/execute PosDist.mac
 
-#energy distribution
-/gps/hist/type energy
-/gps/hist/file Spectrum.dat
-
-#angular distribution
-/gps/ang/type focused
-/gps/ang/focuspoint -5.18 m
-#=========================mu-======================
-/gps/source/add 1
-/gps/particle mu-
-
-#position distribution
-/gps/pos/type Surface
-/gps/pos/shape Sphere
-/gps/pos/radius 11.18 m
-/gps/pos/centre -5.18 m
-/gps/hist/type biaspt
-/control/execute PosDist.mac
-
-#energy distribution
-/gps/hist/type energy
-/gps/hist/file Spectrum.dat
-
-#angular distribution
-/gps/ang/type focused
-/gps/ang/focuspoint -5.18 m

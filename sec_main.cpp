@@ -2,6 +2,7 @@
 #include "secActionInitialization.hh"
 #include "secDetectorConstruction.hh"
 #include "secPhysicsList.hh"
+#include "secRandGenFromFile.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"

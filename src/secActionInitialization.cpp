@@ -11,7 +11,7 @@ secActionInitialization::secActionInitialization(void) :
 {/*nothing here*/}
 
 //dtor
-secActionInitialization::~secActionInitialization(void)
+secActionInitialization::~secActionInitialization()
 {/*nothing here*/}
 
 

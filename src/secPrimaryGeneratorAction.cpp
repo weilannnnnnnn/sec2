@@ -1,10 +1,13 @@
 #include "secPrimaryGeneratorAction.hh"
+#include "secRandGenFromFile.hh"
 
 #include "G4GeneralParticleSource.hh"
 //#include "G4ParticleGun.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include "Randomize.hh"
 #include <iostream>
+#include <fstream>
 #define PI 3.14159256359
 
 //ctor
