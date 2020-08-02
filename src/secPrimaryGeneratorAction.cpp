@@ -27,6 +27,5 @@ secPrimaryGeneratorAction::~secPrimaryGeneratorAction()
 void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {  
     //the configuration of the source is achieved in macro file run.mac!
-    
     pMuonGun -> GeneratePrimaryVertex(anEvent);
 }

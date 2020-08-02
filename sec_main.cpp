@@ -32,10 +32,6 @@ int main(int argc, char** argv)
     G4RunManager* runManager = new G4RunManager;
 #endif
 
-    auto RandGen = secRandGenFromFile::GetInstance();
-
-    RandGen->LoadFile("FileName.txt");
-
     runManager -> SetUserInitialization( new secDetectorConstruction() );
 //---------------------------------------------------------------------
     runManager -> SetUserInitialization( new secPhysicsList() );

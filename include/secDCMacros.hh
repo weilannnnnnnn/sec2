@@ -1,11 +1,11 @@
 #ifndef secDCMacros_hh
 #define secDCMacros_hh
 
-#ifdef G4MULTITHREADED
+
     #include "G4MTRunManager.hh"
-#else
+
     #include "G4RunManager.hh"
-#endif
+
 
 #include "G4VPhysicalVolume.hh"
 #include "globals.hh"

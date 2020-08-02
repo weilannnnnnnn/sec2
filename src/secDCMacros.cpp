@@ -1,7 +1,13 @@
 #include "secDCMacros.hh"
 #include "secDetectorConstruction.hh"
 
-#include "G4UIdirectory"
+#ifdef G4MULTITHREADED
+#include "G4MTRunManager.hh"
+#else
+#include "G4RunManager.hh"
+#endif
+
+#include "G4UIdirectory.hh"
 #include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
 

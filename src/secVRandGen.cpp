@@ -15,31 +15,31 @@ secVRandGen::~secVRandGen()
 
 
 
-G4double secVRandGen::Shoot(size_t idx, DistFuncType Method = PDF_TYPE)
+G4double secVRandGen::Shoot(size_t idx, DistFuncType Method)
 {
     //using the slice sampling method to shoot samples!
     //using slice sampling method can guarantee that using 
     //almost all probability density function is usable.
     G4bool IsEmpty = XminVect.empty() || XmaxVect.empty() || YmaxVect.empty();
-    G4bool IsOverflow = ( PDFidx >= XminVect.size() ) || ( PDFidx >= XmaxVect.size() ) || 
-                        ( PDFidx >= YmaxVect.size() );
+    G4bool IsOverflow = ( idx >= XminVect.size() ) || ( idx >= XmaxVect.size() ) || 
+                        ( idx >= YmaxVect.size() );
     
     if( IsEmpty )
     {
-        G4cerr << "===========================================================\n"
-               << "                    Error From sec2\n"
-               << "In function secVRandGen::Shoot(), Empty pdf boundary vector!\n"
-               << G4endl;
+        std::cerr << "===========================================================\n"
+                  << "                    Error From sec2\n"
+                  << "In function secVRandGen::Shoot(), Empty pdf boundary vector!\n"
+                  << std::endl;
 
         assert( true );
     }
 
     if( IsOverflow )
     {
-        G4cerr << "===========================================================\n"
-               << "                    Error From sec2\n"
-               << "In function secVRandGen::Shoot(), Index OverFlow!\n"
-               << G4endl;
+        std::cerr << "===========================================================\n"
+                  << "                    Error From sec2\n"
+                  << "In function secVRandGen::Shoot(), Index OverFlow!\n"
+                  << std::endl;
 
         assert( true );
     }
@@ -47,9 +47,9 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method = PDF_TYPE)
     if( Method == PDF_TYPE )
     {
         G4double samp = 0, AcptProb = 0;
-        G4double pdfXmin = XminVect[PDFidx];
-        G4double pdfXmax = XmaxVect[PDFidx];
-        G4double pdfYmax = YmaxVect[PDFidx];
+        G4double pdfXmin = XminVect[idx];
+        G4double pdfXmax = XmaxVect[idx];
+        G4double pdfYmax = YmaxVect[idx];
 
         do
         {
@@ -59,19 +59,18 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method = PDF_TYPE)
         
         return samp;
     }
-    else if( Method == CDF_TYPE )
+    
+    if( Method == CDF_TYPE )
     {
         return InverseCDF(G4UniformRand(), idx);
     }
-    else
-    {
-        G4cerr << "===========================================================\n"
-               << "                    Error From sec2\n"
-               << "In function secVRandGen::Shoot(), Illegal distribution fun-\n"
-               << "ction Type\n"
-               << G4endl;
+    std::cerr << "===========================================================\n"
+              << "                    Error From sec2\n"
+              << "In function secVRandGen::Shoot(), Illegal distribution fun-\n"
+              << "ction Type\n"
+              << std::endl;
 
-        assert( true );
-    }
-
+    assert( true );
+    return 1.;
+    
 }

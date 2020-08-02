@@ -2,7 +2,7 @@
 #define secRandGenFromFile_hh
 
 #include "secVRandGen.hh"
-#include "G4PhysicsFreeVector.hh"
+#include "G4PhysicsOrderedFreeVector.hh"
 
 #include <string>
 #include <vector>
@@ -15,7 +15,7 @@
         has been used.
 */
 
-class G4PhysicsFreeVector;
+class G4PhysicsOrderedFreeVector;
 
 class secRandGenFromFile : public secVRandGen
 {
@@ -26,15 +26,14 @@ class secRandGenFromFile : public secVRandGen
         secRandGenFromFile(secRandGenFromFile const&) = delete;
         void operator=(secRandGenFromFile const&)     = delete;
 
-    protected:
         virtual G4double PDF(G4double X, size_t PDFidx);
         virtual G4double InverseCDF(G4double X, size_t CDFidx);
         
     private:
         secRandGenFromFile();
         virtual ~secRandGenFromFile();
-        std::vector<G4PhysicsFreeVector> PDFXYvectors;
-        std::vector<G4PhysicsFreeVector> CDFXYvectors;
+        std::vector<G4PhysicsOrderedFreeVector> PDFXYvectors;
+        std::vector<G4PhysicsOrderedFreeVector> CDFXYvectors;
 };
 
 #endif
