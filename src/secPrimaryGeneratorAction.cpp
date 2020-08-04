@@ -2,6 +2,7 @@
 #include "secRandGenFromFile.hh"
 
 #include "G4GeneralParticleSource.hh"
+#include "secParticleSource.hh"
 //#include "G4ParticleGun.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Threading.hh"
@@ -27,5 +28,8 @@ secPrimaryGeneratorAction::~secPrimaryGeneratorAction()
 void secPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {  
     //the configuration of the source is achieved in macro file run.mac!
-    pMuonGun -> GeneratePrimaryVertex(anEvent);
+    secParticleSource Instance;
+    Instance.GeneratePrimaryVertex(anEvent);
+
+    //pMuonGun -> GeneratePrimaryVertex(anEvent);
 }

@@ -31,6 +31,10 @@ int main(int argc, char** argv)
 #else
     G4RunManager* runManager = new G4RunManager;
 #endif
+     
+    auto RandGen = secRandGenFromFile::GetInstance();
+    RandGen->LoadFile("ThetaPDF.txt", secVRandGen::CDF_TYPE);
+    RandGen->LoadFile("EnegCDF.txt", secVRandGen::PDF_TYPE);
 
     runManager -> SetUserInitialization( new secDetectorConstruction() );
 //---------------------------------------------------------------------

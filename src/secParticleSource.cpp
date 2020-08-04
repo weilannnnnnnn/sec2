@@ -7,15 +7,14 @@
 
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
-
+#include "G4Geantino.hh"
 #include "G4Event.hh"
-#include "G4SystemOfUnit.hh"
+#include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include "globals.hh"
 
 #include <cmath>
-
-class G4ThreeVector;
+#include <fstream>
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 
@@ -38,6 +37,8 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 
     //determine particle definition
     //the charge ratio of mu+ and mu- is about 1.2 : 1
+    ParticleDef = G4Geantino::Definition();
+    /*    
     if( G4UniformRand() > 1.2 / 2.2 )
     {
         ParticleDef = G4MuonPlus::Definition();
@@ -46,33 +47,32 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
     {
         ParticleDef = G4MuonMinus::Definition();
     }
-
+    */
     //generate an energy value
-    const G4double NormFact = 46.4488 * GeV; // normalization factor of energy
-    G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE) * NormFact - 105.6 * GeV;
-
+    G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE);
+    
     //generate position
-    G4ThreeVector Centre(0, 0, -5.18 * m);
-
     const G4double Radius = 5 * sqrt(5) * m;
-    G4double PosPhi = 2 * 3.141592653589793 * G4UniformRand();
-    G4double PosTheta = RandGenFile->Shoot(1, secVRandGen::PDF_TYPE);
-
-    G4ThreeVector DirVect; // direction vector
+    const G4double PosPhi = 2 * 3.141592653589793 * G4UniformRand();
+    const G4double PosTheta = RandGenFile->Shoot(0, secVRandGen::PDF_TYPE);
+ 
+    G4ThreeVector DirVect(0, 0, -1); // direction vector
     //in spherical coordinate system
-    DirVect.setMag(Radius);
-    DirVect.setTheta(PosTheta);
-    DirVect.setPhi(PosPhi);
+    DirVect.setMag( Radius );
+    DirVect.setTheta( PosTheta );
+    DirVect.setPhi( PosPhi );
 
     G4ThreeVector PosVect(0, 0, -5.18 * m); // position vector
     PosVect += DirVect; // set position
-        
-    auto vertex = new G4PrimaryVertex(PosVect, 0.);
-    auto PrimaryParticle = new G4PrimaryParticle(ParticleDef);
+    DirVect = - DirVect;
     
-    PrimaryParticle->SetKineticEnergy(KineticEnergy);
+    auto vertex = new G4PrimaryVertex( /*G4ThreeVector(0, 0, 0)*/PosVect, 0. );
+    auto PrimaryParticle = new G4PrimaryParticle( ParticleDef );
+    
+    PrimaryParticle->SetKineticEnergy( KineticEnergy );
+    PrimaryParticle->SetMomentumDirection( /*G4ThreeVector(0, 0, 1)*/DirVect.unit() );
     PrimaryParticle->SetMass( ParticleDef->GetPDGMass() );
-    PrimaryParticle->SetMomentumDirection( ParticleDef->GetPDGCharge() );
+    PrimaryParticle->SetCharge( ParticleDef->GetPDGCharge() );
 
     vertex->SetPrimary( PrimaryParticle );
 

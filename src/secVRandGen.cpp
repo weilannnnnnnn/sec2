@@ -31,7 +31,7 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method)
                   << "In function secVRandGen::Shoot(), Empty pdf boundary vector!\n"
                   << std::endl;
 
-        assert( true );
+        exit(1);
     }
 
     if( IsOverflow )
@@ -41,7 +41,7 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method)
                   << "In function secVRandGen::Shoot(), Index OverFlow!\n"
                   << std::endl;
 
-        assert( true );
+        exit(1);
     }
 
     if( Method == PDF_TYPE )
@@ -70,7 +70,7 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method)
               << "ction Type\n"
               << std::endl;
 
-    assert( true );
+    exit(1);
     return 1.;
     
 }

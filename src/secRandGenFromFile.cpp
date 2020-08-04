@@ -90,7 +90,7 @@ void secRandGenFromFile::LoadFile(const std::string& Name, secVRandGen::DistFunc
                << "In function secRandGenFromFile::LoadFile(), Illegal distri-!\n"
                << "bution function type\n"
                << std::endl;
-        assert( true );
+        exit(1);
     }
     
 }
@@ -105,7 +105,7 @@ G4double secRandGenFromFile::PDF(G4double X, size_t i)
                   << "In function secRandGenFromFile::PDF(), Index OverFlow!\n"
                   << std::endl;
 
-        assert( true );
+        exit(1);
         return 0.;
     }
 
@@ -122,7 +122,7 @@ G4double secRandGenFromFile::InverseCDF(G4double Y, size_t i)
                   << "In function secRandGenFromFile::InverseCDF(), Index OverFlow!\n"
                   << G4endl;
 
-        assert( true );
+        exit(1);
         return 0.;
     }
 

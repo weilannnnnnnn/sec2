@@ -16,7 +16,7 @@ class secRandGenFromFx : public secVRandGen
 {
     public:
 
-        secRandGenFromFx* GetInstance();
+        static secRandGenFromFx* GetInstance();
 
         virtual G4double Shoot(size_t idx, secVRandGen::DistFuncType Type = secVRandGen::PDF_TYPE);
         
