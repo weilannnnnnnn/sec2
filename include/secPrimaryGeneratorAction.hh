@@ -4,6 +4,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 
 class G4GeneralParticleSource;
+class secParticleSource;
 class G4Event;
 //class G4ParticleGun;
 
@@ -17,7 +18,8 @@ public:
 
 
 private:
-    G4GeneralParticleSource* pMuonGun;
+    //G4GeneralParticleSource* pMuonGun;
+    secParticleSource* pMuonGun;
 
 };
 

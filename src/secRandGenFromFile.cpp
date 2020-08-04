@@ -1,4 +1,5 @@
 #include "secRandGenFromFile.hh"
+#include "secRandMacro.hh"
 #include "globals.hh"
 #include "G4ios.hh"
 #include <cmath>
@@ -8,14 +9,13 @@
 #include <cassert>
 
 secRandGenFromFile::secRandGenFromFile() : 
-    secVRandGen()
+    secVRandGen(),
 {
-
+    RandMacro = new secRandMacro(this);
 }
-
 secRandGenFromFile::~secRandGenFromFile()
 {
-
+    delete RandMacro;
 }
 
 secRandGenFromFile* secRandGenFromFile::GetInstance()
@@ -32,7 +32,7 @@ void secRandGenFromFile::LoadFile(const std::string& Name, secVRandGen::DistFunc
     std::vector<G4double> Yval;
     
     ifstrm.open(Name, std::ifstream::in);
-
+    G4double Max = 0;//store the max y value of pdf!
     if( !ifstrm.is_open() )
     {
         //error msg!!
@@ -46,8 +46,6 @@ void secRandGenFromFile::LoadFile(const std::string& Name, secVRandGen::DistFunc
     else
     {
         std::string line;
-        G4double Max = 0;
-
         while( getline(ifstrm, line) )
         {
 	        istrstrm.clear();
@@ -61,23 +59,25 @@ void secRandGenFromFile::LoadFile(const std::string& Name, secVRandGen::DistFunc
                 break;
 	        }    
             Xval.push_back(X);
-	    Yval.push_back(Y);
+	        Yval.push_back(Y);
+
             //record the max val of the PDF
             if( Y > Max )
             {
                 Max = Y;
             }
         }
-        YmaxVect.push_back(Max);
     }
-    
+
     G4PhysicsOrderedFreeVector XYpairs( &(Xval[0]), &(Yval[0]), Xval.size() );//set the x - y data pairs
-    XminVect.push_back( XYpairs.Energy(0) );
-    XmaxVect.push_back( XYpairs.GetMaxEnergy() );
-    
+
     if(Type == secVRandGen::PDF_TYPE )
     {
         PDFXYvectors.push_back( XYpairs );
+
+        XmaxVect.push_back( XYpairs.GetMaxEnergy() );
+        XminVect.push_back( XYpairs.Energy(0) );
+        YmaxVect.push_back(Max);
     }
     else if( Type == secVRandGen::CDF_TYPE )
     {

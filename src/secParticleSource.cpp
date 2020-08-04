@@ -1,6 +1,7 @@
 #include "secParticleSource.hh"
 #include "secRandGenFromFile.hh"
 #include "secRandGenFromFx.hh"
+#include "secRandMacro.hh"
 
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
@@ -37,8 +38,8 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 
     //determine particle definition
     //the charge ratio of mu+ and mu- is about 1.2 : 1
-    ParticleDef = G4Geantino::Definition();
-    /*    
+    //ParticleDef = G4Geantino::Definition();
+   
     if( G4UniformRand() > 1.2 / 2.2 )
     {
         ParticleDef = G4MuonPlus::Definition();
@@ -47,7 +48,7 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
     {
         ParticleDef = G4MuonMinus::Definition();
     }
-    */
+    
     //generate an energy value
     G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE);
     
@@ -62,7 +63,7 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
     DirVect.setTheta( PosTheta );
     DirVect.setPhi( PosPhi );
 
-    G4ThreeVector PosVect(0, 0, -5.18 * m); // position vector
+    G4ThreeVector PosVect(0, 0, ( 6 - 5 * sqrt(5) ) * m); // position vector
     PosVect += DirVect; // set position
     DirVect = - DirVect;
     

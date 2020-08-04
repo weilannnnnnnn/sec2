@@ -139,7 +139,7 @@ void secDCMacros::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         //rotate the Physical Volume accoring to the Euler Angle.
         G4ThreeVector EulerVect = cmd->ConvertTo3Vector(NewVal);
         G4RotationMatrix RotMat(EulerVect.x(), EulerVect.y(), EulerVect.z());
-	PVNow->SetRotation( &RotMat );
+	    PVNow->SetRotation( &RotMat );
         //inform the run manager
         InformRunMgr();
         DumpOverlapInfo(IsOverlapCheck, PVNow);

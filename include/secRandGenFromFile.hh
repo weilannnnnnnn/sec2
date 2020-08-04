@@ -15,6 +15,7 @@
         has been used.
 */
 
+class secRandMacro;
 class G4PhysicsOrderedFreeVector;
 
 class secRandGenFromFile : public secVRandGen
@@ -32,6 +33,8 @@ class secRandGenFromFile : public secVRandGen
     private:
         secRandGenFromFile();
         virtual ~secRandGenFromFile();
+        
+        secRandMacro* RandMacro;
         std::vector<G4PhysicsOrderedFreeVector> PDFXYvectors;
         std::vector<G4PhysicsOrderedFreeVector> CDFXYvectors;
 };
