@@ -1,7 +1,16 @@
 #ifndef secRandMacro_hh
 #define secRandMacro_hh
 
-class secRandGenFromFile;
+#include "secRandGenFromFile.hh"
+
+/*==================================================================
+    class discription:
+        This class manages the macro commands which are used to spe-
+        cify the file name and probability distribution function type
+        of secRandGenFromFile;
+====================================================================
+*/
+
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWith3VectorAndUnit;

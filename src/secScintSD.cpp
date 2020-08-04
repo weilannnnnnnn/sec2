@@ -99,7 +99,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 */
     if( *ParticleNow == *G4OpticalPhoton::Definition() )
     {
-        if( /*step->GetTrack()->GetTrackID() != FormerID*/1 )
+        if( step->GetTrack()->GetTrackID() != FormerID )
         {
             const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
             const G4double GlobalTime = step->GetPreStepPoint()->GetGlobalTime();
@@ -156,8 +156,17 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitDown = new secScintHit();
             pMuonHitDown->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
             pMuonHCdown->insert(pMuonHitDown);
+
+            if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
+            {
+                //is a decay event!!
+                DecayFlagScint = true;
+                DecayFlagSiPM  = true;
+                DecayTime = step->GetPreStepPoint()->GetGlobalTime();
+            }
 	    }
     }
+    /*
     else if( *ParticleNow == *G4NeutrinoMu::Definition() || 
 	         *ParticleNow == *G4AntiNeutrinoMu::Definition() )
     {
@@ -170,6 +179,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             step->GetTrack()->SetTrackStatus(fStopAndKill);
         }
     }
+    */
     return true;
     
 }

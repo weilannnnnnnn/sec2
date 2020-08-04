@@ -8,11 +8,13 @@
 #include <vector>
 #include "globals.hh"
 
-/*
+/*================================================================================================
     class discription: 
-        this class is used to generate the random samples from the data points
-        in the loaded file. Appropriate interpolation method( default: liner )
-        has been used.
+            This class is a singleton class, which is used to generate the random 
+        samples from the data points in the loaded file. Appropriate interpo-
+        lation method( default: liner ) has been used. For detailed information of the
+        interpolation method, please consult G4PhysicsVector.hh and G4PhysicsOrderedFreeVector.hh
+==================================================================================================
 */
 
 class secRandMacro;
