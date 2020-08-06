@@ -131,6 +131,13 @@ void secRunAction::MergeFile(G4String FileName)
         remove(sstrm.str().c_str());
         sstrm.str("");
     }
+    
+    G4bool IsEmpty = FinalDataStrm.eof();
     FinalDataStrm.close();
+
+    if( IsEmpty )
+    {
+        remove(FileName.c_str());
+    }
 }
 

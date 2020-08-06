@@ -36,21 +36,23 @@ secSteppingAction::~secSteppingAction()
 void secSteppingAction::UserSteppingAction(const G4Step* step )
 {
 /*  
-	//print the decay Event
+    //print the decay Event
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();
-    if( *ParticleNow == *G4NeutrinoMu::Definition() ||
-        *ParticleNow == *G4AntiNeutrinoMu::Definition() )
+    if( *ParticleNow == *G4MuonPlus::Definition() ||
+        *ParticleNow == *G4MuonMinus::Definition() )
     {
-	if( step->IsFirstStepInVolume() )
+	if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
 	{
 	    std::ostringstream sstrm;
-	    sstrm << "DecayTime" << "_t" << G4Threading::G4GetThreadId();
+	    sstrm << "DecayTime.dat" << "_t" << G4Threading::G4GetThreadId();
 
 	    std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
-	    fstrm << step->GetPreStepPoint()->GetGlobalTime() << '\n';
-	    step->GetTrack()->SetTrackStatus(fStopAndKill);
+	    fstrm << step->GetPostStepPoint()->GetGlobalTime() << '\n';
+
+            //std::cout << "DecayTime = " << step->GetPostStepPoint()->GetGlobalTime() << '\n';
+	    //step->GetTrack()->SetTrackStatus(fStopAndKill);
 	}
     }
-*/ 
-
+*/
 }
+

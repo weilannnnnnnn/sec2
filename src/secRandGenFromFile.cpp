@@ -9,10 +9,11 @@
 #include <cassert>
 
 secRandGenFromFile::secRandGenFromFile() : 
-    secVRandGen(),
+    secVRandGen()
 {
     RandMacro = new secRandMacro(this);
 }
+
 secRandGenFromFile::~secRandGenFromFile()
 {
     delete RandMacro;

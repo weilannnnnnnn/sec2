@@ -48,12 +48,20 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
     {
         ParticleDef = G4MuonMinus::Definition();
     }
-    
+    /* 
+    std::ofstream ofstrm;
+    ofstrm.open("SampleFile.txt");
+
+    for( G4int i = 0; i != 10000; ++i )
+    {
+        ofstrm << RandGenFile->Shoot(0, secVRandGen::CDF_TYPE) << ' ' << RandGenFile->Shoot(0, secVRandGen::PDF_TYPE) << '\n';
+    }
+    */
     //generate an energy value
-    G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE);
-    
+    G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE) * GeV;
+    //std::cout << "Energy = " << KineticEnergy / 1000.<< " GeV" << std::endl;     
     //generate position
-    const G4double Radius = 5 * sqrt(5) * m;
+    const G4double Radius = 2 * sqrt(5) * m;
     const G4double PosPhi = 2 * 3.141592653589793 * G4UniformRand();
     const G4double PosTheta = RandGenFile->Shoot(0, secVRandGen::PDF_TYPE);
  
@@ -63,7 +71,7 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
     DirVect.setTheta( PosTheta );
     DirVect.setPhi( PosPhi );
 
-    G4ThreeVector PosVect(0, 0, ( 6 - 5 * sqrt(5) ) * m); // position vector
+    G4ThreeVector PosVect(0, 0, 6*m - Radius); // position vector
     PosVect += DirVect; // set position
     DirVect = - DirVect;
     

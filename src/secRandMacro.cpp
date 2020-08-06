@@ -12,9 +12,9 @@ secRandMacro::secRandMacro(secRandGenFromFile* gen) :
     secRanddir = new G4UIdirectory("/sec/Rand");
 
     cmd_FuncType = new G4UIcmdWithAString("/sec/Rand/FuncType", this);
-    cmd_FuncType->SetGuidance("Specify the distribution function type", this);
+    cmd_FuncType->SetGuidance("Specify the distribution function type");
     cmd_FuncType->SetParameterName("FileType", false);
-    cmd_FuncType->AvailableForState(G4State_PreInit, G4State_Idle);
+    cmd_FuncType->AvailableForStates(G4State_PreInit, G4State_Idle);
     cmd_FuncType->SetCandidates("PDF CDF");
 
     cmd_FileName = new G4UIcmdWithAString("/sec/Rand/FileName", this);

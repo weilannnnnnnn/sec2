@@ -102,7 +102,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         if( step->GetTrack()->GetTrackID() != FormerID )
         {
             const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
-            const G4double GlobalTime = step->GetPreStepPoint()->GetGlobalTime();
+            const G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
             if( VolumeCpyNb == 1 )
             {
                 auto pPhotonHitUp = new secScintHit();
@@ -132,7 +132,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
              *ParticleNow == *G4MuonMinus::Definition() )
     {
         G4double aStepEdep = step->GetTotalEnergyDeposit();
-        G4double GlobalTime = step->GetPreStepPoint()->GetGlobalTime();
+        G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
         
         if( VolumeCpyNb == 1 )
@@ -147,6 +147,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitUp = new secScintHit();
             pMuonHitUp->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
             pMuonHCup->insert(pMuonHitUp);
+	    //std::cout << "In scint 1" << std::endl;
         }
         else if( VolumeCpyNb == 2 )
         {
@@ -156,15 +157,17 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitDown = new secScintHit();
             pMuonHitDown->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
             pMuonHCdown->insert(pMuonHitDown);
+	    //std::cout << "In scint 2" << std::endl;
 
             if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
             {
                 //is a decay event!!
                 DecayFlagScint = true;
                 DecayFlagSiPM  = true;
-                DecayTime = step->GetPreStepPoint()->GetGlobalTime();
+                DecayTime = step->GetPostStepPoint()->GetGlobalTime();
+		std::cout << "Decayed!" << std::endl;
             }
-	    }
+        }
     }
     /*
     else if( *ParticleNow == *G4NeutrinoMu::Definition() || 

@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 #endif
      
     auto RandGen = secRandGenFromFile::GetInstance();
-    RandGen->LoadFile("ThetaPDF.txt", secVRandGen::CDF_TYPE);
-    RandGen->LoadFile("EnegCDF.txt", secVRandGen::PDF_TYPE);
+    RandGen->LoadFile("ThetaPDF.txt", secVRandGen::PDF_TYPE);
+    RandGen->LoadFile("EnegCDF.txt", secVRandGen::CDF_TYPE);
 
     runManager -> SetUserInitialization( new secDetectorConstruction() );
 //---------------------------------------------------------------------

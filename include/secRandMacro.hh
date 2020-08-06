@@ -1,8 +1,7 @@
 #ifndef secRandMacro_hh
 #define secRandMacro_hh
-
+#include "G4UImessenger.hh" 
 #include "secRandGenFromFile.hh"
-
 /*==================================================================
     class discription:
         This class manages the macro commands which are used to spe-
