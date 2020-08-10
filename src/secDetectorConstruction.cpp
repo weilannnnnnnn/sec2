@@ -43,7 +43,9 @@
 //geometry
 #include "G4Box.hh"
 #include "G4Tubs.hh"
+#include "G4Trd.hh"
 #include "G4VSolid.hh"
+#include "G4UnionSolid.hh"
 #include "G4SubtractionSolid.hh"// for the hole in the foil
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
@@ -98,10 +100,14 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     //geometry size(half X, half Y, half Z);
     const G4double World_Size[3] = {10.*m, 10.*m, 6.*m};
     const G4double  Conc_Size[3] = {0.*m, 4.*m, 1.*m}; //inner radius,outer radius and half height
-    const G4double Scint_Size[3] = {5.*cm, 5*cm, 0.5*cm};
-    const G4double Plate_Size[3] = {5.*cm, 5*cm, 2.*cm};
-    const G4double  Foil_Size[3] = {5.1*cm, 5.1*cm, 0.6*cm};
-    const G4double  SiPM_Size[3] = {0.5*cm, 0.5*cm, 0.05*cm};
+    //const G4double Scint_Size[3] = {5.*cm, 5*cm, 0.5*cm};
+    const G4double Scint_Size[] = {10.*mm, 10.*mm, 42*mm, 71.75*mm, 169.25*mm,
+                                   10.*mm, 10.*mm, 10.*mm, 42.*mm, 50.*mm};
+    const G4double Plate_Size[3] = {169.25*mm, 71.75*mm, 10.*mm};
+    //const G4double  Foil_Size[3] = {5.1*cm, 5.1*cm, 0.6*cm};
+    const G4double Foil_Size[] = {10.2*mm, 10.2*mm, 42.2*mm, 71.77*mm, 169.27*mm
+                                  10.2*mm, 10.2*mm, 10.2*mm, 42.2*mm, 50.*mm }; 
+    const G4double SiPM_Size[3] = {10.*cm, 10.*cm, 0.05*cm};
 
 //the position of each volume
 
@@ -111,21 +117,27 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     const G4double Conc_Z = Conc_Buttom_Z + Conc_Size[2];
 
     //the interval between the concrete cylinder and the top scintillator
-    const G4double Conc_Scint_Interval = Foil_Size[2];
+    const G4double Conc_Scint_Interval = Foil_Size[0];
 
     //the Z value of up scint
     const G4double Scint1_Z = Conc_Buttom_Z - Conc_Scint_Interval;
-    //the Z value of up SiPM
-    const G4double SiPM1_Z = Scint1_Z - Scint_Size[2] - SiPM_Size[2];
+
+    //the XYZ value of up SiPM
+    const G4double SiPM1_X = Scint_Size[4] + Scint_Size[9] + SiPM_Size[2];
+    const G4double SiPM1_Y = 0.;
+    const G4double SiPM1_Z = Scint1_Z;
 
     //the interval between the scintillator and the iron plate
-    const G4double Scint_Plate_Interval = 4.*cm;
-    const G4double Plate_Z = Scint1_Z - Scint_Plate_Interval;
+    //const G4double Scint_Plate_Interval = 4.*cm;
+    const G4double Plate_Z = Scint1_Z - Foil_Size[0] - Plate_Size[2];
 
     //the Z value of down scintillator
-    const G4double Scint2_Z = Plate_Z - Scint_Plate_Interval;
-    //the Z value of down SiPM
-    const G4double SiPM2_Z = Scint2_Z - Scint_Size[2] - SiPM_Size[2];
+    const G4double Scint2_Z = Plate_Z - Plate_Size[2] - Foil_Size[0];
+
+    //the XYZ value of down SiPM
+    const G4double SiPM2_X = SiPM1_X;
+    const G4double SiPM2_Y = SiPM2_Y; 
+    const G4double SiPM2_Z = Scint2_Z;
 //======================================================================
 
 //world volume
@@ -188,8 +200,13 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     ConstructOpticalScint(sci_mat, _ScintSurface);
     
     //geometry(shape)
-    auto sci_geo = new G4Box("sci_geo", Scint_Size[0], Scint_Size[1], Scint_Size[2]);
-    
+    auto sci_geo1 = new G4Trd("sci_geo1", Scint_Size[0], Scint_Size[1], Scint_Size[2], Scint_Size[3], Scint_Size[4]);
+    auto sci_geo2 = new G4Trd("sci_geo2", Scint_Size[5], Scint_Size[6], Scint_Size[7], Scint_Size[8], Scint_Size[9]);
+    auto sci_geo  = new G4UnionSolid("sci_geo",          //name
+                                     sci_geo1, sci_geo2, //parts
+                                     nullptr,            //ptr of rotation matrix ( no rotation )
+                                     G4ThreeVector(0, 0, Scint_Size[4] + Scint_Size[9]));//translation vector
+
     //logical volume
     auto sci_log1 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
     auto sci_log2 = new G4LogicalVolume(sci_geo, sci_mat, "sci_log");
@@ -204,8 +221,11 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto  ScintSurface1 = new G4LogicalSkinSurface("sci_surface1", sci_log1, _ScintSurface);
     auto  ScintSurface2 = new G4LogicalSkinSurface("sci_surface2", sci_log2, _ScintSurface);
     
-    new G4PVPlacement(0, G4ThreeVector(0., 0., Scint1_Z), sci_log1, "sci_phy1", world_log, false, 1, OverLapCheck);
-    new G4PVPlacement(0, G4ThreeVector(0., 0., Scint2_Z), sci_log2, "sci_phy2", world_log, false, 2, OverLapCheck);
+    G4RotationMatrix rm = G4RotationMatrix();
+    rm->RotateY(3.141592653589793 / 2);
+
+    new G4PVPlacement(&rm, G4ThreeVector(0., 0., Scint1_Z), sci_log1, "sci_phy1", world_log, false, 1, OverLapCheck);
+    new G4PVPlacement(&rm, G4ThreeVector(0., 0., Scint2_Z), sci_log2, "sci_phy2", world_log, false, 2, OverLapCheck);
     
 
 //=======================================================================
@@ -228,16 +248,16 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto pm_surface1 = new G4LogicalSkinSurface("pm_surface1", pm_log1, _pm_surface);
     auto pm_surface2 = new G4LogicalSkinSurface("pm_surface2", pm_log2, _pm_surface);
 
-    new G4PVPlacement(0, 
-                      G4ThreeVector(0., 0., SiPM1_Z),
+    new G4PVPlacement(&rm, 
+                      G4ThreeVector(SiPM1_X, SiPM1_Y, SiPM1_Z),
                       pm_log1, 
                       "SiPM1", 
                       world_log, 
                       false, 
                       1, 
                       OverLapCheck);
-    new G4PVPlacement(0,
-                      G4ThreeVector(0., 0., SiPM2_Z),
+    new G4PVPlacement(&rm,
+                      G4ThreeVector(SiPM2_X, SiPM2_Y, SiPM2_Z),
                       pm_log2,
                       "SiPM2",
                       world_log,
@@ -257,13 +277,14 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     ConstructOpticalFoil(foil_mat, _foil_surface);
 
 
-    auto foil_geo1 = new G4Box("foil_body", Foil_Size[0], Foil_Size[1], Foil_Size[2]);
-    auto foil_geo2 = new G4SubtractionSolid("foil_box", foil_geo1, sci_geo, 0, G4ThreeVector());
-    auto foil_geo  = new G4SubtractionSolid("foil_box_with_hole",
-                                            foil_geo2,
-                                            pm_geo,
-                                            0,
-                                            G4ThreeVector(0, 0, -Foil_Size[2] - SiPM_Size[2]));
+    auto foil_geo1 = new G4Trd("foil_body1", Foil_Size[0], Foil_Size[1], Foil_Size[2], Foil_Size[3], Foil_Size[4]);
+    auto foil_geo2 = new G4Trd("foil_body2", Foil_Size[5], Foil_Size[6], Foil_Size[7], Foil_Size[8], Foil_Size[9]);
+    auto foil_geo3 = new G4UnionSolid("foil_body",          //body
+                                      foil_geo1, foil_geo2, //union solid
+                                      nullptr,              //rotation matrix (no rotation)
+                                      G4ThreeVector(0., 0., Foil_Size[4] + Foil_Size[9])); //translation vector
+
+    auto foil_geo = new G4SubtractionSolid("Al_foil_geo", foil_geo3, sci_geo);
 
     auto foil_log1 = new G4LogicalVolume(foil_geo, foil_mat, "Al_foil_log1");
     auto foil_log2 = new G4LogicalVolume(foil_geo, foil_mat, "Al_foil_log2");
@@ -271,8 +292,8 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     auto  foil_surface1 = new G4LogicalSkinSurface("foil_surface1", foil_log1, _foil_surface);
     auto  foil_surface2 = new G4LogicalSkinSurface("foil_surface2", foil_log2, _foil_surface);
 
-    new G4PVPlacement(0, G4ThreeVector(0., 0., Scint1_Z), foil_log1, "Al_foil_phy1", world_log, false, 0, OverLapCheck);
-    new G4PVPlacement(0, G4ThreeVector(0., 0., Scint2_Z), foil_log2, "Al_foil_phy2", world_log, false, 0, OverLapCheck);
+    new G4PVPlacement(&rm, G4ThreeVector(0., 0., Scint1_Z), foil_log1, "Al_foil_phy1", world_log, false, 0, OverLapCheck);
+    new G4PVPlacement(&rm, G4ThreeVector(0., 0., Scint2_Z), foil_log2, "Al_foil_phy2", world_log, false, 0, OverLapCheck);
 
 //=======================================================================
     return world_phy;
