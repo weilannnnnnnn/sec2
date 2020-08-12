@@ -25,10 +25,22 @@ class secParticleSource : public G4VPrimaryGenerator
         //event generator.
         virtual void GeneratePrimaryVertex(G4Event* Evt) override;
 
+        enum secSourceType
+        {
+            MUON_GEN,
+            NOISE_GEN
+        };
+
     private:
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
+        secSourceType GenType;
+
+        void GenMuons(G4Event* Evt);
+        void GenNoise(G4Event* Evt);
+        double GetWaitTime(secSourceType Type);
+        void SetGenType(secSourceType Type){ GenType = Type; }
 
 };
 
