@@ -40,20 +40,8 @@ secParticleSource::~secParticleSource()
 void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
     //No generation option, which will be added in the future.
-    switch(GenType)
-    {
-        case MUON_GEN : 
-        {
-            GenMuons(Evt);
-        }
-
-        case NOISE_GEN : 
-        {
-            GenNoise(Evt);
-        }
-
-    };
-
+    //GenMuons();
+    GenNoise();
 }
 
 void secParticleSource::GenMuons(G4Event* Evt)
@@ -100,11 +88,11 @@ void secParticleSource::GenMuons(G4Event* Evt)
     PosVect += DirVect; // set position
     DirVect = - DirVect;
     
-    auto vertex = new G4PrimaryVertex( /*G4ThreeVector(0, 0, 0)*/PosVect, 0. );
+    auto vertex = new G4PrimaryVertex( /*G4ThreeVector(0, 0, 0)*/PosVect, WaitTime );
     auto PrimaryParticle = new G4PrimaryParticle( ParticleDef );
     
     PrimaryParticle->SetKineticEnergy( KineticEnergy );
-    PrimaryParticle->SetMomentumDirection( /*G4ThreeVector(0, 0, 1)*/DirVect.unit() );
+    PrimaryParticle->SetMomentumDirection( /*G4ThreeVector(0, 0,WaitTime 1)*/DirVect.unit() );
     PrimaryParticle->SetMass( ParticleDef->GetPDGMass() );
     PrimaryParticle->SetCharge( ParticleDef->GetPDGCharge() );
 
@@ -123,7 +111,7 @@ void secParticleSource::GenNoise(G4Event* Evt)
     G4ThreeVector PosVect(0, 1, 0);
 
     DirVect.theta() = CLHEP::HepUniformRand() * 3.141592653589793;
-    DirVect.phi()   = CLHEP::HepUniformRand() * 3.141592653589793;
+    DirVect.phi()   = CLHEP::HepUniformRand() * 3.141592653589793 * 2.;
 
     PosVect.x() = CLHEP::HepUniformRand() * 20. * m - 10. * m;
     PosVect.y() = CLHEP::HepUniformRand() * 20. * m - 10. * m;
@@ -132,8 +120,8 @@ void secParticleSource::GenNoise(G4Event* Evt)
     auto vertex = new G4PrimaryVertex(PosVect, WaitTime);
     auto PriPar = new G4PrimaryParticle( ParDef );
 
-    PriPar->SetKineticEnergy(Eneg);
-    PriPar->SetMomentumDirection(DirVect.unit());
+    PriPar->SetKineticEnergy( Eneg );
+    PriPar->SetMomentumDirection( DirVect.unit() );
     PriPar->SetMass( ParDef->GetPDGMass() );
     PriPar->SetCharge( ParDef->GetPDGCharge() );
 
@@ -141,15 +129,16 @@ void secParticleSource::GenNoise(G4Event* Evt)
     Evt->AddPrimaryVertex( vertex );
 }
 
-double secParticleSource::GetWaitTime(secSourceType Type)
+G4double secParticleSource::MuonWaitTime()
 {
-    static std::atomic<double> MuonWaitTime(0.);
-    static std::atomic<double> NoiseWaitTime(0.);
-   
-    if( Type == MUON_GEN )
-        return ( MuonWaitTime += CLHEP::RandExponential::shoot(1./30. * s) );
-    else if( Type == NOISE_GEN )
-        return ( NoiseWaitTime += CLHEP::RandExponential::shoot(1. * s) ); 
-    else
-        return 0.;
+    static std::atomic<G4double> MuonWaitTime(0.);
+
+    return MuonWaitTime += CLHEP::RandExponential::shoot(0.5*s);
+}
+
+G4double secParticleSource::NoiseWaitTime()
+{
+    static std::atomic<G4double> NoiseWaitTime(0.);
+
+    return NoiseWaitTime += CLHEP::RandExponential::shoot(0.01 * s);
 }
