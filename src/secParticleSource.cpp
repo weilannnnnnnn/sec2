@@ -15,6 +15,7 @@
 #include "Randomize.hh"
 #include "globals.hh"
 
+#include <iostream>
 #include <cmath>
 #include <fstream>
 #include <atomic>
@@ -22,10 +23,7 @@
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 
-secParticleSource::secParticleSource() : 
-    GenType(MUON_GEN),
-    MuonTotalTime(0.),
-    NoiseTotalTime(0.)
+secParticleSource::secParticleSource()  
 {
     //random generators
     RandGenFile = secRandGenFromFile::GetInstance();
@@ -41,7 +39,7 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
     //No generation option, which will be added in the future.
     //GenMuons();
-    GenNoise();
+    GenNoise(Evt);
 }
 
 void secParticleSource::GenMuons(G4Event* Evt)
@@ -73,7 +71,7 @@ void secParticleSource::GenMuons(G4Event* Evt)
     G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE) * GeV;
     //std::cout << "Energy = " << KineticEnergy / 1000.<< " GeV" << std::endl;     
     //generate position
-    G4double WaitTime = GetWaitTime(MUON_GEN);
+    G4double WaitTime = MuonWaitTime(); 
     const G4double Radius = 2 * sqrt(5) * m;
     const G4double PosPhi = 2 * 3.141592653589793 * G4UniformRand();
     const G4double PosTheta = RandGenFile->Shoot(0, secVRandGen::PDF_TYPE);
@@ -105,17 +103,24 @@ void secParticleSource::GenNoise(G4Event* Evt)
 {
     G4ParticleDefinition* ParDef = G4Electron::Definition();
     G4double Eneg = CLHEP::RandGauss::shoot(5., 1.) * MeV;
-    G4double WaitTime = GetWaitTime(NOISE_GEN);
-
+    G4double WaitTime = NoiseWaitTime();
+    
+    std::cout << "WaitTime = " << WaitTime << std::endl;
     G4ThreeVector DirVect(0, 1, 0);
     G4ThreeVector PosVect(0, 1, 0);
+    
+    G4double Theta = G4UniformRand() * 3.141592653589793;
+    G4double Phi   = G4UniformRand() * 3.141592653589793 * 2.;
+    DirVect.setTheta( Theta );
+    DirVect.setPhi( Phi );
+    
+    G4double X = G4UniformRand() * 20. * m - 10. * m;
+    G4double Y = G4UniformRand() * 20. * m - 10. * m;
+    G4double Z = G4UniformRand() * 12. * m - 6. * m;
 
-    DirVect.theta() = CLHEP::HepUniformRand() * 3.141592653589793;
-    DirVect.phi()   = CLHEP::HepUniformRand() * 3.141592653589793 * 2.;
-
-    PosVect.x() = CLHEP::HepUniformRand() * 20. * m - 10. * m;
-    PosVect.y() = CLHEP::HepUniformRand() * 20. * m - 10. * m;
-    PosVect.z() = CLHEP::HepUnifromRand() * 12. * m - 6. * m;
+    PosVect.setX( X );
+    PosVect.setY( Y );
+    PosVect.setZ( Z );
 
     auto vertex = new G4PrimaryVertex(PosVect, WaitTime);
     auto PriPar = new G4PrimaryParticle( ParDef );
@@ -132,13 +137,13 @@ void secParticleSource::GenNoise(G4Event* Evt)
 G4double secParticleSource::MuonWaitTime()
 {
     static std::atomic<G4double> MuonWaitTime(0.);
-
-    return MuonWaitTime += CLHEP::RandExponential::shoot(0.5*s);
+    
+    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5*s) );
 }
 
 G4double secParticleSource::NoiseWaitTime()
 {
     static std::atomic<G4double> NoiseWaitTime(0.);
 
-    return NoiseWaitTime += CLHEP::RandExponential::shoot(0.01 * s);
+    return ( NoiseWaitTime = NoiseWaitTime + CLHEP::RandExponential::shoot(0.1 * s) );
 }

@@ -29,13 +29,11 @@ class secParticleSource : public G4VPrimaryGenerator
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
-        secSourceType GenType;
 
         void GenMuons(G4Event* Evt);
         void GenNoise(G4Event* Evt);
         static G4double MuonWaitTime();
         static G4double NoiseWaitTime();
-        void SetGenType(secSourceType Type){ GenType = Type; }
 
 };
 
