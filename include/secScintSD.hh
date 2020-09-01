@@ -49,6 +49,7 @@ class secScintSD : public G4VSensitiveDetector
         secScintHitsCollection *pMuonHCdown;   //Muon's HC down
 };
 
+//reset the SD at the end of each event
 inline void secScintSD::Reset(void)
 {
     PhotonsGenUp = 0;

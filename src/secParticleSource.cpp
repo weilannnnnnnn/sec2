@@ -114,9 +114,12 @@ void secParticleSource::GenNoise(G4Event* Evt)
     DirVect.setTheta( Theta );
     DirVect.setPhi( Phi );
     
-    G4double X = G4UniformRand() * 20. * m - 10. * m;
-    G4double Y = G4UniformRand() * 20. * m - 10. * m;
-    G4double Z = G4UniformRand() * 12. * m - 6. * m;
+    //G4double X = G4UniformRand() * 20. * m - 10. * m;
+    G4double X = G4UniformRand() * m - 0.5 * m;
+    //G4double Y = G4UniformRand() * 20. * m - 10. * m;
+    G4double Y = G4UniformRand() * m - 0.5 * m;
+    //G4double Z = G4UniformRand() * 12. * m - 6. * m;
+    G4double Z = G4UniformRand()*m + 0.528 * m;
 
     PosVect.setX( X );
     PosVect.setY( Y );
@@ -138,12 +141,12 @@ G4double secParticleSource::MuonWaitTime()
 {
     static std::atomic<G4double> MuonWaitTime(0.);
     
-    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5*s) );
+    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
 }
 
-G4double secParticleSource::NoiseWaitTime()
+G4double secParticleSource::NoiseWaitTime()s
 {
     static std::atomic<G4double> NoiseWaitTime(0.);
 
-    return ( NoiseWaitTime = NoiseWaitTime + CLHEP::RandExponential::shoot(0.1 * s) );
+    return ( NoiseWaitTime = NoiseWaitTime + CLHEP::RandExponential::shoot(0.1)*s );
 }
