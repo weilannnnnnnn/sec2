@@ -41,7 +41,6 @@ class secScintSD : public G4VSensitiveDetector
         G4double PhotonEnegDown;
         G4double MuonEdepUp;
         G4double MuonEdepDown;
-        G4double MuonArriveTime;
 	    G4int    FormerID;
 
         secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator

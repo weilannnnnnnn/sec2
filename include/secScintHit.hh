@@ -25,37 +25,21 @@ class secScintHit : public G4VHit
         virtual void Draw(void);
         virtual void Print(void);
 
-        secScintHit &SetPhotonEneg(G4double Eneg);
-        secScintHit &SetPhotonGlobalTime(G4double Time);
-        secScintHit &SetGenPhotons(G4int PhotonsGen);
-        secScintHit &SetMuonEdep(G4double Eneg);
-        secScintHit &SetMuonGlobalTime(G4double Time);
-        secScintHit &SetMuonVelocity(G4double V);
+        secScintHit &SetEneg(G4double E);
+        secScintHit &SetGlobalTime(G4double T);
+        secScintHit &SetEdep(G4double E);
+        secScintHit &SetVelocity(G4double V);
 
-        G4double GetPhotonEneg(void)       const { return PhotonEneg; }
-        G4double GetPhotonGlobalTime(void) const { return PhotonGlobalTime; }
-        G4int    GetGenPhotons(void)       const { return GenPhotons; }
-        G4double GetMuonEdep(void)         const { return MuonEnegDeposit; }
-        G4double GetMuonGlobalTime(void)   const { return MuonGlobalTime; }
-        G4double GetMuonVelocity(void)     const { return MuonVelocity; }
+        G4double GetEneg(void)       const { return Eneg; }
+        G4double GetGlobalTime(void) const { return GlobalTime; }
+        G4double GetEdep(void)       const { return EnegDeposit; }
+        G4double GetVelocity(void)   const { return Velocity; }  
 
     private:
-        G4double PhotonEneg;
-        G4double PhotonGlobalTime;
-        /*
-            Currently, variable PhotonEneg saves the Energy of all
-            generated photons in a scintillator in a single event.
-         */
-        G4double MuonEnegDeposit;
-        G4double MuonGlobalTime;
-        G4double MuonVelocity;
-
-        G4int GenPhotons;
-        /*
-            GenPhotons saves the the number of generated photons in a scintillator in a
-            single event.
-         */
-        
+        G4double Eneg;
+        G4double GlobalTime;
+        G4double EnegDeposit;
+        G4double Velocity;
 };
 
 using secScintHitsCollection = G4THitsCollection<secScintHit>;
@@ -77,39 +61,27 @@ inline void secScintHit::operator delete(void* hit)
     secScintHitAllocator->FreeSingle((secScintHit*) hit);
 }
 
-inline secScintHit& secScintHit::SetPhotonEneg(G4double Eneg)
+inline secScintHit& secScintHit::SetEneg(G4double E)
 {
-    PhotonEneg = Eneg;
+    Eneg = E;
     return *this;
 }
 
-inline secScintHit& secScintHit::SetPhotonGlobalTime(G4double Time)
+inline secScintHit& secScintHit::SetGlobalTime(G4double T)
 {
-    PhotonGlobalTime = Time;
+    GlobalTime = T;
     return *this;
 }
 
-inline secScintHit& secScintHit::SetGenPhotons(G4int PhotonsGen)
+inline secScintHit& secScintHit::SetEdep(G4double Edep)
 {
-    GenPhotons = PhotonsGen;
+    EnegDeposit = Edep;
     return *this;
 }
 
-inline secScintHit& secScintHit::SetMuonEdep(G4double Eneg)
+inline secScintHit& SetVelocity(G4double V)
 {
-    MuonEnegDeposit = Eneg;
-    return *this;
-}
-
-inline secScintHit& secScintHit::SetMuonGlobalTime(G4double Time)
-{
-    MuonGlobalTime = Time;
-    return *this;
-}
-
-inline secScintHit& secScintHit::SetMuonVelocity(G4double V)
-{
-    MuonVelocity = V;
+    Velocity = V;
     return *this;
 }
 

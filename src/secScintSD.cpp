@@ -40,7 +40,6 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     PhotonEnegDown(0.),
     MuonEdepUp(0.),
     MuonEdepDown(0.),
-    MuonArriveTime(0.),
     FormerID(-1),
     pPhotonHCup(nullptr),
     pPhotonHCdown(nullptr),
@@ -106,7 +105,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             if( VolumeCpyNb == 1 )
             {
                 auto pPhotonHitUp = new secScintHit();
-                pPhotonHitUp->SetPhotonEneg(aPhotonEneg).SetPhotonGlobalTime(GlobalTime);
+                pPhotonHitUp->SetEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
                 pPhotonHCup->insert(pPhotonHitUp);
                 PhotonsGenUp++;
                 PhotonEnegUp += aPhotonEneg;
@@ -115,7 +114,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             else if( VolumeCpyNb == 2 )
             {
                 auto pPhotonHitDown = new secScintHit();
-                pPhotonHitDown->SetPhotonEneg(aPhotonEneg).SetPhotonGlobalTime(GlobalTime);
+                pPhotonHitDown->SetEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
                 pPhotonHCdown->insert(pPhotonHitDown);
                 PhotonsGenDown++;
                 PhotonEnegDown += aPhotonEneg;
@@ -137,17 +136,12 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         
         if( VolumeCpyNb == 1 )
         {
-            if( step->IsFirstStepInVolume() )
-            {
-                MuonArriveTime += RandExponential::shoot( HepRandom::getTheEngine(), 2.*s );
-            }
             //get energy disposit
             MuonEdepUp += aStepEdep;
             //save to hits collection
             auto pMuonHitUp = new secScintHit();
-            pMuonHitUp->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
+            pMuonHitUp->SetGlobalTime(GlobalTime).SetVelocity(MuonVelocity);
             pMuonHCup->insert(pMuonHitUp);
-	    //std::cout << "In scint 1" << std::endl;
         }
         else if( VolumeCpyNb == 2 )
         {
@@ -155,9 +149,8 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             MuonEdepDown += aStepEdep;
             //save to hits collection
             auto pMuonHitDown = new secScintHit();
-            pMuonHitDown->SetMuonGlobalTime(GlobalTime).SetMuonVelocity(MuonVelocity);
+            pMuonHitDown->SetGlobalTime(GlobalTime).SetVelocity(MuonVelocity);
             pMuonHCdown->insert(pMuonHitDown);
-	    //std::cout << "In scint 2" << std::endl;
 
             if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
             {
@@ -165,24 +158,9 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
                 DecayFlagScint = true;
                 DecayFlagSiPM  = true;
                 DecayTime = step->GetPostStepPoint()->GetGlobalTime();
-		std::cout << "Decayed!" << std::endl;
             }
         }
     }
-    /*
-    else if( *ParticleNow == *G4NeutrinoMu::Definition() || 
-	         *ParticleNow == *G4AntiNeutrinoMu::Definition() )
-    {
-        if( step->IsFirstStepInVolume() && VolumeCpyNb == 2)
-        {
-            std::cout << "****Decayed!!****" << '\n';
-            DecayFlagScint = true;
-            DecayFlagSiPM = true;
-            DecayTime = step->GetPreStepPoint()->GetGlobalTime();
-            step->GetTrack()->SetTrackStatus(fStopAndKill);
-        }
-    }
-    */
     return true;
     
 }
@@ -215,21 +193,20 @@ void secScintSD::EndOfEvent(G4HCofThisEvent*)
         //fill the data in hit collections into 1-D histogram and print its edges and entries
         PrintData("UpScintResponse.dat",      // file name
                   pPhotonHCup,                // hits collection's pointer
-	              &secScintHit::GetPhotonGlobalTime,// data getter function's pointer
+	              &secScintHit::GetGlobalTime,// data getter function's pointer
                   8000, 0.*ns, 20000.*ns);    // number-of-bins, lower limit, upper limit
 
         PrintData("DownScintResponse.dat", 
                   pPhotonHCdown,
-		          &secScintHit::GetPhotonGlobalTime,
+		          &secScintHit::GetGlobalTime,
                   8000, 0.*ns, 20000.*ns);
 
         PrintData("DownMuonVelocity.dat",
                   pMuonHCdown,
-                  &secScintHit::GetMuonVelocity);
+                  &secScintHit::GetVelocity);
 
         //print the decay time
         PrintData("DecayTime.dat", DecayTime);
-        PrintData("ArriveTime.dat", MuonArriveTime);
     }
 
     Reset();

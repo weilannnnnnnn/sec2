@@ -5,6 +5,7 @@
 #include "secSiPMHit.hh"
 #include "globals.hh"
 #include <initializer_list>
+#include <vector>
 
 class secScintSD;
 class G4Step;
@@ -29,9 +30,18 @@ class secSiPMSD : public G4VSensitiveDetector
         
     private:
         
-        void PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter GetterLst,
-                     unsigned int bins, G4double Xmin, G4double Xmax);
+        void PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+                         unsigned int nbins, G4double Xmin, G4double Xmax);
+        
+        void PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter);
+        
+        void PrintData(G4String FileName, G4double val);
+        
         G4int DecayEventID;
+        G4bool IsNoise; // a hard-coded version for noise simulation
+        G4double EventWaitTime;
+        std::vector<G4double> NoiseWaitTimeVect;
+
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;
