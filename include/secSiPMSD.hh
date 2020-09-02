@@ -29,16 +29,27 @@ class secSiPMSD : public G4VSensitiveDetector
         void ResetDecayFlag(void);
         
     private:
+    
+    //output methods!
+        //fill the values in the Hits into a histogram and print the histogram,
+        //the empty bins will be ignored!
+        void PrintData(G4String FileName, G4String HistName,
+                       secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
+                       unsigned int nbins, G4double Xmin, G4double Xmax);
         
-        void PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
-                         unsigned int nbins, G4double Xmin, G4double Xmax);
+        //directly print the values in the Hits
+        void PrintData(G4String FileName, G4double HCname,
+                       secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
         
-        void PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
-        
+        //print the value generated in a single event.
         void PrintData(G4String FileName, G4double val);
         
         G4int DecayEventID;
-        G4bool IsNoise; // a hard-coded version for noise simulation
+        G4int NoiseResponseID;
+        G4int NormalResponseID;
+        G4bool IsMuon;
+        G4bool IsNoise;
+        G4bool HasEntered;
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
 

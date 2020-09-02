@@ -15,13 +15,18 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 #include <cassert>
 class G4VPhysicalVolume;
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
     G4VSensitiveDetector(SDname),
     DecayEventID(0),
-    IsNoise(true),
+    NoiseResponseID(0),
+    NormalResponseID(0),
+    IsMuon(false),
+    IsNoise(false),
+    HasEntered(false),
     EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
@@ -83,19 +88,20 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     }
 //the case that an optical photon hits one of the SiPM
 //the copy number of the UPPER SiPM is 1 and that of the lower one is 2!!
-
     //generate the time stamp for each event!
-    if( IsNoise )
+    IsMuon = pScintSD->IsMuon();
+    IsNoise = pScintSD->IsNoise();
+    if( !HasEntered && IsMuon )
     {
-        IsNoise = false;
-        EventWaitTime = secParticleSource::NoiseWaitTime();
-        std::cout << "WaitTime = " << EventWaitTime << std::endl;
+        HasEntered = true;
+        EventWaitTime = secParticleSource::MuonWaitTime();
     }
-    //else
-    //{
-    //    IsNoise = false;
-    //    EventWaitTime = secParticleSource::MuonWaitTime();
-    //}
+
+    if( !HasEntered && IsNoise )
+    {
+        HasEntered = true;
+        EventWaitTime = secParticleSource::NoiseWaitTime();
+    }
     
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
@@ -137,26 +143,28 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         //ignore the event that didn't trigger both of the SiPMs!
 	    return;
     }
-    else if( true ) // the PM is Triggered by Noise particle( mainly electrons )
+    else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
     {
-        IsNoise = true;
+        ++NoiseResponseID;
+        G4String UpName = "UpNoiseResponse ", DownName = "DownNoise ";
+        UpName += itoa(NoiseResponseID);
+        DownName += itoa(NoiseResponseID);
         //print noise response
-        PrintData("UpNoiseResponse.dat", 
+        PrintData("UpNoiseResponse.dat", UpName,
                   pHCup, 
                   &secSiPMHit::GetGlobalTime, 
                   8000, 
-                  /*EventWaitTime*/0., 
-                  /*EventWaitTime +*/ BackTimeWindow);
+                  0., 
+                  BackTimeWindow);
 
-        PrintData("DownNoiseResponse.dat", 
+        PrintData("DownNoiseResponse.dat", DownName,
                   pHCdown, 
                   &secSiPMHit::GetGlobalTime, 
                   8000, 
-                  /*EventWaitTime*/0., 
-                  /*EventWaitTime +*/ BackTimeWindow);
+                  0., 
+                  BackTimeWindow);
 
         PrintData("NoiseWaitTime.dat", EventWaitTime);
-        
     }
     else if( IsADecayEvent() ) // a decay event
     {
@@ -167,20 +175,25 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         }
         DecayEventID++;
         ResetDecayFlag();
+        G4Sring UpName = "UpDecayID ", DownName = "DownDecayID ";
+        UpName += itoa(DecayEventID);
+        DownName += itoa(DecayEventID);
 
-        PrintData("UpSiPMResponse.dat", 
+        PrintData("UpSiPMResponse.dat", UpName,
                 pHCup,
                 &secSiPMHit::GetGlobalTime,
                 8000, 
-                EventWaitTime, 
-                EventWaitTime + BackTimeWindow);
+                0., 
+                BackTimeWindow);
 
-        PrintData("DownSiPMResponse.dat",
+        PrintData("DownSiPMResponse.dat", DownName,
                 pHCdown,
                 &secSiPMHit::GetGlobalTime,
                 8000, 
-                EventWaitTime, 
-                EventWaitTime + BackTimeWindow);
+                0., 
+                BackTimeWindow);
+        
+        PrintData("DecayMuonWaitTime.dat", EventWaitTime);
     }
     else // normal muon events
     {
@@ -230,21 +243,29 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
         if( IsPrint )
         {
-            PrintData("UpSiPMNormal.dat", 
+            ++NormalResponseID;
+            G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
+            UpName += itoa(NormalResponseID);
+            DownName += itoa(NormalResponseID);
+
+            PrintData("UpSiPMNormal.dat", UpName,
                       pHCup, 
                       &secSiPMHit::GetGlobalTime, 
                       8000, 
-                      EventWaitTime, 
-                      EventWaitTime + BackTimeWindow);
+                      0., 
+                      BackTimeWindow);
             
-            PrintData("DonwSiPMNormal.dat",
+            PrintData("DonwSiPMNormal.dat", DownName,
                       pHCdown,
                       &secSiPMHit::GetGlobalTime,
                       8000,
-                      EventWaitTime,
-                      EventWaitTime + BackTimeWindow);
+                      0.,
+                      BackTimeWindow);
+            PrintData("NormalMuonWaitTime.dat", EventWaitTime);
         }
     }
+    //reset the flag for generating the time stamp at the end of the event!
+    HasEntered = false;
 }
 
 G4bool secSiPMSD::IsADecayEvent()
@@ -257,8 +278,9 @@ void secSiPMSD::ResetDecayFlag()
 }
 
 //print histogram version
-void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
-                         unsigned int nbins, G4double Xmin, G4double Xmax)
+void secSiPMSD::PrintData(G4String FileName, G4String HistName,
+                          secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
+                          unsigned int nbins, G4double Xmin, G4double Xmax)
 {
     //fill histogram
     tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
@@ -280,7 +302,7 @@ void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPM
     }
 
     //assert( fstrm.is_open() );
-    fstrm << "Decay Event ID_t" << G4Threading::G4GetThreadId() << "= " << DecayEventID << '\n';
+    fstrm << HistName + "_t" << G4Threading::G4GetThreadId() << '\n';
     
     //write file
     const std::vector<unsigned int>& entries = hist.bins_entries();
@@ -312,7 +334,8 @@ void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPM
 }
 
 //direct print HC version
-void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
+void secSiPMSD::PrintData(G4String FileName, G4String HCname,
+                          secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
 {
     //create files
     std::ostringstream sstrm;
@@ -326,7 +349,7 @@ void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPM
     }
 
     //assert( fstrm.is_open() );
-    fstrm << "Decay Event ID_t" << G4Threading::G4GetThreadId() << "= " << DecayEventID << '\n';
+    fstrm << HCname + "_t" << G4Threading::G4GetThreadId() << '\n';
 
     for( size_t i = 0; i != pHC->GetSize(); ++i )
     {

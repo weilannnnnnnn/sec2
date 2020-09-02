@@ -32,6 +32,8 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     G4VSensitiveDetector(SDname),
     DecayFlagSiPM(false),
     DecayFlagScint(false),
+    IsMuonEvent(false),
+    IsNoiseEvent(false),
     DecayEventID(0),
     DecayTime(0.),
     PhotonsGenUp(0),
@@ -130,6 +132,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     else if( *ParticleNow == *G4MuonPlus::Definition() ||
              *ParticleNow == *G4MuonMinus::Definition() )
     {
+        IsMuonEvent = true;
         G4double aStepEdep = step->GetTotalEnergyDeposit();
         G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
@@ -160,6 +163,11 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
                 DecayTime = step->GetPostStepPoint()->GetGlobalTime();
             }
         }
+    }
+    else
+    {
+        //noise event!!
+        IsNoiseEvent = true;
     }
     return true;
     
