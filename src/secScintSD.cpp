@@ -122,7 +122,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             }
             //update the id
             FormerID = step->GetTrack()->GetTrackID();
-            step->GetTrack()->SetTrackStatus(fStopAndKill);
+            //step->GetTrack()->SetTrackStatus(fStopAndKill);
             return false;
         }
     }

@@ -39,7 +39,7 @@ class secScintHit : public G4VHit
         G4double Eneg;
         G4double GlobalTime;
         G4double EnegDeposit;
-        G4double Velocity;
+	G4double Velocity;
 };
 
 using secScintHitsCollection = G4THitsCollection<secScintHit>;
@@ -79,7 +79,7 @@ inline secScintHit& secScintHit::SetEdep(G4double Edep)
     return *this;
 }
 
-inline secScintHit& SetVelocity(G4double V)
+inline secScintHit& secScintHit::SetVelocity(G4double V)
 {
     Velocity = V;
     return *this;

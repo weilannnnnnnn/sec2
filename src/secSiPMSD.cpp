@@ -40,7 +40,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     if( ifstrm.is_open() )
     {
         std::string line;
-        while( ifstrm.getline(line) )
+        while( getline(ifstrm, line) )
         {
             NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
         }
@@ -87,27 +87,33 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     //generate the time stamp for each event!
     if( IsNoise )
     {
+        IsNoise = false;
         EventWaitTime = secParticleSource::NoiseWaitTime();
+        std::cout << "WaitTime = " << EventWaitTime << std::endl;
     }
-    else
-    {
-        EventWaitTime = secParticleSource::MuonWaitTime();
-    }
+    //else
+    //{
+    //    IsNoise = false;
+    //    EventWaitTime = secParticleSource::MuonWaitTime();
+    //}
     
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
-    G4double GlobalTime  = step->GetTrack()->GetGlobalTime() + EventWaitTime;
-
+    G4double GlobalTime  = step->GetTrack()->GetGlobalTime() /*+ EventWaitTime*/;
+    //std::cout << "GlobalTime = " << GlobalTime << std::endl;
+    step->GetTrack()->SetTrackStatus(fStopAndKill);
     if( VolumeCpyNb == 1 )
     {
         //upper SiPM!!
-        auto newHitUp = new secSiPMHit();
+	//std::cout << "In Up" << std::endl;
+	auto newHitUp = new secSiPMHit();
         (*newHitUp).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCup->insert(newHitUp);
     }
     else if( VolumeCpyNb == 2 )
     {
         //lower SiPM!!
+        //std::cout << "In Down" << std::endl;
         auto newHitDown = new secSiPMHit();
         (*newHitDown).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCdown->insert(newHitDown);
@@ -131,22 +137,23 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         //ignore the event that didn't trigger both of the SiPMs!
 	    return;
     }
-    else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
+    else if( true ) // the PM is Triggered by Noise particle( mainly electrons )
     {
+        IsNoise = true;
         //print noise response
         PrintData("UpNoiseResponse.dat", 
                   pHCup, 
                   &secSiPMHit::GetGlobalTime, 
                   8000, 
-                  EventWaitTime, 
-                  EventWaitTime + BackTimeWindow);
+                  /*EventWaitTime*/0., 
+                  /*EventWaitTime +*/ BackTimeWindow);
 
         PrintData("DownNoiseResponse.dat", 
                   pHCdown, 
                   &secSiPMHit::GetGlobalTime, 
                   8000, 
-                  EventWaitTime, 
-                  EventWaitTime + BackTimeWindow);
+                  /*EventWaitTime*/0., 
+                  /*EventWaitTime +*/ BackTimeWindow);
 
         PrintData("NoiseWaitTime.dat", EventWaitTime);
         
@@ -161,14 +168,14 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         DecayEventID++;
         ResetDecayFlag();
 
-        PrintHC("UpSiPMResponse.dat", 
+        PrintData("UpSiPMResponse.dat", 
                 pHCup,
                 &secSiPMHit::GetGlobalTime,
                 8000, 
                 EventWaitTime, 
                 EventWaitTime + BackTimeWindow);
 
-        PrintHC("DownSiPMResponse.dat",
+        PrintData("DownSiPMResponse.dat",
                 pHCdown,
                 &secSiPMHit::GetGlobalTime,
                 8000, 
@@ -235,7 +242,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
                       &secSiPMHit::GetGlobalTime,
                       8000,
                       EventWaitTime,
-                      EventWaitTime + BackTimeWindow)
+                      EventWaitTime + BackTimeWindow);
         }
     }
 }
@@ -250,7 +257,7 @@ void secSiPMSD::ResetDecayFlag()
 }
 
 //print histogram version
-void secScintSD::PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
                          unsigned int nbins, G4double Xmin, G4double Xmax)
 {
     //fill histogram
@@ -305,7 +312,7 @@ void secScintSD::PrintData(G4String FileName, secScintHitsCollection* pHC, secSc
 }
 
 //direct print HC version
-void secScintSD::PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter)
+void secSiPMSD::PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
 {
     //create files
     std::ostringstream sstrm;
@@ -334,7 +341,7 @@ void secScintSD::PrintData(G4String FileName, secScintHitsCollection* pHC, secSc
 }
 
 //print single double value version
-void secScintSD::PrintData(G4String FileName, G4double val)
+void secSiPMSD::PrintData(G4String FileName, G4double val)
 {
     	std::ostringstream sstrm;
         sstrm << FileName << "_t" << G4Threading::G4GetThreadId();

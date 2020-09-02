@@ -30,10 +30,10 @@ class secSiPMSD : public G4VSensitiveDetector
         
     private:
         
-        void PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
+        void PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
                          unsigned int nbins, G4double Xmin, G4double Xmax);
         
-        void PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter);
+        void PrintData(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
         
         void PrintData(G4String FileName, G4double val);
         

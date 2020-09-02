@@ -23,8 +23,8 @@ int main(int argc, char** argv)
     {
         ui = new G4UIExecutive(argc, argv);
     }
-
-    G4Random::setTheEngine(new CLHEP::RanecuEngine);
+    
+    G4Random::setTheEngine(new CLHEP::RanecuEngine());
     
 #ifdef G4MULTITHREADED
     G4MTRunManager* runManager = new G4MTRunManager;

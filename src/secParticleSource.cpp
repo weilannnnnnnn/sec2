@@ -102,10 +102,10 @@ void secParticleSource::GenMuons(G4Event* Evt)
 void secParticleSource::GenNoise(G4Event* Evt)
 {
     G4ParticleDefinition* ParDef = G4Electron::Definition();
-    G4double Eneg = CLHEP::RandGauss::shoot(5., 1.) * MeV;
-    G4double WaitTime = NoiseWaitTime();
+    G4double Eneg = CLHEP::RandGauss::shoot(50., 1.) * MeV;
+    //G4double WaitTime = NoiseWaitTime();
     
-    std::cout << "WaitTime = " << WaitTime << std::endl;
+    //std::cout << "WaitTime = " << WaitTime << std::endl;
     G4ThreeVector DirVect(0, 1, 0);
     G4ThreeVector PosVect(0, 1, 0);
     
@@ -125,7 +125,7 @@ void secParticleSource::GenNoise(G4Event* Evt)
     PosVect.setY( Y );
     PosVect.setZ( Z );
 
-    auto vertex = new G4PrimaryVertex(PosVect, WaitTime);
+    auto vertex = new G4PrimaryVertex(PosVect, 0.);
     auto PriPar = new G4PrimaryParticle( ParDef );
 
     PriPar->SetKineticEnergy( Eneg );
@@ -144,7 +144,7 @@ G4double secParticleSource::MuonWaitTime()
     return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
 }
 
-G4double secParticleSource::NoiseWaitTime()s
+G4double secParticleSource::NoiseWaitTime()
 {
     static std::atomic<G4double> NoiseWaitTime(0.);
 
