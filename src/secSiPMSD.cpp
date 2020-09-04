@@ -17,6 +17,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
+
 class G4VPhysicalVolume;
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
@@ -135,6 +136,7 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {   
+    std::cout << "1ns = " << 1*ns << std::endl;
     const G4double BackTimeWindow = 20000*ns;
     const G4double FrontTimeWindow = 100*ns;
     if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) ) // empty HC, the PM haven't been triggered!
@@ -147,8 +149,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     {
         ++NoiseResponseID;
         G4String UpName = "UpNoiseResponse ", DownName = "DownNoise ";
-        UpName += itoa(NoiseResponseID);
-        DownName += itoa(NoiseResponseID);
+	char Buf[50] = {};
+	sprintf(Buf, "%d", NoiseResponseID);
+        UpName += Buf;
+        DownName += Buf;
         //print noise response
         PrintData("UpNoiseResponse.dat", UpName,
                   pHCup, 
@@ -175,9 +179,11 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         }
         DecayEventID++;
         ResetDecayFlag();
-        G4Sring UpName = "UpDecayID ", DownName = "DownDecayID ";
-        UpName += itoa(DecayEventID);
-        DownName += itoa(DecayEventID);
+        G4String UpName = "UpDecayID ", DownName = "DownDecayID ";
+	char Buf[50] = {};
+	sprintf(Buf, "%d", DecayEventID);
+        UpName += Buf;
+        DownName += Buf;
 
         PrintData("UpSiPMResponse.dat", UpName,
                 pHCup,
@@ -245,8 +251,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         {
             ++NormalResponseID;
             G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
-            UpName += itoa(NormalResponseID);
-            DownName += itoa(NormalResponseID);
+	    char Buf[50] = {};
+	    sprintf(Buf, "%d", NormalResponseID);
+            UpName += Buf;
+            DownName += Buf;
 
             PrintData("UpSiPMNormal.dat", UpName,
                       pHCup, 
@@ -278,9 +286,10 @@ void secSiPMSD::ResetDecayFlag()
 }
 
 //print histogram version
-void secSiPMSD::PrintData(G4String FileName, G4String HistName,
-                          secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
-                          unsigned int nbins, G4double Xmin, G4double Xmax)
+void secSiPMSD::PrintData(G4String FileName, G4String HistName, 
+		          secSiPMHitsCollection* pHC, 
+			  secSiPMHit::DataGetter Getter, 
+			  unsigned int nbins, G4double Xmin, G4double Xmax)
 {
     //fill histogram
     tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
@@ -335,7 +344,8 @@ void secSiPMSD::PrintData(G4String FileName, G4String HistName,
 
 //direct print HC version
 void secSiPMSD::PrintData(G4String FileName, G4String HCname,
-                          secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
+                          secSiPMHitsCollection* pHC, 
+			  secSiPMHit::DataGetter Getter)
 {
     //create files
     std::ostringstream sstrm;
