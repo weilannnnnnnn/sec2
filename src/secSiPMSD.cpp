@@ -1,6 +1,7 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
 #include "secAnalysis.hh"
+#include "secParticleSource.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Threading.hh"
@@ -10,15 +11,24 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4SystemOfUnits.hh"
 #include <string>
+#include <vector>
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 #include <cassert>
+
 class G4VPhysicalVolume;
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
     G4VSensitiveDetector(SDname),
     DecayEventID(0),
+    NoiseResponseID(0),
+    NormalResponseID(0),
+    IsMuon(false),
+    IsNoise(false),
+    HasEntered(false),
+    EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
     pHCdown(nullptr)
@@ -30,6 +40,18 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     {
         collectionName.insert(str);
     }
+
+    std::ifstream ifstrm;
+    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
+    if( ifstrm.is_open() )
+    {
+        std::string line;
+        while( getline(ifstrm, line) )
+        {
+            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
+        }
+    }
+    ifstrm.close();
 }
 
 secSiPMSD::~secSiPMSD()
@@ -62,25 +84,43 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();    
     if( *ParticleNow != *G4OpticalPhoton::Definition() )
     {
-        //not an optical photon, return, don't generate hit
+        //not an optical photon, return, DO NOT generate hit
         return false;
     }
-
 //the case that an optical photon hits one of the SiPM
 //the copy number of the UPPER SiPM is 1 and that of the lower one is 2!!
+    //generate the time stamp for each event!
+    IsMuon = pScintSD->IsMuon();
+    IsNoise = pScintSD->IsNoise();
+    if( !HasEntered && IsMuon )
+    {
+        HasEntered = true;
+        EventWaitTime = secParticleSource::MuonWaitTime();
+    }
+
+    if( !HasEntered && IsNoise )
+    {
+        HasEntered = true;
+        EventWaitTime = secParticleSource::NoiseWaitTime();
+    }
+    
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
-    G4double GlobalTime  = step->GetTrack()->GetGlobalTime();
+    G4double GlobalTime  = step->GetTrack()->GetGlobalTime() /*+ EventWaitTime*/;
+    //std::cout << "GlobalTime = " << GlobalTime << std::endl;
+    step->GetTrack()->SetTrackStatus(fStopAndKill);
     if( VolumeCpyNb == 1 )
     {
         //upper SiPM!!
-        auto newHitUp = new secSiPMHit();
+	//std::cout << "In Up" << std::endl;
+	auto newHitUp = new secSiPMHit();
         (*newHitUp).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCup->insert(newHitUp);
     }
     else if( VolumeCpyNb == 2 )
     {
         //lower SiPM!!
+        //std::cout << "In Down" << std::endl;
         auto newHitDown = new secSiPMHit();
         (*newHitDown).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCdown->insert(newHitDown);
@@ -95,46 +135,144 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 }
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
-{
-    
-    if( !(pHCup->GetSize()) || !(pHCdown->GetSize()) )
+{   
+    const G4double BackTimeWindow = 20000*ns;
+    const G4double FrontTimeWindow = 100*ns;
+    if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) ) // empty HC, the PM haven't been triggered!
     {
-        //ignore the event that didn't trigger both of the SiPMs!
-	return;
-    }
- 
-    else//fill histograms
-    {
-        auto AnalysisMgr = G4AnalysisManager::Instance();
-        //get number of photons and fill
-        AnalysisMgr->FillH1(2, pHCup->GetSize());
-        AnalysisMgr->FillH1(3, pHCdown->GetSize());
-        for( size_t i = 0; i != pHCup->GetSize(); ++i )
-        {
-            AnalysisMgr->FillH1(6, ((*pHCup)[i])->GetPhotonEneg() );
-        }
-        for( size_t i = 0; i != pHCdown->GetSize(); ++i )
-        {
-            AnalysisMgr->FillH1(7, ((*pHCdown)[i])->GetPhotonEneg() );
-        }
-    }
-    
-    //digitization and fill the histograms
-    //create the Decay Event's files
-    if( IsADecayEvent() )
-    {
-	DecayEventID++;
-	//std::cout << "decayed!!" << '\n';
         ResetDecayFlag();
-        PrintHC("UpSiPMResponse.dat", 
+        //ignore the event that didn't trigger both of the SiPMs!
+	    return;
+    }
+    else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
+    {
+        ++NoiseResponseID;
+        G4String UpName = "UpNoiseResponse ", DownName = "DownNoise ";
+	char Buf[50] = {};
+	sprintf(Buf, "%d", NoiseResponseID);
+        UpName += Buf;
+        DownName += Buf;
+        //print noise response
+        PrintData("UpNoiseResponse.dat", UpName,
+                  pHCup, 
+                  &secSiPMHit::GetGlobalTime, 
+                  8000, 
+                  0., 
+                  BackTimeWindow);
+
+        PrintData("DownNoiseResponse.dat", DownName,
+                  pHCdown, 
+                  &secSiPMHit::GetGlobalTime, 
+                  8000, 
+                  0., 
+                  BackTimeWindow);
+
+        PrintData("NoiseWaitTime.dat", EventWaitTime);
+    }
+    else if( IsADecayEvent() ) // a decay event
+    {
+        if( !(pHCup->GetSize()) || !(pHCdown->GetSize()) )
+        {
+            ResetDecayFlag();
+            return;
+        }
+        DecayEventID++;
+        ResetDecayFlag();
+        G4String UpName = "UpDecayID ", DownName = "DownDecayID ";
+	char Buf[50] = {};
+	sprintf(Buf, "%d", DecayEventID);
+        UpName += Buf;
+        DownName += Buf;
+
+        PrintData("UpSiPMResponse.dat", UpName,
                 pHCup,
                 &secSiPMHit::GetGlobalTime,
-                8000, 0.*ns, 20000*ns);
-        PrintHC("DownSiPMResponse.dat",
+                8000, 
+                0., 
+                BackTimeWindow);
+
+        PrintData("DownSiPMResponse.dat", DownName,
                 pHCdown,
                 &secSiPMHit::GetGlobalTime,
-                8000, 0.*ns, 20000.*ns);
+                8000, 
+                0., 
+                BackTimeWindow);
+        
+        PrintData("DecayMuonWaitTime.dat", EventWaitTime);
     }
+    else // normal muon events
+    {
+        G4bool IsPrint = false;
+
+        auto beg = NoiseWaitTimeVect.begin();
+        auto end = NoiseWaitTimeVect.end();
+        auto mid = beg + (end - beg) / 2;
+        
+        //locate the closest noise wait time
+        if( EventWaitTime <= *beg )
+        {
+            if( *beg - EventWaitTime <= BackTimeWindow )
+            {
+                //print the response!
+                IsPrint = true;
+            }
+            //else do nothing
+        }
+        else if ( EventWaitTime >= *(end - 1) )
+        {
+            if( EventWaitTime - *end <= FrontTimeWindow )
+            {
+                //print the response
+                IsPrint = true;
+            }
+            //else do nothing
+        }
+        else
+        {
+            while( mid != end && EventWaitTime != *mid )
+            {
+                if( EventWaitTime < *mid )
+                    end = mid;
+                else
+                    beg = mid + 1;
+                mid = beg + (end - beg) / 2; // update middle
+            }
+        }
+
+        if( *mid - EventWaitTime <= BackTimeWindow ||  EventWaitTime - (*mid-1) <= FrontTimeWindow )
+        {
+            //print the response
+            IsPrint = true;
+        }
+        //else do nothing
+
+        if( IsPrint )
+        {
+            ++NormalResponseID;
+            G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
+	    char Buf[50] = {};
+	    sprintf(Buf, "%d", NormalResponseID);
+            UpName += Buf;
+            DownName += Buf;
+
+            PrintData("UpSiPMNormal.dat", UpName,
+                      pHCup, 
+                      &secSiPMHit::GetGlobalTime, 
+                      8000, 
+                      0., 
+                      BackTimeWindow);
+            
+            PrintData("DonwSiPMNormal.dat", DownName,
+                      pHCdown,
+                      &secSiPMHit::GetGlobalTime,
+                      8000,
+                      0.,
+                      BackTimeWindow);
+            PrintData("NormalMuonWaitTime.dat", EventWaitTime);
+        }
+    }
+    //reset the flag for generating the time stamp at the end of the event!
+    HasEntered = false;
 }
 
 G4bool secSiPMSD::IsADecayEvent()
@@ -146,8 +284,11 @@ void secSiPMSD::ResetDecayFlag()
     pScintSD->DecayFlagSiPM = false;
 }
 
-void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter, 
-                        unsigned int nbins, G4double Xmin, G4double Xmax)
+//print histogram version
+void secSiPMSD::PrintData(G4String FileName, G4String HistName, 
+		          secSiPMHitsCollection* pHC, 
+			  secSiPMHit::DataGetter Getter, 
+			  unsigned int nbins, G4double Xmin, G4double Xmax)
 {
     //fill histogram
     tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
@@ -169,7 +310,7 @@ void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHi
     }
 
     //assert( fstrm.is_open() );
-    fstrm << "Decay Event ID_t" << G4Threading::G4GetThreadId() << "= " << DecayEventID << '\n';
+    fstrm << HistName + "_t" << G4Threading::G4GetThreadId() << '\n';
     
     //write file
     const std::vector<unsigned int>& entries = hist.bins_entries();
@@ -186,14 +327,57 @@ void secSiPMSD::PrintHC(G4String FileName, secSiPMHitsCollection* pHC, secSiPMHi
     
     for( size_t i = 0; i != sz; ++i )
     {
+	
         if( entries[i] == 0 )
 	{
             continue;
 	}
+
         fstrm << edges[i] << '\t' << entries[i] << '\n';
     }
 
     fstrm.flush();
     //close files
     fstrm.close();
+}
+
+//direct print HC version
+void secSiPMSD::PrintData(G4String FileName, G4String HCname,
+                          secSiPMHitsCollection* pHC, 
+			  secSiPMHit::DataGetter Getter)
+{
+    //create files
+    std::ostringstream sstrm;
+    sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
+    std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary);
+    
+    if( !fstrm.is_open() )
+    {
+        std::cerr << "***Unable to open file: " << FileName << " ***" << '\n';
+        std::cerr << "***The generated data will not be recorded!***" << '\n';
+    }
+
+    //assert( fstrm.is_open() );
+    fstrm << HCname + "_t" << G4Threading::G4GetThreadId() << '\n';
+
+    for( size_t i = 0; i != pHC->GetSize(); ++i )
+    {
+        G4double val = ( ( (*pHC)[i] ) ->* (Getter) )();
+        fstrm << val << '\n';
+    }    
+
+    fstrm.flush();
+    //close files
+    fstrm.close();
+
+}
+
+//print single double value version
+void secSiPMSD::PrintData(G4String FileName, G4double val)
+{
+    	std::ostringstream sstrm;
+        sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
+
+        std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
+        fstrm << val << '\n';
 }

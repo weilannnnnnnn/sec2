@@ -4,12 +4,10 @@ G4ThreadLocal G4Allocator<secScintHit> *secScintHitAllocator = 0;
 
 secScintHit::secScintHit() :
 G4VHit(),
-PhotonEneg(0.),
-PhotonGlobalTime(0.),
-MuonEnegDeposit(0.),
-MuonGlobalTime(0.),
-MuonVelocity(0.),
-GenPhotons(-1)
+Eneg(0.),
+GlobalTime(0.),
+EnegDeposit(0.),
+Velocity(0.)
 {
 
 }
@@ -19,13 +17,15 @@ secScintHit::~secScintHit()
 }
 secScintHit::secScintHit(const secScintHit& rhs)
 {
-    PhotonEneg = rhs.PhotonEneg;
-    GenPhotons = rhs.GenPhotons;
+    Eneg = rhs.Eneg;
+    GlobalTime = rhs.GlobalTime;
+    EnegDeposit = rhs.EnegDeposit;
 }
 const secScintHit& secScintHit::operator=(const secScintHit& rhs)
 {
-    PhotonEneg = rhs.PhotonEneg;
-    GenPhotons = rhs.GenPhotons;
+    Eneg = rhs.Eneg;
+    GlobalTime = rhs.GlobalTime;
+    EnegDeposit = rhs.EnegDeposit;
     return *this;
 }
 G4bool secScintHit::operator==(const secScintHit& rhs) const
