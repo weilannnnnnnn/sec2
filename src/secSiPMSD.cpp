@@ -136,6 +136,10 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {   
+<<<<<<< HEAD
+=======
+    std::cout << "1ns = " << 1*ns << std::endl;
+>>>>>>> secNoise
     const G4double BackTimeWindow = 20000*ns;
     const G4double FrontTimeWindow = 100*ns;
     if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) ) // empty HC, the PM haven't been triggered!
