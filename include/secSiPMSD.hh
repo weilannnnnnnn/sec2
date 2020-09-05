@@ -2,7 +2,6 @@
 #define secSiPMSD_hh
 
 #include "secSiPMHit.hh"
-#include "secAnalysis.hh"
 
 #include "G4VSensitiveDetector.hh"
 #include "globals.hh"
@@ -13,8 +12,6 @@
 class secScintSD;
 class G4Step;
 class G4HCofThisEvent;
-class TH1D;
-class TFile;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
@@ -33,13 +30,6 @@ class secSiPMSD : public G4VSensitiveDetector
         void ResetDecayFlag(void);
         
     private:
-    
-    //output methods!
-
-        //print data in CERN ROOT format
-        TFile* CreateFile(G4String FileName);
-        void FillHist(TH1D* HistPtr, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
-        //remember to close the file.
 
         //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
@@ -66,7 +56,6 @@ class secSiPMSD : public G4VSensitiveDetector
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
 
-        TFile* pFile;
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;

@@ -30,7 +30,9 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 
 void secRunAction::EndOfRunAction(const G4Run* )
 {
-        
+    auto AnalysisMgr = G4RootAnalysisManager::Instance();
+    AnalysisMgr->Write();
+    AnalysisMgr->CloseFile();
 }
 
 void secRunAction::MergeFile(G4String FileName)

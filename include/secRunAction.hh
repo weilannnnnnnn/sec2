@@ -19,7 +19,7 @@ public:
 
 private:
     void MergeFile(G4String FileName);
-    void MergeFile(TFile* file1, TFile* file2);
+
 };
 
 #endif
