@@ -4,11 +4,8 @@
 #include "secPhysicsList.hh"
 #include "secRandGenFromFile.hh"
 
-#ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
-#else
 #include "G4RunManager.hh"
-#endif
 #include "G4UImanager.hh"
 #include "G4UIcommand.hh"
 
@@ -26,11 +23,11 @@ int main(int argc, char** argv)
     
     G4Random::setTheEngine(new CLHEP::RanecuEngine());
     
-#ifdef G4MULTITHREADED
-    G4MTRunManager* runManager = new G4MTRunManager;
-#else
+//#ifdef G4MULTITHREADED
+    //G4MTRunManager* runManager = new G4MTRunManager;
+//#else
     G4RunManager* runManager = new G4RunManager;
-#endif
+//#endif
      
     auto RandGen = secRandGenFromFile::GetInstance();
     RandGen->LoadFile("ThetaPDF.txt", secVRandGen::PDF_TYPE);

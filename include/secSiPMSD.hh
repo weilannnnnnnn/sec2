@@ -38,8 +38,7 @@ class secSiPMSD : public G4VSensitiveDetector
 
         //print data in CERN ROOT format
         TFile* CreateFile(G4String FileName);
-        void FillHist(const TH1D* HistPtr, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
-        void PrintData(const TFile* FilePtr, G4String FileDir, const TH1D* HistPtr);
+        void FillHist(TH1D* HistPtr, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
         //remember to close the file.
 
         //print data in ASCII / Binary format

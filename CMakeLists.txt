@@ -22,7 +22,7 @@ endif()
 #
 include(${Geant4_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
+include_directories($ENV{ROOTSYS}/include)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -36,6 +36,10 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(sec2 sec_main.cpp ${sources} ${headers})
 target_link_libraries(sec2 ${Geant4_LIBRARIES})
+target_link_libraries(sec2 $ENV{ROOTSYS}/lib/libCore.so)
+target_link_libraries(sec2 $ENV{ROOTSYS}/lib/libRIO.so)
+target_link_libraries(sec2 $ENV{ROOTSYS}/lib/libHist.so)
+target_link_libraries(sec2 $ENV{ROOTSYS}/lib/libTree.so)
 
 #----------------------------------------------------------------------------
 

@@ -83,7 +83,7 @@ secDetectorConstruction::~secDetectorConstruction()
 //-------------------
 G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 {
-
+    std::cout << "In secDetectorConstruction::Construct()" << std::endl;
     auto nist = G4NistManager::Instance();
     G4bool OverLapCheck = true;
 
@@ -365,6 +365,7 @@ void secDetectorConstruction::ConstructOpticalPlate(G4Material *&, G4OpticalSurf
 }
 void secDetectorConstruction::ConstructSDandField()
 {
+    std::cout << "In secDetectorConstruction::ConstructSDandField()" << std::endl;
     //construct sensitive detector!
     std::vector<G4String> ScintHCnameVect = {"Upper Photon HC", "Lower Photon HC", "Upper Muon HC", "Lower Muon HC"};
     auto ScintSD = new secScintSD("ScintSD", ScintHCnameVect);
