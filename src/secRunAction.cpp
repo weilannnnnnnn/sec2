@@ -4,16 +4,16 @@
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 #include "G4Threading.hh"
-
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
-
 #include "globals.hh"
+
 #include <string.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <cstdio>
+
 secRunAction::secRunAction(void) : 
  G4UserRunAction()
 {
@@ -25,34 +25,12 @@ secRunAction::~secRunAction()
 
 void secRunAction::BeginOfRunAction(const G4Run* )
 {
+
 }
 
 void secRunAction::EndOfRunAction(const G4Run* )
 {
-    //merge the decay data files
-    
-    if( !isMaster )
-    {
-        //only use one thread to merge the file.
-        return;
-    }
-    else
-    {
-        MergeFile("UpScintResponse.dat");
-        MergeFile("DownScintResponse.dat");
-
-        MergeFile("UpSiPMResponse.dat");
-        MergeFile("DownSiPMResponse.dat");
-
-	MergeFile("UpNoiseResponse.dat");
-	MergeFile("DownNoiseResponse.dat");
-	MergeFile("NoiseWaitTime.dat");
         
-        MergeFile("DownMuonVelocity.dat");
-        MergeFile("DecayTime.dat");
-        MergeFile("ArriveTime.dat");
-    }
-    
 }
 
 void secRunAction::MergeFile(G4String FileName)

@@ -2,6 +2,7 @@
 #define secRunAction_HH
 
 #include "G4UserRunAction.hh"
+#include "secAnalysis.hh"
 #include "globals.hh"
 
 class G4Run;
@@ -18,6 +19,7 @@ public:
 
 private:
     void MergeFile(G4String FileName);
+    void MergeFile(TFile* file1, TFile* file2);
 };
 
 #endif

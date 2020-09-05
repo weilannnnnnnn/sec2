@@ -1,16 +1,20 @@
 #ifndef secSiPMSD_hh
 #define secSiPMSD_hh
 
-#include "G4VSensitiveDetector.hh"
 #include "secSiPMHit.hh"
+#include "secAnalysis.hh"
+
+#include "G4VSensitiveDetector.hh"
 #include "globals.hh"
-#include <initializer_list>
+
 #include <vector>
+#include <memory>
 
 class secScintSD;
 class G4Step;
 class G4HCofThisEvent;
-
+class TH1D;
+class TFile;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
@@ -31,6 +35,14 @@ class secSiPMSD : public G4VSensitiveDetector
     private:
     
     //output methods!
+
+        //print data in CERN ROOT format
+        TFile* CreateFile(G4String FileName);
+        void FillHist(const TH1D* HistPtr, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
+        void PrintData(const TFile* FilePtr, G4String FileDir, const TH1D* HistPtr);
+        //remember to close the file.
+
+        //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
         //the empty bins will be ignored!
         void PrintData(G4String FileName, G4String HistName, 
@@ -55,6 +67,7 @@ class secSiPMSD : public G4VSensitiveDetector
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
 
+        TFile* pFile;
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;

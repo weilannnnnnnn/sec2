@@ -1,5 +1,8 @@
 #ifndef secAnalysis_hh
 #define secAnalysis_hh
-    //set the output format for the histograms
-    #include "g4root.hh"
+    #include "TFile.h"
+    #include "TH1D.h"
+
+class TFile;
+class TH1D;
 #endif
