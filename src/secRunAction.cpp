@@ -1,6 +1,6 @@
 #include "secRunAction.hh"
 #include "secAnalysis.hh"
-
+#include "secSiPMSD.hh"
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 #include "G4Threading.hh"
@@ -25,14 +25,14 @@ secRunAction::~secRunAction()
 
 void secRunAction::BeginOfRunAction(const G4Run* )
 {
-
 }
 
 void secRunAction::EndOfRunAction(const G4Run* )
 {
-    auto AnalysisMgr = G4RootAnalysisManager::Instance();
-    AnalysisMgr->Write();
-    AnalysisMgr->CloseFile();
+    if( IsMaster() )
+    {
+        secSiPMSD::pFile->Close();
+    }
 }
 
 void secRunAction::MergeFile(G4String FileName)

@@ -5,17 +5,19 @@
 
 #include "G4VSensitiveDetector.hh"
 #include "globals.hh"
-
+#include "TFile.h"
+#include "secRunAction.hh"
 #include <vector>
 #include <memory>
 
 class secScintSD;
 class G4Step;
 class G4HCofThisEvent;
+class TH1D;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
-
+    friend class secRunAction;
     public:
         
         secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);
@@ -28,13 +30,15 @@ class secSiPMSD : public G4VSensitiveDetector
         
         G4bool IsADecayEvent(void);
         void ResetDecayFlag(void);
-        
+        static TFile* pFile;
     private:
 
         //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
         //the empty bins will be ignored!
-        void PrintData(G4String FileName, G4String HistName, 
+        void FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter);
+
+	void PrintData(G4String FileName, G4String HistName, 
 		       secSiPMHitsCollection* pHC, 
 		       secSiPMHit::DataGetter Getter, 
 		       unsigned int nbins, G4double Xmin, G4double Xmax);
@@ -55,11 +59,10 @@ class secSiPMSD : public G4VSensitiveDetector
         G4bool HasEntered;
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
-
+        
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;
 };
-
 
 #endif

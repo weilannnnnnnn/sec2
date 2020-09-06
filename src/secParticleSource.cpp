@@ -38,7 +38,7 @@ secParticleSource::~secParticleSource()
 void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
     //No generation option, which will be added in the future.
-    //GenMuons();
+    //GenMuons(Evt);
     GenNoise(Evt);
 }
 

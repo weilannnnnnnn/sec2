@@ -11,6 +11,11 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4SystemOfUnits.hh"
 #include "tools/histo/h1d"
+
+#include "TFile.h"
+#include "TH1D.h"
+
+#include <mutex>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -20,6 +25,8 @@
 #include <cassert>
 
 class G4VPhysicalVolume;
+std::mutex mtx;
+TFile* secSiPMSD::pFile = new TFile("secDecayEvent.root", "RECREATE");
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
     G4VSensitiveDetector(SDname),
@@ -57,7 +64,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
 
 secSiPMSD::~secSiPMSD()
 {
-
 }
 
 void secSiPMSD::Initialize(G4HCofThisEvent* HC)
@@ -77,8 +83,6 @@ void secSiPMSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCIDup, pHCup);
     HC->AddHitsCollection(HCIDdown, pHCdown);
 
-    auto FileMgr = G4RootAnalysisManager::Instance();
-    FileMgr->OpenFile("secNoiseData.root");
 }
 
 G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
@@ -140,10 +144,6 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {   
-    if( pFile == nullptr )
-    {
-        return;
-    }
     const G4double BackTimeWindow = 20000*ns;
     const G4double FrontTimeWindow = 100*ns;
     
@@ -162,28 +162,20 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         UpName += Buf;
         DownName += Buf;
         
+	mtx.lock();
         //creating Up histograms
-        auto FileMgr = G4RootAnalysisManager::Instance();
-        FileMgr->CreateH1(UpName, UpName, 800, 0., 2000.*ns);
-        G4int UpID = FileMgr->GetH1Id(UpName);
-
-        for(size_t i = 0; i != pHCup->GetSize(); ++i)
-        {
-            G4double val = ( (*pHCup)[i] )->GetGlobalTime();
-            FileMgr->FillH1(UpId, val);
-        }
+        pFile->cd();
         
+	TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
+	FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+        
+	TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
+        FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
+	
+	UpHist.Write();
+        DownHist.Write();	
         //creating Down Histograms
-        FileMgr->CreateH1(DownName, DownName, 800, 0., 2000.*ns);
-        G4int DownID = FileMgr->GetH1Id(DownName);
-
-        for(size_t i = 0; i != pHCdown->GetSize(); ++i)
-        {
-            G4double val = ( (*pHCdown)[i] )->GetGlobalTime();
-            FileMgr->FillH1(DownId, val);
-        }
-
-        PrintData("NoiseWaitTime.dat", EventWaitTime);
+        mtx.unlock();
     }
     else if( IsADecayEvent() ) // a decay event
     {
@@ -200,7 +192,20 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         UpName += Buf;
         DownName += Buf;
         
-        PrintData("DecayMuonWaitTime.dat", EventWaitTime);
+	mtx.lock();
+        pFile->cd();
+
+	TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
+	FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+
+	TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
+	FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
+
+	UpHist.Write();
+	DownHist.Write();
+	mtx.unlock();
+        
+	PrintData("DecayMuonWaitTime.dat", EventWaitTime);
     }
     else // normal muon events
     {
@@ -273,6 +278,14 @@ void secSiPMSD::ResetDecayFlag()
     pScintSD->DecayFlagSiPM = false;
 }
 
+void secSiPMSD::FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
+{
+    for( size_t i = 0; i != pHC->GetSize(); ++i )
+    {
+        G4double val = ( ( (*pHC)[i] ) ->* (Getter) )();
+        pHist->Fill(val);
+    }
+}
 //print histogram version
 void secSiPMSD::PrintData(G4String FileName, G4String HistName, 
 		          secSiPMHitsCollection* pHC, 
