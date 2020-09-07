@@ -182,10 +182,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         DecayEventID++;
         ResetDecayFlag();
         G4String UpName = "UpDecayID ", DownName = "DownDecayID ";
-        char Buf[50] = {};
-        sprintf(Buf, "%d_t%d", DecayEventID, G4Threading::G4GetThreadId());
-        UpName += Buf;
-        DownName += Buf;
+        char Buf1[50] = {};
+        sprintf(Buf1, "%d_t%d", DecayEventID, G4Threading::G4GetThreadId());
+        UpName += Buf1;
+        DownName += Buf1;
         
 	    mtx.lock();
 
@@ -201,12 +201,12 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         DownHist.Write();
         mtx.unlock();
         
-        char Buf[10] = {};        
-        sprintf(Buf, "%d", DecayEventID);
+        char Buf2[10] = {};        
+        sprintf(Buf2, "%d", DecayEventID);
         G4String Description = "DecayEvtID ";
-        Description += Buf;
+        Description += Buf2;
 
-	    PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
+        PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
     }
     else // normal muon events
     {
@@ -257,27 +257,28 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         {
             ++NormalResponseID;
             G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
-            char Buf[50] = {};
-            sprintf(Buf, "%d", NormalResponseID);
-            UpName += Buf;
-            DownName += Buf;
+            char Buf1[50] = {};
+            sprintf(Buf1, "%d", NormalResponseID);
+            UpName += Buf1;
+            DownName += Buf1;
 
             mtx.lock();
             pFile->cd("UpNorm");
-            TH1D UpHist(UpName.c_str(); UpName.c_str(), 160, 0., 400.*ns);
+            TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
 
             pFile->cd("UpNorm");
             TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
 
-            UpHist->Write();
-            DownHist->Write();
+            UpHist.Write();
+            DownHist.Write();
             mtx.unlock();
 
-            char Buf[10] = {};
-            sprintf(Buf, "%d", NormalResponseID);
+            char Buf2[10] = {};
+            sprintf(Buf2, "%d", NormalResponseID);
             G4String Description = "NormID ";
+	    Description += Buf2;
     	    PrintData("NormalMuonWaitTime.dat", Description, EventWaitTime);
         }
     }
