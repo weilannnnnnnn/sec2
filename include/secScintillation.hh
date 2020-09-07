@@ -7,10 +7,11 @@
 #include "G4Track.hh"
 #include "globals.hh"
 
-/*
+/*===============================================================
+class description:
     This class is dreved from G4Scintillation in order to disable 
     the at rest process of G4Scintillation
-*/
+=================================================================*/
 
 class secScintillation : public G4Scintillation
 {

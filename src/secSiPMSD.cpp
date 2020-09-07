@@ -26,7 +26,6 @@
 
 class G4VPhysicalVolume;
 std::mutex mtx;
-TFile* secSiPMSD::pFile = new TFile("secDecayEvent.root", "RECREATE");
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
     G4VSensitiveDetector(SDname),
@@ -95,33 +94,28 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
         //not an optical photon, return, DO NOT generate hit
         return false;
     }
-//the case that an optical photon hits one of the SiPM
-//the copy number of the UPPER SiPM is 1 and that of the lower one is 2!!
+    //the case that an optical photon hits one of the SiPM
+    //the copy number of the UPPER SiPM is 1 and that of the lower one is 2!!
     //generate the time stamp for each event!
     IsMuon = pScintSD->IsMuon();
     IsNoise = pScintSD->IsNoise();
+    
     if( !HasEntered && IsMuon )
     {
         HasEntered = true;
         EventWaitTime = secParticleSource::MuonWaitTime();
     }
-
-    if( !HasEntered && IsNoise )
-    {
-        HasEntered = true;
-        EventWaitTime = secParticleSource::NoiseWaitTime();
-    }
     
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
-    G4double GlobalTime  = step->GetTrack()->GetGlobalTime() /*+ EventWaitTime*/;
-    //std::cout << "GlobalTime = " << GlobalTime << std::endl;
+    G4double GlobalTime  = step->GetTrack()->GetGlobalTime() ;
+    //the photons is absorbed by the SiPM, so the track must be killed
     step->GetTrack()->SetTrackStatus(fStopAndKill);
     if( VolumeCpyNb == 1 )
     {
         //upper SiPM!!
-	//std::cout << "In Up" << std::endl;
-	auto newHitUp = new secSiPMHit();
+	    //std::cout << "In Up" << std::endl;
+	    auto newHitUp = new secSiPMHit();
         (*newHitUp).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCup->insert(newHitUp);
     }
@@ -137,13 +131,14 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     {
         //do nothing.
     }
-    //the photons is absorbed by the SiPM, so the track must be killed
-    step->GetTrack()->SetTrackStatus(fStopAndKill);
     return true;
 }
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
-{   
+{  
+/*
+    At the end of event, specify the type of the event and save the result
+*/
     const G4double BackTimeWindow = 20000*ns;
     const G4double FrontTimeWindow = 100*ns;
     
@@ -162,17 +157,17 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         UpName += Buf;
         DownName += Buf;
         
-	mtx.lock();
+	    mtx.lock();
         //creating Up histograms
-        pFile->cd();
+        pFile->cd("UpNoise");
+	    TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
+	    FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
         
-	TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
-	FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        
-	TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
+        pFile->cd("DownNoise");
+	    TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
 	
-	UpHist.Write();
+    	UpHist.Write();
         DownHist.Write();	
         //creating Down Histograms
         mtx.unlock();
@@ -192,20 +187,26 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         UpName += Buf;
         DownName += Buf;
         
-	mtx.lock();
-        pFile->cd();
+	    mtx.lock();
 
-	TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
-	FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+        pFile->cd("UpDecay");
+        TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
+        FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
 
-	TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
-	FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
+        pFile->cd("DownDecay");
+        TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
+        FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
 
-	UpHist.Write();
-	DownHist.Write();
-	mtx.unlock();
+        UpHist.Write();
+        DownHist.Write();
+        mtx.unlock();
         
-	PrintData("DecayMuonWaitTime.dat", EventWaitTime);
+        char Buf[10] = {};        
+        sprintf(Buf, "%d", DecayEventID);
+        G4String Description = "DecayEvtID ";
+        Description += Buf;
+
+	    PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
     }
     else // normal muon events
     {
@@ -245,13 +246,12 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
                 mid = beg + (end - beg) / 2; // update middle
             }
         }
-
-        if( *mid - EventWaitTime <= BackTimeWindow ||  EventWaitTime - (*mid-1) <= FrontTimeWindow )
+        if( *mid - EventWaitTime <= BackTimeWindow || EventWaitTime - (*mid-1) <= FrontTimeWindow )
         {
             //print the response
             IsPrint = true;
         }
-        //else do nothing
+            //else do nothing
 
         if( IsPrint )
         {
@@ -262,7 +262,23 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             UpName += Buf;
             DownName += Buf;
 
-    	    PrintData("NormalMuonWaitTime.dat", EventWaitTime);
+            mtx.lock();
+            pFile->cd("UpNorm");
+            TH1D UpHist(UpName.c_str(); UpName.c_str(), 160, 0., 400.*ns);
+            FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+
+            pFile->cd("UpNorm");
+            TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
+            FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
+
+            UpHist->Write();
+            DownHist->Write();
+            mtx.unlock();
+
+            char Buf[10] = {};
+            sprintf(Buf, "%d", NormalResponseID);
+            G4String Description = "NormID ";
+    	    PrintData("NormalMuonWaitTime.dat", Description, EventWaitTime);
         }
     }
     //reset the flag for generating the time stamp at the end of the event!
@@ -288,9 +304,9 @@ void secSiPMSD::FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit
 }
 //print histogram version
 void secSiPMSD::PrintData(G4String FileName, G4String HistName, 
-		          secSiPMHitsCollection* pHC, 
-			  secSiPMHit::DataGetter Getter, 
-			  unsigned int nbins, G4double Xmin, G4double Xmax)
+		                  secSiPMHitsCollection* pHC, 
+			              secSiPMHit::DataGetter Getter, 
+			              unsigned int nbins, G4double Xmin, G4double Xmax)
 {
     //fill histogram
     tools::histo::h1d hist("aHist", nbins, Xmin, Xmax);
@@ -321,7 +337,7 @@ void secSiPMSD::PrintData(G4String FileName, G4String HistName,
     const G4double binw = (Xmax - Xmin) / nbins;
     for( size_t i = 0; i != nbins + 1; ++i )
     {
-	const G4double edge = Xmin + i * binw;
+	    const G4double edge = Xmin + i * binw;
         edges.push_back( edge );
     }
     //std::cout << "entries size = " << entries.size() << " edges size = " << edges.size() << '\n';
@@ -329,12 +345,10 @@ void secSiPMSD::PrintData(G4String FileName, G4String HistName,
     
     for( size_t i = 0; i != sz; ++i )
     {
-	
         if( entries[i] == 0 )
-	{
+	    {
             continue;
-	}
-
+	    }
         fstrm << edges[i] << '\t' << entries[i] << '\n';
     }
 
@@ -346,7 +360,7 @@ void secSiPMSD::PrintData(G4String FileName, G4String HistName,
 //direct print HC version
 void secSiPMSD::PrintData(G4String FileName, G4String HCname,
                           secSiPMHitsCollection* pHC, 
-			  secSiPMHit::DataGetter Getter)
+			              secSiPMHit::DataGetter Getter)
 {
     //create files
     std::ostringstream sstrm;
@@ -375,11 +389,11 @@ void secSiPMSD::PrintData(G4String FileName, G4String HCname,
 }
 
 //print single double value version
-void secSiPMSD::PrintData(G4String FileName, G4double val)
+void secSiPMSD::PrintData(G4String FileName, G4String ValDescription, G4double val)
 {
     	std::ostringstream sstrm;
         sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
 
         std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
-        fstrm << val << '\n';
+        fstrm << ValDescription << "_t" << G4Threading::G4GetThreadId() << val << '\n';
 }

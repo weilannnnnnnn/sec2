@@ -6,7 +6,7 @@
 
 /*========================================================
     class description:
-        This class is a temperate particle source of sec 
+        This class is a temporary particle source of sec 
     detector. 
 ==========================================================
 */

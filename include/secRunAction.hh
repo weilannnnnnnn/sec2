@@ -7,6 +7,13 @@
 
 class G4Run;
 
+/*========================================================
+class desctiption:
+
+    The RunAction in sec detector, which manages the ASCII
+file and CERN ROOT file's input and output
+==========================================================*/
+
 class secRunAction : public G4UserRunAction
 {
 public:
@@ -19,6 +26,7 @@ public:
 
 private:
     void MergeFile(G4String FileName);
+    void GenerateNoiseTimeStamp(G4String FileName, const size_t Num);
 
 };
 

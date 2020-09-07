@@ -39,7 +39,7 @@ class secScintHit : public G4VHit
         G4double Eneg;
         G4double GlobalTime;
         G4double EnegDeposit;
-	G4double Velocity;
+	    G4double Velocity;
 };
 
 using secScintHitsCollection = G4THitsCollection<secScintHit>;

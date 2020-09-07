@@ -31,26 +31,27 @@ class secSiPMSD : public G4VSensitiveDetector
         G4bool IsADecayEvent(void);
         void ResetDecayFlag(void);
         static TFile* pFile;
+
     private:
 
         //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
         //the empty bins will be ignored!
-        void FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter);
+        void FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
 
-	void PrintData(G4String FileName, G4String HistName, 
-		       secSiPMHitsCollection* pHC, 
-		       secSiPMHit::DataGetter Getter, 
-		       unsigned int nbins, G4double Xmin, G4double Xmax);
+	    void PrintData(G4String FileName, G4String HistName, 
+		               secSiPMHitsCollection* pHC, 
+		               secSiPMHit::DataGetter Getter, 
+		               unsigned int nbins, G4double Xmin, G4double Xmax);
         
         //directly print the values in the Hits
         void PrintData(G4String FileName, G4String HCname,
                        secSiPMHitsCollection* pHC, 
-		       secSiPMHit::DataGetter Getter);
+		               secSiPMHit::DataGetter Getter);
         
         //print the value generated in a single event.
-        void PrintData(G4String FileName, G4double val);
-        
+        void PrintData(G4String FileName, G4String ValDescription, G4double val);
+    
         G4int DecayEventID;
         G4int NoiseResponseID;
         G4int NormalResponseID;

@@ -1,5 +1,6 @@
 #include "secRunAction.hh"
 #include "secAnalysis.hh"
+#include "secParticleSource.hh"
 #include "secSiPMSD.hh"
 #include "G4RunManager.hh"
 #include "G4Run.hh"
@@ -25,13 +26,31 @@ secRunAction::~secRunAction()
 
 void secRunAction::BeginOfRunAction(const G4Run* )
 {
+    //ROOT file initialization
+    if( IsMaster() )
+    {
+        TFile* secSiPMSD::pFile = new TFile("secDecayEvent.root", "RECREATE");
+        pFile->mkdir("UpDecay");
+        pFile->mkdir("DownDecay");
+
+        pFile->mkdir("UpNoise");
+        pFile->mkdir("DownNoise");
+
+        pFile->mkdir("UpNorm");
+        pFile->mkdir("DownNorm");
+    }
 }
 
 void secRunAction::EndOfRunAction(const G4Run* )
 {
+    //use master thread to merge and close file.
     if( IsMaster() )
     {
         secSiPMSD::pFile->Close();
+        GenerateNoiseTimeStamp("NoiseWaitTime.dat", 10000);
+        //Merge the ascii file.
+        MergeFile("DecayMuonWaitTime.dat");
+        MergeFile("NormalMuonWaitTime.dat");
     }
 }
 
@@ -65,3 +84,13 @@ void secRunAction::MergeFile(G4String FileName)
     }
 }
 
+void secRunAction::GenerateNoiseTimeStamp(G4String FileName, const size_t Num)
+{
+    std::ofstream ofstrm;
+
+    ofstrm.open(FileName, std::ofstream::out | std::ofstream::binary);
+
+    for( size_t i = 0; i != Num; ++i)
+        ofstrm << secParticleSource::NoiseWaitTime() << '\n';
+    ofstrm.close();
+}
