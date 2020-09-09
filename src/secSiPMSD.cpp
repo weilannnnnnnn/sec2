@@ -211,48 +211,42 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else // normal muon events
     {
         G4bool IsPrint = false;
+        const size_t sz = NoiseWaitTimeVect.size();
 
-        auto beg = NoiseWaitTimeVect.begin();
-        auto end = NoiseWaitTimeVect.end();
-        auto mid = beg + (end - beg) / 2;
-        
+        static thread_local size_t idx = 0;
+
         //locate the closest noise wait time
-        if( EventWaitTime <= *beg )
+        while( EventWaitTime - NoiseWaitTimeVect[idx] > 0 )
         {
-            if( *beg - EventWaitTime <= BackTimeWindow )
+            ++idx;
+            if( idx == sz )
             {
-                //print the response!
-                IsPrint = true;
+                break;
             }
-            //else do nothing
         }
-        else if ( EventWaitTime >= *(end - 1) )
+        
+        if( idx == 0 )
         {
-            if( EventWaitTime - *end <= FrontTimeWindow )
+            if( NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
+                IsPrint = true;
+        }
+        else if( idx == sz )
+        {
+            if( EventWaitTime - NoiseWaitTimeVect[sz-1] <= FrontTimeWindow )
             {
-                //print the response
                 IsPrint = true;
             }
-            //else do nothing
+        }
+        else if ( EventWaitTime - NoiseWaitTimeVect[idx-1] <= FrontTimeWindow ||
+                  NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
+        {
+                IsPrint = true;
         }
         else
         {
-            while( mid != end && EventWaitTime != *mid )
-            {
-                if( EventWaitTime < *mid )
-                    end = mid;
-                else
-                    beg = mid + 1;
-                mid = beg + (end - beg) / 2; // update middle
-            }
+            //do nothing
         }
-        if( *mid - EventWaitTime <= BackTimeWindow || EventWaitTime - (*mid-1) <= FrontTimeWindow )
-        {
-            //print the response
-            IsPrint = true;
-        }
-            //else do nothing
-
+        
         if( IsPrint )
         {
             ++NormalResponseID;
