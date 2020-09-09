@@ -8,12 +8,14 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
-
+#include "TFile.h"
 #include <string.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <cstdio>
+
+TFile* secSiPMSD::pFile = new TFile("secData", "RECREATE");
 
 secRunAction::secRunAction(void) : 
  G4UserRunAction()
@@ -29,15 +31,14 @@ void secRunAction::BeginOfRunAction(const G4Run* )
     //ROOT file initialization
     if( IsMaster() )
     {
-        TFile* secSiPMSD::pFile = new TFile("secDecayEvent.root", "RECREATE");
-        pFile->mkdir("UpDecay");
-        pFile->mkdir("DownDecay");
+	secSiPMSD::pFile->mkdir("UpDecay");
+	secSiPMSD::pFile->mkdir("DownDecay");
 
-        pFile->mkdir("UpNoise");
-        pFile->mkdir("DownNoise");
+	secSiPMSD::pFile->mkdir("UpNoise");
+	secSiPMSD::pFile->mkdir("DownNoise");
 
-        pFile->mkdir("UpNorm");
-        pFile->mkdir("DownNorm");
+	secSiPMSD::pFile->mkdir("UpNorm");
+	secSiPMSD::pFile->mkdir("DownNorm");
     }
 }
 
