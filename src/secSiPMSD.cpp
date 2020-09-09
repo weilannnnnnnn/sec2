@@ -160,13 +160,14 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 	    mtx.lock();
         //creating Up histograms
         pFile->cd("UpNoise");
-        TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
-        FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        UpHist.Write();
+	    TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
+	    FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
         
         pFile->cd("DownNoise");
-        TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
+	    TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
+	
+    	UpHist.Write();
         DownHist.Write();	
         //creating Down Histograms
         mtx.unlock();
@@ -181,103 +182,96 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         DecayEventID++;
         ResetDecayFlag();
         G4String UpName = "UpDecayID ", DownName = "DownDecayID ";
-        char Buf1[50] = {};
-        sprintf(Buf1, "%d_t%d", DecayEventID, G4Threading::G4GetThreadId());
-        UpName += Buf1;
-        DownName += Buf1;
+        char Buf[50] = {};
+        sprintf(Buf, "%d_t%d", DecayEventID, G4Threading::G4GetThreadId());
+        UpName += Buf;
+        DownName += Buf;
         
 	    mtx.lock();
 
         pFile->cd("UpDecay");
         TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        UpHist.Write();
-        
-	pFile->cd("DownDecay");
+
+        pFile->cd("DownDecay");
         TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-        DownHist.Write();
-        
-	mtx.unlock();
-        
-        char Buf2[10] = {};        
-        sprintf(Buf2, "%d", DecayEventID);
-        G4String Description = "DecayEvtID ";
-        Description += Buf2;
 
-        PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
+        UpHist.Write();
+        DownHist.Write();
+        mtx.unlock();
+        
+        char Buf[10] = {};        
+        sprintf(Buf, "%d", DecayEventID);
+        G4String Description = "DecayEvtID ";
+        Description += Buf;
+
+	    PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
     }
     else // normal muon events
     {
         G4bool IsPrint = false;
+        const size_t sz = NoiseWaitTimeVect.size();
 
-        auto beg = NoiseWaitTimeVect.begin();
-        auto end = NoiseWaitTimeVect.end();
-        auto mid = beg + (end - beg) / 2;
-        
+        static thread_local size_t idx = 0;
+
         //locate the closest noise wait time
-        if( EventWaitTime <= *beg )
+        while( EventWaitTime - NoiseWaitTimeVect[idx] > 0 )
         {
-            if( *beg - EventWaitTime <= BackTimeWindow )
+            ++idx;
+            if( idx == sz )
             {
-                //print the response!
-                IsPrint = true;
+                break;
             }
-            //else do nothing
         }
-        else if ( EventWaitTime >= *(end - 1) )
+        
+        if( idx == 0 )
         {
-            if( EventWaitTime - *end <= FrontTimeWindow )
+            if( NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
+                IsPrint = true;
+        }
+        else if( idx == sz )
+        {
+            if( EventWaitTime - NoiseWaitTimeVect[sz-1] <= FrontTimeWindow )
             {
-                //print the response
                 IsPrint = true;
             }
-            //else do nothing
+        }
+        else if ( EventWaitTime - NoiseWaitTimeVect[idx-1] <= FrontTimeWindow ||
+                  NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
+        {
+                IsPrint = true;
         }
         else
         {
-            while( mid != end && EventWaitTime != *mid )
-            {
-                if( EventWaitTime < *mid )
-                    end = mid;
-                else
-                    beg = mid + 1;
-                mid = beg + (end - beg) / 2; // update middle
-            }
+            //do nothing
         }
-        if( *mid - EventWaitTime <= BackTimeWindow || EventWaitTime - (*mid-1) <= FrontTimeWindow )
-        {
-            //print the response
-            IsPrint = true;
-        }
-            //else do nothing
-
+        
         if( IsPrint )
         {
             ++NormalResponseID;
             G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
-            char Buf1[50] = {};
-            sprintf(Buf1, "%d", NormalResponseID);
-            UpName += Buf1;
-            DownName += Buf1;
+            char Buf[50] = {};
+            sprintf(Buf, "%d", NormalResponseID);
+            UpName += Buf;
+            DownName += Buf;
 
             mtx.lock();
             pFile->cd("UpNorm");
-            TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
+            TH1D UpHist(UpName.c_str(); UpName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-            UpHist.Write();
-            
-	    pFile->cd("UpNorm");
+
+            pFile->cd("UpNorm");
             TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-            DownHist.Write();
-            
-	    mtx.unlock();
 
-            char Buf2[10] = {};
-            sprintf(Buf2, "%d", NormalResponseID);
+            UpHist->Write();
+            DownHist->Write();
+            mtx.unlock();
+
+            char Buf[10] = {};
+            sprintf(Buf, "%d", NormalResponseID);
             G4String Description = "NormID ";
-	    Description += Buf2;
     	    PrintData("NormalMuonWaitTime.dat", Description, EventWaitTime);
         }
     }
