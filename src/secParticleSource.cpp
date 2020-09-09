@@ -111,7 +111,7 @@ void secParticleSource::GenNoise(G4Event* Evt)
     //G4double Y = G4UniformRand() * 20. * m - 10. * m;
     G4double Y = G4UniformRand() * m - 0.5 * m;
     //G4double Z = G4UniformRand() * 12. * m - 6. * m;
-    G4double Z = G4UniformRand()*m + 0.528 * m;
+    G4double Z = G4UniformRand() * m - 0.5*m + 1.528 * m;
 
     PosVect.setX( X );
     PosVect.setY( Y );

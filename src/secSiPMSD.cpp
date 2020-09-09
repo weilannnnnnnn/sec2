@@ -160,14 +160,13 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 	    mtx.lock();
         //creating Up histograms
         pFile->cd("UpNoise");
-	    TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
-	    FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+        TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
+        FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+        UpHist.Write();
         
         pFile->cd("DownNoise");
-	    TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
+        TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-	
-    	UpHist.Write();
         DownHist.Write();	
         //creating Down Histograms
         mtx.unlock();
@@ -192,14 +191,14 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         pFile->cd("UpDecay");
         TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-
-        pFile->cd("DownDecay");
+        UpHist.Write();
+        
+	pFile->cd("DownDecay");
         TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-
-        UpHist.Write();
         DownHist.Write();
-        mtx.unlock();
+        
+	mtx.unlock();
         
         char Buf2[10] = {};        
         sprintf(Buf2, "%d", DecayEventID);
@@ -211,42 +210,48 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else // normal muon events
     {
         G4bool IsPrint = false;
-        const size_t sz = NoiseWaitTimeVect.size();
 
-        static thread_local size_t idx = 0;
-
-        //locate the closest noise wait time
-        while( EventWaitTime - NoiseWaitTimeVect[idx] > 0 )
-        {
-            ++idx;
-            if( idx == sz )
-            {
-                break;
-            }
-        }
+        auto beg = NoiseWaitTimeVect.begin();
+        auto end = NoiseWaitTimeVect.end();
+        auto mid = beg + (end - beg) / 2;
         
-        if( idx == 0 )
+        //locate the closest noise wait time
+        if( EventWaitTime <= *beg )
         {
-            if( NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
-                IsPrint = true;
-        }
-        else if( idx == sz )
-        {
-            if( EventWaitTime - NoiseWaitTimeVect[sz-1] <= FrontTimeWindow )
+            if( *beg - EventWaitTime <= BackTimeWindow )
             {
+                //print the response!
                 IsPrint = true;
             }
+            //else do nothing
         }
-        else if ( EventWaitTime - NoiseWaitTimeVect[idx-1] <= FrontTimeWindow ||
-                  NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
+        else if ( EventWaitTime >= *(end - 1) )
         {
+            if( EventWaitTime - *end <= FrontTimeWindow )
+            {
+                //print the response
                 IsPrint = true;
+            }
+            //else do nothing
         }
         else
         {
-            //do nothing
+            while( mid != end && EventWaitTime != *mid )
+            {
+                if( EventWaitTime < *mid )
+                    end = mid;
+                else
+                    beg = mid + 1;
+                mid = beg + (end - beg) / 2; // update middle
+            }
         }
-        
+        if( *mid - EventWaitTime <= BackTimeWindow || EventWaitTime - (*mid-1) <= FrontTimeWindow )
+        {
+            //print the response
+            IsPrint = true;
+        }
+            //else do nothing
+
         if( IsPrint )
         {
             ++NormalResponseID;
@@ -260,14 +265,14 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             pFile->cd("UpNorm");
             TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-
-            pFile->cd("UpNorm");
+            UpHist.Write();
+            
+	    pFile->cd("UpNorm");
             TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-
-            UpHist.Write();
             DownHist.Write();
-            mtx.unlock();
+            
+	    mtx.unlock();
 
             char Buf2[10] = {};
             sprintf(Buf2, "%d", NormalResponseID);

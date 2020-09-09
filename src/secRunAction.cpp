@@ -15,7 +15,7 @@
 #include <iostream>
 #include <cstdio>
 
-TFile* secSiPMSD::pFile = new TFile("secData", "RECREATE");
+TFile* secSiPMSD::pFile = new TFile("secData.root", "RECREATE");
 
 secRunAction::secRunAction(void) : 
  G4UserRunAction()
