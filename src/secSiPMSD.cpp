@@ -162,13 +162,13 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         pFile->cd("UpNoise");
 	    TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
 	    FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        
+        UpHist.Write();
+
         pFile->cd("DownNoise");
 	    TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-	
-    	UpHist.Write();
         DownHist.Write();	
+
         //creating Down Histograms
         mtx.unlock();
     }
@@ -192,13 +192,13 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         pFile->cd("UpDecay");
         TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+        UpHist.Write();
 
         pFile->cd("DownDecay");
         TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
         FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-
-        UpHist.Write();
         DownHist.Write();
+
         mtx.unlock();
         
         char Buf2[10] = {};        
@@ -210,6 +210,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     }
     else // normal muon events
     {
+        /*
+            if the a single normal muon event is coupled with a noise event, than this
+            normal muon event will be saved. 
+        */
         G4bool IsPrint = false;
         const size_t sz = NoiseWaitTimeVect.size();
 
@@ -224,7 +228,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
                 break;
             }
         }
-        
+        //after this loop, the EventWait time lies in: NoiseWaitTime[idx-1], EventWaitTime, NoiseWaitTime[idx]
+        //or at the very beginning or the very end of the NoiseWaitTimeVect.
+
+        //if the normal event is close enough to a noise event, than this normal event will be saved.
         if( idx == 0 )
         {
             if( NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
@@ -256,17 +263,19 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             UpName += Buf1;
             DownName += Buf1;
 
+            //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different thread.
+            // What a BAD feature !
             mtx.lock();
             pFile->cd("UpNorm");
             TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
+            UpHist.Write();
 
             pFile->cd("UpNorm");
             TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
             FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-
-            UpHist.Write();
             DownHist.Write();
+            
             mtx.unlock();
 
             char Buf2[10] = {};

@@ -3,6 +3,9 @@
 #include "secRandGenFromFx.hh"
 #include "secRandMacro.hh"
 
+#include "G4RunManager.hh"
+#include "G4MTRunManager.hh"
+
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
 
@@ -28,11 +31,11 @@ secParticleSource::secParticleSource()
     //random generators
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
+
 }
 
 secParticleSource::~secParticleSource()
 {
-
 }
 
 void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
@@ -138,7 +141,21 @@ G4double secParticleSource::MuonWaitTime()
 
 G4double secParticleSource::NoiseWaitTime()
 {
-    static std::atomic<G4double> NoiseWaitTime(0.);
-
-    return ( NoiseWaitTime = NoiseWaitTime + CLHEP::RandExponential::shoot(0.1)*s );
+    //generate noise particle's time stamp.
+    static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
+    static G4double* NoiseWaitTimeArr = nullptr;
+    static size_t NoiseIdx = 0;
+    //if the time stamp hasn't been generated, initialize.
+    if( ! IsInit.test_and_set() )
+    {
+        const size_t NoiseNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+        NoiseWaitTimeArr = new G4double[NoiseNum]; // last until the program ends.
+        const G4double NoiseInten = 100; // Becquerel, Bq
+        for( size_t i = 0; i != NoiseNum; ++i )
+        {
+            const G4double time =  CLHEP::RandFlat::shoot(0, NoiseNum / NoiseInten);
+            NoiseWaitTimeArr[i] = time;
+        }
+    }
+    return (NoiseWaitTimeArr[NoiseIdx++]);
 }

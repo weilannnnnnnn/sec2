@@ -417,7 +417,7 @@ void secDetectorConstruction::SetOpticalProperties(G4LogicalVolume* LV, G4String
     std::map<std::string, G4double> ConstSurfaceNameVal;
     std::vector<G4double> SurfaceEnegVect;
     std::vector<G4double> SurfaceValVect;
-
+    
     std::string PropertyName;
 
     G4bool IsSurface = 0;

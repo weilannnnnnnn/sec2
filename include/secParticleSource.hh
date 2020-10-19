@@ -31,7 +31,6 @@ class secParticleSource : public G4VPrimaryGenerator
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
-
         void GenMuons(G4Event* Evt);
         void GenNoise(G4Event* Evt);
 
