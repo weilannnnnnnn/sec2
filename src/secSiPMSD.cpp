@@ -14,6 +14,7 @@
 
 #include "TFile.h"
 #include "TH1D.h"
+#include "TTree.h"
 
 #include <mutex>
 #include <string>
@@ -157,17 +158,23 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         UpName += Buf;
         DownName += Buf;
         
+        //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different threads.
+        // What a BAD feature !
 	    mtx.lock();
-        //creating Up histograms
+        //creating Up histogramss
         pFile->cd("UpNoise");
-	    TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
-	    FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        UpHist.Write();
-
+        TTree UpTree(UpName.c_str(), "Up Noise Response Data Tree");
+        tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
+        FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
+        G4Hist2TTree(&UpHist, &UpTree);
+        UpTree.Write();
+        
         pFile->cd("DownNoise");
-	    TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
-        FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-        DownHist.Write();	
+        TTree DownTree(DownName.c_str(), "Down Noise Response Data Tree");
+        tools::histo::h1d DownHist("DownNoiseHist", 160, 0., 400.*ns);
+        FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
+        G4Hist2TTree(&DownHist, &DownTree);
+        DownTree.Write();
 
         //creating Down Histograms
         mtx.unlock();
@@ -190,14 +197,18 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 	    mtx.lock();
 
         pFile->cd("UpDecay");
-        TH1D UpHist(UpName.c_str(), UpName.c_str(), 8000, 0., 20000.*ns);
-        FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-        UpHist.Write();
+        TTree UpTree(UpName.c_str(), "Up Decay Event Response Data Tree");
+        tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
+        FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
+        G4Hist2TTree(&UpHist, &UpTree);
+        UpTree.Write();
 
         pFile->cd("DownDecay");
-        TH1D DownHist(DownName.c_str(), DownName.c_str(), 8000, 0., 20000.*ns);
-        FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-        DownHist.Write();
+        TTree DownTree(DownName.c_str(), "Down Decay Event Response Data Tree");
+        tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
+        FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
+        G4Hist2TTree(&DownHist, &DownTree);
+        DownTree.Write();
 
         mtx.unlock();
         
@@ -259,23 +270,29 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             ++NormalResponseID;
             G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
             char Buf1[50] = {};
-            sprintf(Buf1, "%d", NormalResponseID);
+            //directly ouput the noise index. 
+            sprintf(Buf1, "%d", idx);
             UpName += Buf1;
             DownName += Buf1;
-
-            //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different thread.
-            // What a BAD feature !
-            mtx.lock();
-            pFile->cd("UpNorm");
-            TH1D UpHist(UpName.c_str(), UpName.c_str(), 160, 0., 400.*ns);
-            FillRootHist(&UpHist, pHCup, &secSiPMHit::GetGlobalTime);
-            UpHist.Write();
-
-            pFile->cd("UpNorm");
-            TH1D DownHist(DownName.c_str(), DownName.c_str(), 160, 0., 400.*ns);
-            FillRootHist(&DownHist, pHCdown, &secSiPMHit::GetGlobalTime);
-            DownHist.Write();
             
+            mtx.lock();
+
+            pFile->cd("UpNorm");
+            TTree UpTree(UpName.c_str(), "Up Normal Event Data Tree");
+            tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
+            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
+            G4Hist2TTree(&UpHist, &UpTree);
+            UpTree.Branch("TimeStamp", &EventWaitTime, "EventWaitTime/D");
+            UpTree.Write();
+
+            pFile->cd("UpNorm");
+            TTree DownTree(DownName.c_str(), "Down Normal Event Data Tree");
+            tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
+            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
+            G4Hist2TTree(&DownHist, &DownTree);
+            DownTree.Branch("DownTimeStamp", &EventWaitTime, "EventWaitTime/D");
+            DownTree.Write();
+
             mtx.unlock();
 
             char Buf2[10] = {};
@@ -399,4 +416,43 @@ void secSiPMSD::PrintData(G4String FileName, G4String ValDescription, G4double v
 
         std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
         fstrm << ValDescription << "_t" << G4Threading::G4GetThreadId() << val << '\n';
+}
+
+void secSiPMSD::FillG4Hist(secSiPMHitsCOllection* pHC,
+                           secSiPMHit::DataGetter Getter,
+                           tools::histo::h1d* histptr)
+{
+    for( size_t i = 0; i != pHC->GetSize(); ++i )
+    {   
+        G4double val = ( ( (*pHC)[i] ) ->* (Getter) )();
+        histptr->fill(val);
+    }
+}
+
+void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
+                             TTree* DataTree)
+{
+    //maybe we can use auto here.
+    const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();
+    const std::vector<G4double>& EdgesVect = histptr->get_axis(0)->edges();
+    
+    G4double Time = 0.;
+    unsigned int Entry = 0;
+    //create time branch and entries branch, in order to save the 
+    //histogram. 
+    DataTree->Branch("Time", &Time, "Time/i");
+    DataTree->Branch("Entry", &Entry, "Entry/D");
+    
+    const size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
+    for( size_t i = 0; i != sz; ++i )
+    {
+        if( entries[i] == 0 )
+	    {
+            continue;
+	    }
+        //fill the branches
+        Time = EdgesVect[i];
+        Entry = EntriesVect[i]
+        DataTree->Fill();
+    }
 }

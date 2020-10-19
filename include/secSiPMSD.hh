@@ -4,6 +4,7 @@
 #include "secSiPMHit.hh"
 
 #include "G4VSensitiveDetector.hh"
+#include "tools/histo/h1d.h"
 #include "globals.hh"
 #include "TFile.h"
 #include "secRunAction.hh"
@@ -14,6 +15,8 @@ class secScintSD;
 class G4Step;
 class G4HCofThisEvent;
 class TH1D;
+class h1d;
+class TTree;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
@@ -39,6 +42,17 @@ class secSiPMSD : public G4VSensitiveDetector
         //the empty bins will be ignored!
         void FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter);
 
+        //this function fills the histogram, using the data from hits collection.
+        //class tools::histo::h1d comes with Geant4 kernel. 
+        void FillG4Hist(secSiPMHitsCollection* pHC, 
+                        secSiPMHit::DataGetter Getter,
+                        tools::histo::h1d* histptr);
+
+        //this retrives the data from h1d, and fill them into a tree's branch.
+        void G4Hist2TTree(tools::histo::h1d* histptr,
+                          TTree* DataTree);
+        
+        //out of date method.
 	    void PrintData(G4String FileName, G4String HistName, 
 		               secSiPMHitsCollection* pHC, 
 		               secSiPMHit::DataGetter Getter, 
