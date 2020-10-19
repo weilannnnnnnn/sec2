@@ -7,6 +7,7 @@
 #include "tools/histo/h1d.h"
 #include "globals.hh"
 #include "TFile.h"
+#include "TTree.h"
 #include "secRunAction.hh"
 #include <vector>
 #include <memory>
@@ -78,6 +79,13 @@ class secSiPMSD : public G4VSensitiveDetector
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;
+
+        TTree* UpNoiseTree;
+        TTree* DownNoiseTree;
+        TTree* UpDecayTree;
+        TTree* DownDecayTree;
+        TTree* UpNormalTree;
+        TTree* DownNormalTree;
 };
 
 #endif

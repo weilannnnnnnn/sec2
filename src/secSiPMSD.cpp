@@ -17,6 +17,7 @@
 #include "TTree.h"
 
 #include <mutex>
+#include <atomic>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -48,7 +49,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     {
         collectionName.insert(str);
     }
-
+    //read in the noise wait time file. 
     std::ifstream ifstrm;
     ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
     if( ifstrm.is_open() )
@@ -60,6 +61,51 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         }
     }
     ifstrm.close();
+    //initialize the trees. 
+    static std::atomic_flag TreesInit = ATOMIC_FLAG_INIT;
+    if( !TreesInit.test_and_set() )
+    {
+        pFile->cd("UpNoise");
+        UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
+        UpNoiseTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        UpNoiseTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        UpNoiseTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+
+        pFile->cd("DownNoise");
+        DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
+        DownNoiseTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        DownNoiseTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        DownNoiseTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+
+        pFile->cd("UpDecay");
+        UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
+        UpDecayTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        UpDecayTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        UpDecayTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+        UpDecayTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+        
+        pFile->cd("DownDecay");
+        DownDecayTree  = new TTree("DownDecay", "Down Decay Response Tree");
+        DownDecayTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        DownDecayTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        DownDecayTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+        DownDecayTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+
+        pFile->cd("UpNorm");
+        UpNormalTree   = new TTree("UpNormal", "Up Normal Event Response Tree");
+        UpNormalTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        UpNormalTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        UpNormalTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+        UpNormalTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+
+        pFile->cd("DownNorm");
+        DownNormalTree = new TTree("DownNormal", "Down Normal Event Response");
+        DownNormalTree->Branch("ArraySize", nullptr, "ArraySize/L");
+        DownNormalTree->Branch("Time", nullptr, "Time[ArraySize]/D");
+        DownNormalTree->Branch("Entries", nullptr, "Entries[ArraySize]/D");
+        DownNormalTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+
+    }
 }
 
 secSiPMSD::~secSiPMSD()
@@ -162,19 +208,15 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         // What a BAD feature !
 	    mtx.lock();
         //creating Up histogramss
-        pFile->cd("UpNoise");
-        TTree UpTree(UpName.c_str(), "Up Noise Response Data Tree");
         tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
-        G4Hist2TTree(&UpHist, &UpTree);
-        UpTree.Write();
+        G4Hist2TTree(&UpHist, UpNoiseTree);
+        UpNoiseTree.Write();
         
-        pFile->cd("DownNoise");
-        TTree DownTree(DownName.c_str(), "Down Noise Response Data Tree");
         tools::histo::h1d DownHist("DownNoiseHist", 160, 0., 400.*ns);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
-        G4Hist2TTree(&DownHist, &DownTree);
-        DownTree.Write();
+        G4Hist2TTree(&DownHist, DownNoiseTree);
+        DownNoiseTree.Write();
 
         //creating Down Histograms
         mtx.unlock();
@@ -196,19 +238,15 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         
 	    mtx.lock();
 
-        pFile->cd("UpDecay");
-        TTree UpTree(UpName.c_str(), "Up Decay Event Response Data Tree");
         tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
-        G4Hist2TTree(&UpHist, &UpTree);
-        UpTree.Write();
+        G4Hist2TTree(&UpHist, UpDecayTree);
+        UpDecayTree.Write();
 
-        pFile->cd("DownDecay");
-        TTree DownTree(DownName.c_str(), "Down Decay Event Response Data Tree");
         tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
-        G4Hist2TTree(&DownHist, &DownTree);
-        DownTree.Write();
+        G4Hist2TTree(&DownHist, DownDecayTree);
+        DownDecayTree.Write();
 
         mtx.unlock();
         
@@ -274,24 +312,18 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             sprintf(Buf1, "%d", idx);
             UpName += Buf1;
             DownName += Buf1;
-            
+
             mtx.lock();
 
-            pFile->cd("UpNorm");
-            TTree UpTree(UpName.c_str(), "Up Normal Event Data Tree");
             tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
             FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
-            G4Hist2TTree(&UpHist, &UpTree);
-            UpTree.Branch("TimeStamp", &EventWaitTime, "EventWaitTime/D");
-            UpTree.Write();
+            G4Hist2TTree(&UpHist, UpNormalTree);
+            UpNormalTree.Write();
 
-            pFile->cd("UpNorm");
-            TTree DownTree(DownName.c_str(), "Down Normal Event Data Tree");
             tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
             FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
-            G4Hist2TTree(&DownHist, &DownTree);
-            DownTree.Branch("DownTimeStamp", &EventWaitTime, "EventWaitTime/D");
-            DownTree.Write();
+            G4Hist2TTree(&DownHist, DownNormalTree);
+            DownNormalTree.Write();
 
             mtx.unlock();
 
@@ -436,23 +468,13 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();
     const std::vector<G4double>& EdgesVect = histptr->get_axis(0)->edges();
     
-    G4double Time = 0.;
-    unsigned int Entry = 0;
-    //create time branch and entries branch, in order to save the 
-    //histogram. 
-    DataTree->Branch("Time", &Time, "Time/i");
-    DataTree->Branch("Entry", &Entry, "Entry/D");
-    
     const size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
-    for( size_t i = 0; i != sz; ++i )
-    {
-        if( entries[i] == 0 )
-	    {
-            continue;
-	    }
-        //fill the branches
-        Time = EdgesVect[i];
-        Entry = EntriesVect[i]
-        DataTree->Fill();
-    }
+
+    DataTree->SetBranchAddress("ArraySize", &sz);
+    DataTree->SetBranchAddress("Time", &EdgesVect[0]);
+    DataTree->SetBranchAddress("Entries", &EntriesVect[0]);
+    if( !IsNoise )
+        DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
+
+    DataTree->Fill();
 }
