@@ -18,6 +18,7 @@ class G4HCofThisEvent;
 class TH1D;
 class h1d;
 class TTree;
+class TBranch;
 
 class secSiPMSD : public G4VSensitiveDetector
 {

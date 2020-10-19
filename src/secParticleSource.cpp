@@ -42,7 +42,7 @@ void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
     //No generation option, which will be added in the future.
     //GenMuons(Evt);
-    GenNoise(Evt);
+    GenNoiseBeta(Evt);
 }
 
 void secParticleSource::GenMuons(G4Event* Evt)
@@ -94,13 +94,13 @@ void secParticleSource::GenMuons(G4Event* Evt)
     Evt->AddPrimaryVertex( vertex );
 }
 
-void secParticleSource::GenNoise(G4Event* Evt)
+void secParticleSource::GenNoiseBeta(G4Event* Evt)
 {
     G4ParticleDefinition* ParDef = G4Electron::Definition();
-    G4double Eneg = CLHEP::RandGauss::shoot(50., 1.) * MeV;
-    //G4double WaitTime = NoiseWaitTime();
-    
-    //std::cout << "WaitTime = " << WaitTime << std::endl;
+    //generate energy sample.
+    G4double Eneg = RandGenFile->Shoot(2, secVRandGen::PDF_TYPE) * MeV;
+
+    //generate direction
     G4ThreeVector DirVect(0, 1, 0);
     G4ThreeVector PosVect(0, 1, 0);
     
@@ -109,6 +109,7 @@ void secParticleSource::GenNoise(G4Event* Evt)
     DirVect.setTheta( Theta );
     DirVect.setPhi( Phi );
     
+    //generate position
     //G4double X = G4UniformRand() * 20. * m - 10. * m;
     G4double X = G4UniformRand() * m - 0.5 * m;
     //G4double Y = G4UniformRand() * 20. * m - 10. * m;
@@ -134,6 +135,7 @@ void secParticleSource::GenNoise(G4Event* Evt)
 
 G4double secParticleSource::MuonWaitTime()
 {
+    //generate muons events' wait time.
     static std::atomic<G4double> MuonWaitTime(0.);
     
     return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
@@ -157,5 +159,5 @@ G4double secParticleSource::NoiseWaitTime()
             NoiseWaitTimeArr[i] = time;
         }
     }
-    return (NoiseWaitTimeArr[NoiseIdx++]);
+    return ( NoiseWaitTimeArr[NoiseIdx++] );
 }
