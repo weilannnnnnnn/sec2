@@ -66,47 +66,48 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     static std::atomic_flag TreesInit = ATOMIC_FLAG_INIT;
     if( !TreesInit.test_and_set() )
     {
+        //create the tree branches
         pFile->cd("UpNoise");
         UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
-        UpNoiseTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        UpNoiseTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        UpNoiseTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
+        UpNoiseTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        UpNoiseTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");// in nanosecond
+        UpNoiseTree->Branch("Entries", (unsigned*)nullptr, "Entries[ArraySize]/i");
 
         pFile->cd("DownNoise");
         DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
-        DownNoiseTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        DownNoiseTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        DownNoiseTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
+        DownNoiseTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        DownNoiseTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");// in nanosecond
+        DownNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
 
         pFile->cd("UpDecay");
         UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
-        UpDecayTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        UpDecayTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        UpDecayTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
-        UpDecayTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+        UpDecayTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        UpDecayTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
+        UpDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+        UpDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
         
         pFile->cd("DownDecay");
         DownDecayTree  = new TTree("DownDecay", "Down Decay Response Tree");
-        DownDecayTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        DownDecayTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        DownDecayTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
-        DownDecayTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
+        DownDecayTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        DownDecayTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
+        DownDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+        DownDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
 
         pFile->cd("UpNorm");
         UpNormalTree   = new TTree("UpNormal", "Up Normal Event Response Tree");
-        UpNormalTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        UpNormalTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        UpNormalTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
-        UpNormalTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
-        UpNormalTree->Branch("Coupled index", nullptr, "idx/L");
+        UpNormalTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        UpNormalTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
+        UpNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+        UpNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+        UpNormalTree->Branch("Coupled index", (size_t*) nullptr, "idx/L");
 
         pFile->cd("DownNorm");
         DownNormalTree = new TTree("DownNormal", "Down Normal Event Response");
-        DownNormalTree->Branch("ArraySize", nullptr, "ArraySize/L");
-        DownNormalTree->Branch("Time", nullptr, "Time[ArraySize]/D");
-        DownNormalTree->Branch("Entries", nullptr, "Entries[ArraySize]/i");
-        DownNormalTree->Branch("TimeStamp", nullptr, "TimeStamp/D"); //in second.
-        DownNormalTree->Branch("Coupled index", nullptr, "idx/L");
+        DownNormalTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
+        DownNormalTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
+        DownNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+        DownNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+        DownNormalTree->Branch("Coupled index", (size_t*) nullptr, "idx/L");
 
     }
 }
@@ -136,8 +137,8 @@ void secSiPMSD::Initialize(G4HCofThisEvent* HC)
 
 G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 {
-//the return value of this function is currently researved and
-//it may be used in the future update of Geant4 application.
+    //the return value of this function is currently researved and
+    //it may be used in the future update of Geant4 application.
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();    
     if( *ParticleNow != *G4OpticalPhoton::Definition() )
     {
@@ -201,12 +202,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
     {
         ++NoiseResponseID;
-	    G4String UpName = "UpNoiseResponse ", DownName = "DownNoiseResponse ";
-        char Buf[50] = {};
-        sprintf(Buf, "%d_t%d", NoiseResponseID, G4Threading::G4GetThreadId());
-        UpName += Buf;
-        DownName += Buf;
-        
         //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different threads.
         // What a BAD feature !
 	    mtx.lock();
@@ -235,12 +230,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         }
         DecayEventID++;
         ResetDecayFlag();
-        G4String UpName = "UpDecayID ", DownName = "DownDecayID ";
-        char Buf1[50] = {};
-        sprintf(Buf1, "%d_t%d", DecayEventID, G4Threading::G4GetThreadId());
-        UpName += Buf1;
-        DownName += Buf1;
-        
+
 	    mtx.lock();
 
         tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
@@ -310,14 +300,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         
         if( IsPrint )
         {
-            ++NormalResponseID;
-            G4String UpName = "UpNormalID ", DownName = "DownNormalID ";
-            char Buf1[50] = {};
-            //directly ouput the noise index. 
-            sprintf(Buf1, "%d", idx);
-            UpName += Buf1;
-            DownName += Buf1;
-
             mtx.lock();
 
             tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
@@ -326,6 +308,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
             BranchUpIdx->SetAddress(&idx);
             BranchUpIdx->Fill();
+            UpNromalTree->ResetBranchAddress();
             UpNormalTree->Write();
 
             tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
@@ -335,6 +318,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             BranchDownIdx->SetAddress(&idx);
             BranchDownIdx->Fill();
             DownNormalTree->Write();
+            DownNormalTree->ResetBranchAddress();
 
             mtx.unlock();
 
@@ -479,24 +463,28 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     const std::vector<G4double>& EdgesVect = histptr->get_axis(0)->edges();
     const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();    
     const size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
+    sz -= 2; // remove the underflow and overflow bins
 
-    //fill the branch
+    //fill the branches
     TBranch* BranchArraySz = DataTree->GetBranch("ArraySize");
     BranchArraySz->SetAddress( &sz );
     BranchArraySz->Fill();
-
+    
+    //the values in the std::vector is continuously saved.
     TBranch* BranchTime = DataTree->GetBranch("Time");
-    BranchTime->SetAddress( &(EdgesVect[0]) );
+    BranchTime->SetAddress( &(EdgesVect[1]) );
     BranchTime->Fill();
 
     TBranch* BranchEntries = DataTree->GetBranch("Entries");
-    BranchEntries->SetAddress( &(EntriesVect[0]) );
+    BranchEntries->SetAddress( &(EntriesVect[1]) );
     BranchEntries->Fill();
 
     if( !IsNoise )
     {
         TBranch* BranchTimeStamp = DataTree->GetBranch("TimeStamp");
-        BranchTimeStamp->SetAddress( EventWaitTime );
+        BranchTimeStamp->SetAddress( &EventWaitTime );
         BranchTimeStamp->Fill();
     }
+    //reset the address and load the data into the branches
+    DataTree->ResetBranchAddress();
 }
