@@ -70,33 +70,28 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         pFile->cd("UpNoise");
         UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
         UpNoiseTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        UpNoiseTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");// in nanosecond
         UpNoiseTree->Branch("Entries", (unsigned*)nullptr, "Entries[ArraySize]/i");
 
         pFile->cd("DownNoise");
         DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
         DownNoiseTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        DownNoiseTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");// in nanosecond
         DownNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
 
         pFile->cd("UpDecay");
         UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
         UpDecayTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        UpDecayTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
         UpDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
         UpDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
         
         pFile->cd("DownDecay");
         DownDecayTree  = new TTree("DownDecay", "Down Decay Response Tree");
         DownDecayTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        DownDecayTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
         DownDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
         DownDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
 
         pFile->cd("UpNorm");
         UpNormalTree   = new TTree("UpNormal", "Up Normal Event Response Tree");
         UpNormalTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        UpNormalTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
         UpNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
         UpNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
         UpNormalTree->Branch("Coupled index", (size_t*) nullptr, "idx/L");
@@ -104,7 +99,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         pFile->cd("DownNorm");
         DownNormalTree = new TTree("DownNormal", "Down Normal Event Response");
         DownNormalTree->Branch("ArraySize", (size_t*) nullptr, "ArraySize/L");
-        DownNormalTree->Branch("Time", (double*) nullptr, "Time[ArraySize]/D");
         DownNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
         DownNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
         DownNormalTree->Branch("Coupled index", (size_t*) nullptr, "idx/L");
@@ -244,13 +238,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         DownDecayTree->Write();
 
         mtx.unlock();
-        
-        char Buf2[10] = {};        
-        sprintf(Buf2, "%d", DecayEventID);
-        G4String Description = "DecayEvtID ";
-        Description += Buf2;
-
-	    PrintData("DecayMuonWaitTime.dat", Description, EventWaitTime);
     }
     else // normal muon events
     {
@@ -321,11 +308,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             DownNormalTree->ResetBranchAddress();
 
             mtx.unlock();
-
-            char Buf2[10] = {};
-            sprintf(Buf2, "%d", NormalResponseID);
-            G4String Description = "NormID ";
-    	    PrintData("NormalMuonWaitTime.dat", Description, EventWaitTime);
         }
     }
     //reset the flag for generating the time stamp at the end of the event!
@@ -462,7 +444,7 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     //maybe we can use auto here.
     const std::vector<G4double>& EdgesVect = histptr->get_axis(0)->edges();
     const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();    
-    const size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
+    size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
     sz -= 2; // remove the underflow and overflow bins
 
     //fill the branches
@@ -471,10 +453,6 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     BranchArraySz->Fill();
     
     //the values in the std::vector is continuously saved.
-    TBranch* BranchTime = DataTree->GetBranch("Time");
-    BranchTime->SetAddress( &(EdgesVect[1]) );
-    BranchTime->Fill();
-
     TBranch* BranchEntries = DataTree->GetBranch("Entries");
     BranchEntries->SetAddress( &(EntriesVect[1]) );
     BranchEntries->Fill();

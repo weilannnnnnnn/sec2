@@ -49,9 +49,6 @@ void secRunAction::EndOfRunAction(const G4Run* )
     {
         secSiPMSD::pFile->Close();
         GenerateNoiseTimeStamp("NoiseWaitTime.dat", 10000);
-        //Merge the ascii file.
-        MergeFile("DecayMuonWaitTime.dat");
-        MergeFile("NormalMuonWaitTime.dat");
     }
 }
 
