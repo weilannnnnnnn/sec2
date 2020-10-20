@@ -4,7 +4,7 @@
 #include "secSiPMHit.hh"
 
 #include "G4VSensitiveDetector.hh"
-#include "tools/histo/h1d.h"
+#include "tools/histo/h1d"
 #include "globals.hh"
 #include "TFile.h"
 #include "TTree.h"

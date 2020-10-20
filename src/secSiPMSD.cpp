@@ -10,7 +10,6 @@
 #include "G4OpticalPhoton.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4SystemOfUnits.hh"
-#include "tools/histo/h1d"
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -62,6 +61,29 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         }
     }
     ifstrm.close();
+}
+
+secSiPMSD::~secSiPMSD()
+{
+}
+
+void secSiPMSD::Initialize(G4HCofThisEvent* HC)
+{
+    //SensitiveDetectorName is a string defined in G4VSensitiveDetector.hh
+    //collectionName is a STL vector defined in G4CollectionVector.hh
+
+    //create HCs
+    auto SDmgr = G4SDManager::GetSDMpointer();
+    pHCup   = new secSiPMHitsCollection(SensitiveDetectorName, collectionName[0]);
+    pHCdown = new secSiPMHitsCollection(SensitiveDetectorName, collectionName[1]);
+
+    //Get collection IDs from the G4SDManager object, and register the created HCs to G4HCofThisEvent object.
+    G4int HCIDup   = SDmgr->GetCollectionID(collectionName[0]);
+    G4int HCIDdown = SDmgr->GetCollectionID(collectionName[1]);
+
+    HC->AddHitsCollection(HCIDup, pHCup);
+    HC->AddHitsCollection(HCIDdown, pHCdown);
+
     //initialize the trees. 
     static std::atomic_flag TreesInit = ATOMIC_FLAG_INIT;
     if( !TreesInit.test_and_set() )
@@ -102,31 +124,9 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         DownNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
         DownNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
         DownNormalTree->Branch("Coupled index", (size_t*) nullptr, "idx/L");
-
-    }
-}
-
-secSiPMSD::~secSiPMSD()
-{
-}
-
-void secSiPMSD::Initialize(G4HCofThisEvent* HC)
-{
-    //SensitiveDetectorName is a string defined in G4VSensitiveDetector.hh
-    //collectionName is a STL vector defined in G4CollectionVector.hh
-
-    //create HCs
-    auto SDmgr = G4SDManager::GetSDMpointer();
-    pHCup   = new secSiPMHitsCollection(SensitiveDetectorName, collectionName[0]);
-    pHCdown = new secSiPMHitsCollection(SensitiveDetectorName, collectionName[1]);
-
-    //Get collection IDs from the G4SDManager object, and register the created HCs to G4HCofThisEvent object.
-    G4int HCIDup   = SDmgr->GetCollectionID(collectionName[0]);
-    G4int HCIDdown = SDmgr->GetCollectionID(collectionName[1]);
-
-    HC->AddHitsCollection(HCIDup, pHCup);
-    HC->AddHitsCollection(HCIDdown, pHCdown);
-
+		pFile->Write();
+		pFile->Close();
+	}
 }
 
 G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
@@ -295,7 +295,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
             BranchUpIdx->SetAddress(&idx);
             BranchUpIdx->Fill();
-            UpNromalTree->ResetBranchAddress();
+            UpNormalTree->ResetBranchAddresses();
             UpNormalTree->Write();
 
             tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
@@ -305,7 +305,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             BranchDownIdx->SetAddress(&idx);
             BranchDownIdx->Fill();
             DownNormalTree->Write();
-            DownNormalTree->ResetBranchAddress();
+            DownNormalTree->ResetBranchAddresses();
 
             mtx.unlock();
         }
@@ -427,7 +427,7 @@ void secSiPMSD::PrintData(G4String FileName, G4String ValDescription, G4double v
         fstrm << ValDescription << "_t" << G4Threading::G4GetThreadId() << val << '\n';
 }
 
-void secSiPMSD::FillG4Hist(secSiPMHitsCOllection* pHC,
+void secSiPMSD::FillG4Hist(secSiPMHitsCollection* pHC,
                            secSiPMHit::DataGetter Getter,
                            tools::histo::h1d* histptr)
 {
@@ -442,10 +442,8 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
                              TTree* DataTree)
 {
     //maybe we can use auto here.
-    const std::vector<G4double>& EdgesVect = histptr->get_axis(0)->edges();
     const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();    
-    size_t sz = EntriesVect.size() > EdgesVect.size() ? EdgesVect.size() : EntriesVect.size();
-    sz -= 2; // remove the underflow and overflow bins
+    size_t sz = EntriesVect.size() - 2; // remove the underflow and overflow bins
 
     //fill the branches
     TBranch* BranchArraySz = DataTree->GetBranch("ArraySize");
@@ -454,7 +452,7 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     
     //the values in the std::vector is continuously saved.
     TBranch* BranchEntries = DataTree->GetBranch("Entries");
-    BranchEntries->SetAddress( &(EntriesVect[1]) );
+    BranchEntries->SetAddress( (void*) &(EntriesVect[1]) );
     BranchEntries->Fill();
 
     if( !IsNoise )
@@ -464,5 +462,5 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
         BranchTimeStamp->Fill();
     }
     //reset the address and load the data into the branches
-    DataTree->ResetBranchAddress();
+    DataTree->ResetBranchAddresses();
 }

@@ -19,27 +19,25 @@ TFile* secSiPMSD::pFile = new TFile("secData.root", "RECREATE");
 
 secRunAction::secRunAction(void) : 
  G4UserRunAction()
-{
-}
+{	
 
+}
 secRunAction::~secRunAction()
 {
 }
 
 void secRunAction::BeginOfRunAction(const G4Run* )
 {
-    //ROOT file initialization
-    if( IsMaster() )
-    {
-	secSiPMSD::pFile->mkdir("UpDecay");
-	secSiPMSD::pFile->mkdir("DownDecay");
-
-	secSiPMSD::pFile->mkdir("UpNoise");
-	secSiPMSD::pFile->mkdir("DownNoise");
-
-	secSiPMSD::pFile->mkdir("UpNorm");
-	secSiPMSD::pFile->mkdir("DownNorm");
-    }
+	if( IsMaster() )
+	{
+		//ROOT file initialization
+		secSiPMSD::pFile->mkdir("UpDecay");
+		secSiPMSD::pFile->mkdir("DownDecay");
+		secSiPMSD::pFile->mkdir("UpNoise");
+		secSiPMSD::pFile->mkdir("DownNoise");
+		secSiPMSD::pFile->mkdir("UpNorm");
+		secSiPMSD::pFile->mkdir("DownNorm");
+	}
 }
 
 void secRunAction::EndOfRunAction(const G4Run* )

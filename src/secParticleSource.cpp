@@ -155,7 +155,7 @@ G4double secParticleSource::NoiseWaitTime()
         const G4double NoiseInten = 100; // Becquerel, Bq
         for( size_t i = 0; i != NoiseNum; ++i )
         {
-            const G4double time =  CLHEP::RandFlat::shoot(0, NoiseNum / NoiseInten);
+            const G4double time =  CLHEP::RandFlat::shoot(0., NoiseNum / NoiseInten);
             NoiseWaitTimeArr[i] = time;
         }
     }
