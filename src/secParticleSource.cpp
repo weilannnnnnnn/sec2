@@ -98,7 +98,7 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
 {
     G4ParticleDefinition* ParDef = G4Electron::Definition();
     //generate energy sample.
-    G4double Eneg = RandGenFile->Shoot(2, secVRandGen::PDF_TYPE) * MeV;
+    G4double Eneg = RandGenFile->Shoot(1, secVRandGen::PDF_TYPE) * MeV;
 
     //generate direction
     G4ThreeVector DirVect(0, 1, 0);

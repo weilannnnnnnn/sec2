@@ -165,7 +165,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     {
         //noise event!!
         IsNoiseEvent = true;
-    }
+	}
     return true;
     
 }

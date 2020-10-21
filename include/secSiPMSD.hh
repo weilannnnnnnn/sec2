@@ -81,12 +81,12 @@ class secSiPMSD : public G4VSensitiveDetector
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;
 
-        TTree* UpNoiseTree;
-        TTree* DownNoiseTree;
-        TTree* UpDecayTree;
-        TTree* DownDecayTree;
-        TTree* UpNormalTree;
-        TTree* DownNormalTree;
+        static TTree* UpNoiseTree;
+        static TTree* DownNoiseTree;
+        static TTree* UpDecayTree;
+        static TTree* DownDecayTree;
+        static TTree* UpNormalTree;
+        static TTree* DownNormalTree;
 };
 
 #endif

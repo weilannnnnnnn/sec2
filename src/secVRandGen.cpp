@@ -23,7 +23,6 @@ G4double secVRandGen::Shoot(size_t idx, DistFuncType Method)
     G4bool IsEmpty = XminVect.empty() || XmaxVect.empty() || YmaxVect.empty();
     G4bool IsOverflow = ( idx >= XminVect.size() ) || ( idx >= XmaxVect.size() ) || 
                         ( idx >= YmaxVect.size() );
-    
     if( IsEmpty )
     {
         std::cerr << "===========================================================\n"

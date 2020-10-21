@@ -16,6 +16,12 @@
 #include <cstdio>
 
 TFile* secSiPMSD::pFile = new TFile("secData.root", "RECREATE");
+TTree* secSiPMSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
+TTree* secSiPMSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
+TTree* secSiPMSD::UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
+TTree* secSiPMSD::DownDecayTree  = new TTree("DownDecay", "Down Decay Response Tree");
+TTree* secSiPMSD::UpNormalTree   = new TTree("UpNormal", "Up Normal Event Response Tree");
+TTree* secSiPMSD::DownNormalTree = new TTree("DownNormal", "Down Normal Event Response");
 
 secRunAction::secRunAction(void) : 
  G4UserRunAction()
@@ -31,12 +37,35 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 	if( IsMaster() )
 	{
 		//ROOT file initialization
-		secSiPMSD::pFile->mkdir("UpDecay");
-		secSiPMSD::pFile->mkdir("DownDecay");
-		secSiPMSD::pFile->mkdir("UpNoise");
-		secSiPMSD::pFile->mkdir("DownNoise");
-		secSiPMSD::pFile->mkdir("UpNorm");
-		secSiPMSD::pFile->mkdir("DownNorm");
+		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
+		secSiPMSD::UpNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[160]/i");
+
+
+		secSiPMSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::DownNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[160]/i");
+        	
+
+		secSiPMSD::UpDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::UpDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::UpDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+
+
+		secSiPMSD::DownDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::DownDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::DownDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+
+		
+		secSiPMSD::UpNormalTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::UpNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::UpNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+		secSiPMSD::UpNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");
+
+
+		secSiPMSD::DownNormalTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::DownNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::DownNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+		secSiPMSD::DownNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");
+
 	}
 }
 
@@ -45,6 +74,8 @@ void secRunAction::EndOfRunAction(const G4Run* )
     //use master thread to merge and close file.
     if( IsMaster() )
     {
+        secSiPMSD::UpNoiseTree->Write();
+        secSiPMSD::DownNoiseTree->Write();
         secSiPMSD::pFile->Close();
         GenerateNoiseTimeStamp("NoiseWaitTime.dat", 10000);
     }
