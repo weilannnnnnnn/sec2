@@ -26,7 +26,6 @@ public:
 
 private:
     void MergeFile(G4String FileName);
-    void GenerateNoiseTimeStamp(G4String FileName, const size_t Num);
 
 };
 

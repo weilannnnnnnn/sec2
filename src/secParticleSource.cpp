@@ -121,8 +121,9 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
     PosVect.setZ( Z );
     
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
-    (void) GenNoiseWaitTime( true ); // update noise WaitTime, ignore the compiler warnning.
-    auto PriPar = new G4PrimaryParticle( ParDef );
+    //G4double Dummy =  GenNoiseWaitTime( true ); // update noise WaitTime, ignore the compiler warnning.
+	//(void) Dummy;
+	auto PriPar = new G4PrimaryParticle( ParDef );
 
     PriPar->SetKineticEnergy( Eneg );
     PriPar->SetMomentumDirection( DirVect.unit() );
@@ -141,15 +142,16 @@ G4double secParticleSource::MuonWaitTime()
     return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
 }
 
-G4double secParticleSource::NoiseWaitTime(G4bool IsUpdate)
+G4double secParticleSource::GenNoiseWaitTime(G4bool IsUpdate)
 {
     //generate noise particle's time stamp.
     static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
     static G4double* NoiseWaitTimeArr = nullptr;
-    static size_t NoiseIdx = 0;
+    static std::atomic<size_t> NoiseIdx(0);
     //if the time stamp hasn't been generated, initialize.
     if( ! IsInit.test_and_set() )
     {
+		std::cout << "Noise WaitTime Initializing" << std::endl;
         const size_t NoiseNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
         NoiseWaitTimeArr = new G4double[NoiseNum]; // last until the program ends.
         const G4double NoiseInten = 100; // Becquerel, Bq
@@ -159,5 +161,6 @@ G4double secParticleSource::NoiseWaitTime(G4bool IsUpdate)
             NoiseWaitTimeArr[i] = time;
         }
     }
-    return ( IsUpdate ? NoiseWaitTimeArr[NoiseIdx++]*s : NoiseWaitTimeArr[NoiseIdx]*s );
+	while( !IsInit.test_and_set() );
+    return ( IsUpdate ? NoiseWaitTimeArr[NoiseIdx++]*s : NoiseWaitTimeArr[NoiseIdx.load()]*s );
 }

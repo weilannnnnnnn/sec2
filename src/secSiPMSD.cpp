@@ -109,8 +109,10 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
         	EventWaitTime = secParticleSource::MuonWaitTime();
         
         if( IsNoise )
+		{
             EventWaitTime = secParticleSource::GenNoiseWaitTime();
-    }
+		}
+	}
 
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
@@ -155,11 +157,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         ++NoiseResponseID;
         //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different threads.
         // What a BAD feature !
-	    mtx.lock();
     //=====================================================================
                        //Creating Noise Histograms
-
         //Up Histogram
+		mtx.lock();
 		tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
 		FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpNoiseTree);
@@ -168,10 +169,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         tools::histo::h1d DownHist("DownNoiseHist", 160, 0., 400.*ns);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownNoiseTree);
-    //=====================================================================
-		mtx.unlock();
-
-    }
+    	mtx.unlock();
+	//=====================================================================
+    	PrintData("NoiseWaitTime.txt", EventWaitTime);
+	}
     else if( IsADecayEvent() ) // a decay event
     {
         if( !(pHCup->GetSize()) || !(pHCdown->GetSize()) )
@@ -183,10 +184,9 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 		//never forget this!!
         ResetDecayFlag();
 
-	    mtx.lock();
     //====================================================================
                         //Creating Decay Histograms
-
+	    mtx.lock();
         tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpDecayTree);
@@ -194,10 +194,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownDecayTree);
-
-    //====================================================================
         mtx.unlock();
-
+    //====================================================================
     }
     else // normal muon events
     {
@@ -247,12 +245,12 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         if( IsPrint )
         {
     
-            mtx.lock();
         //==========================================================================
                                   //Creating Normal Histograms
 
 			//NOTICE: fill the extra branches first, or you may run into nasty problems.
-            tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
+            mtx.lock();
+			tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
             TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
             BranchUpIdx->SetAddress(&idx);
             BranchUpIdx->Fill();
@@ -265,13 +263,11 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             BranchDownIdx->Fill();
             FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
             G4Hist2TTree(&DownHist, DownNormalTree);
-
-        //==========================================================================
             mtx.unlock();
+        //==========================================================================
         }
 
         //print noise Wait Time
-        PrintData("NoiseWaitTime.txt", " ", EventWaitTime);
     }
     //=======================================
     //  reset the flag for generating the 
@@ -384,13 +380,13 @@ void secSiPMSD::PrintData(G4String FileName, G4String HCname,
 }
 
 //print single double value version
-void secSiPMSD::PrintData(G4String FileName, G4String ValDescription, G4double val)
+void secSiPMSD::PrintData(G4String FileName, G4double val)
 {
     	std::ostringstream sstrm;
         sstrm << FileName << "_t" << G4Threading::G4GetThreadId();
 
         std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
-        fstrm << ValDescription << "_t" << G4Threading::G4GetThreadId() << val << '\n';
+        fstrm << val << '\n';
 }
 
 void secSiPMSD::FillG4Hist(secSiPMHitsCollection* pHC,

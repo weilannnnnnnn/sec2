@@ -39,10 +39,10 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 	{
 		//ROOT file initialization
 		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
-		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[160]/i");
+		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
 	
 		secSiPMSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[160]/i");
+		secSiPMSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
 
 		secSiPMSD::UpDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
 		secSiPMSD::UpDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
@@ -76,8 +76,7 @@ void secRunAction::EndOfRunAction(const G4Run* )
         secSiPMSD::UpNoiseTree->Write();
         secSiPMSD::DownNoiseTree->Write();
         secSiPMSD::pFile->Close();
-        G4int EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
-		GenerateNoiseTimeStamp("NoiseWaitTime.dat", EventNum);
+		MergeFile("NoiseWaitTime.txt");
     }
 }
 
@@ -111,13 +110,3 @@ void secRunAction::MergeFile(G4String FileName)
     }
 }
 
-void secRunAction::GenerateNoiseTimeStamp(G4String FileName, const size_t Num)
-{
-    std::ofstream ofstrm;
-
-    ofstrm.open(FileName, std::ofstream::out | std::ofstream::binary);
-
-    for( size_t i = 0; i != Num; ++i)
-        ofstrm << secParticleSource::NoiseWaitTime() << '\n';
-    ofstrm.close();
-}

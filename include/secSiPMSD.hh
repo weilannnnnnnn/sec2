@@ -66,7 +66,7 @@ class secSiPMSD : public G4VSensitiveDetector
 		               secSiPMHit::DataGetter Getter);
         
         //print the value generated in a single event.
-        void PrintData(G4String FileName, G4String ValDescription, G4double val);
+        void PrintData(G4String FileName, G4double val);
     
         G4int DecayEventID;
         G4int NoiseResponseID;
