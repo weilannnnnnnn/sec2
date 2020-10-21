@@ -102,12 +102,13 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     IsMuon = pScintSD->IsMuon();
     IsNoise = pScintSD->IsNoise();
     
-    if( !HasEntered && IsMuon )
+    if( !HasEntered  )
     {
         HasEntered = true;
-        EventWaitTime = secParticleSource::MuonWaitTime();
+		if( IsMuon )
+        	EventWaitTime = secParticleSource::MuonWaitTime();
     }
-    
+
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
     G4double GlobalTime  = step->GetTrack()->GetGlobalTime() ;
@@ -157,17 +158,16 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 	    mtx.lock();
 
         //creating Up histograms
-        std::cout << "A Noise Event" << std::endl;
 		
 		tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
 		FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpNoiseTree);
-        
+
 		//creating Down histograms		
         tools::histo::h1d DownHist("DownNoiseHist", 160, 0., 400.*ns);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownNoiseTree);
-        
+
 		mtx.unlock();
     }
 
@@ -179,21 +179,20 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             return;
         }
         DecayEventID++;
-        ResetDecayFlag();
 
 	    mtx.lock();
 
         tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpDecayTree);
-        //UpDecayTree->Write();
 
         tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownDecayTree);
-        //DownDecayTree->Write();
 
         mtx.unlock();
+		//never forget this!!
+        ResetDecayFlag();
     }
     else // normal muon events
     {
@@ -204,7 +203,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         G4bool IsPrint = false;
         const size_t sz = NoiseWaitTimeVect.size();
 
-        static thread_local size_t idx = 0;
+        static thread_local unsigned idx = 0;
 
         //locate the closest noise wait time
         while( EventWaitTime - NoiseWaitTimeVect[idx] > 0 )
@@ -243,21 +242,23 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         
         if( IsPrint )
         {
-            mtx.lock();
 
+            mtx.lock();
+			//fill the extra branches first, or you may run into nasty problems.
             tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
-            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
-            G4Hist2TTree(&UpHist, UpNormalTree);
             TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
             BranchUpIdx->SetAddress(&idx);
             BranchUpIdx->Fill();
-
-            tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
-            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
-            G4Hist2TTree(&DownHist, DownNormalTree);
+            
+			FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
+            G4Hist2TTree(&UpHist, UpNormalTree);
+            
+			tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
             TBranch* BranchDownIdx = DownNormalTree->GetBranch("Coupled index");
             BranchDownIdx->SetAddress(&idx);
             BranchDownIdx->Fill();
+            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
+            G4Hist2TTree(&DownHist, DownNormalTree);
 
             mtx.unlock();
         }
@@ -406,6 +407,6 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
         TBranch* BranchTimeStamp = DataTree->GetBranch("TimeStamp");
         BranchTimeStamp->SetAddress( &EventWaitTime );
     }
-	
+	//fill the entire tree.
 	DataTree->Fill();
 }

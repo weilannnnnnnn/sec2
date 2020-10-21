@@ -38,32 +38,30 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 	{
 		//ROOT file initialization
 		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
-		secSiPMSD::UpNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[160]/i");
-
-
+		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[160]/i");
+	
 		secSiPMSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::DownNoiseTree->Branch("Entries", (unsigned*) nullptr, "Entries[160]/i");
-        	
+		secSiPMSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[160]/i");
 
 		secSiPMSD::UpDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::UpDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::UpDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
 		secSiPMSD::UpDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
 
 
 		secSiPMSD::DownDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::DownDecayTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::DownDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
 		secSiPMSD::DownDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
 
 		
-		secSiPMSD::UpNormalTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::UpNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
-		secSiPMSD::UpNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+		secSiPMSD::UpNormalTree->Branch("ArraySize",     (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::UpNormalTree->Branch("Entries",       (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::UpNormalTree->Branch("TimeStamp",     (double*) nullptr, "TimeStamp/D"); //in second.
 		secSiPMSD::UpNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");
 
 
-		secSiPMSD::DownNormalTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
-		secSiPMSD::DownNormalTree->Branch("Entries", (unsigned*) nullptr, "Entries[ArraySize]/i");
-		secSiPMSD::DownNormalTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+		secSiPMSD::DownNormalTree->Branch("ArraySize",     (unsigned*) nullptr, "ArraySize/i");
+		secSiPMSD::DownNormalTree->Branch("Entries",       (unsigned*) nullptr, "Entries[ArraySize]/i");
+		secSiPMSD::DownNormalTree->Branch("TimeStamp",     (double*) nullptr, "TimeStamp/D"); //in second.
 		secSiPMSD::DownNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");
 
 	}
@@ -77,7 +75,8 @@ void secRunAction::EndOfRunAction(const G4Run* )
         secSiPMSD::UpNoiseTree->Write();
         secSiPMSD::DownNoiseTree->Write();
         secSiPMSD::pFile->Close();
-        GenerateNoiseTimeStamp("NoiseWaitTime.dat", 10000);
+        G4int EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+		GenerateNoiseTimeStamp("NoiseWaitTime.dat", EventNum);
     }
 }
 

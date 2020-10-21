@@ -66,7 +66,6 @@ void secParticleSource::GenMuons(G4Event* Evt)
     G4double KineticEnergy = RandGenFile->Shoot(0, secVRandGen::CDF_TYPE) * GeV;
     //std::cout << "Energy = " << KineticEnergy / 1000.<< " GeV" << std::endl;     
     //generate position
-    G4double WaitTime = MuonWaitTime(); 
     const G4double Radius = 2 * sqrt(5) * m;
     const G4double PosPhi = 2 * 3.141592653589793 * G4UniformRand();
     const G4double PosTheta = RandGenFile->Shoot(0, secVRandGen::PDF_TYPE);
@@ -81,7 +80,7 @@ void secParticleSource::GenMuons(G4Event* Evt)
     PosVect += DirVect; // set position
     DirVect = - DirVect;
     
-    auto vertex = new G4PrimaryVertex( /*G4ThreeVector(0, 0, 0)*/PosVect, WaitTime );
+    auto vertex = new G4PrimaryVertex( /*G4ThreeVector(0, 0, 0)*/PosVect, 0. );
     auto PrimaryParticle = new G4PrimaryParticle( ParticleDef );
     
     PrimaryParticle->SetKineticEnergy( KineticEnergy );
@@ -120,8 +119,8 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
     PosVect.setX( X );
     PosVect.setY( Y );
     PosVect.setZ( Z );
-
-    auto vertex = new G4PrimaryVertex(PosVect, 0.);
+    
+    auto vertex = new G4PrimaryVertex( PosVect, 0. );
     auto PriPar = new G4PrimaryParticle( ParDef );
 
     PriPar->SetKineticEnergy( Eneg );
@@ -159,5 +158,5 @@ G4double secParticleSource::NoiseWaitTime()
             NoiseWaitTimeArr[i] = time;
         }
     }
-    return ( NoiseWaitTimeArr[NoiseIdx++] );
+    return ( NoiseWaitTimeArr[NoiseIdx++]*s );
 }
