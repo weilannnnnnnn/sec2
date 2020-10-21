@@ -15,6 +15,7 @@
 #include <iostream>
 #include <cstdio>
 
+//create the file and trees
 TFile* secSiPMSD::pFile = new TFile("secData.root", "RECREATE");
 TTree* secSiPMSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
 TTree* secSiPMSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");

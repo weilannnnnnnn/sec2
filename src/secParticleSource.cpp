@@ -121,6 +121,7 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
     PosVect.setZ( Z );
     
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
+    (void) GenNoiseWaitTime( true ); // update noise WaitTime, ignore the compiler warnning.
     auto PriPar = new G4PrimaryParticle( ParDef );
 
     PriPar->SetKineticEnergy( Eneg );
@@ -140,7 +141,7 @@ G4double secParticleSource::MuonWaitTime()
     return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
 }
 
-G4double secParticleSource::NoiseWaitTime()
+G4double secParticleSource::NoiseWaitTime(G4bool IsUpdate)
 {
     //generate noise particle's time stamp.
     static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
@@ -158,5 +159,5 @@ G4double secParticleSource::NoiseWaitTime()
             NoiseWaitTimeArr[i] = time;
         }
     }
-    return ( NoiseWaitTimeArr[NoiseIdx++]*s );
+    return ( IsUpdate ? NoiseWaitTimeArr[NoiseIdx++]*s : NoiseWaitTimeArr[NoiseIdx]*s );
 }

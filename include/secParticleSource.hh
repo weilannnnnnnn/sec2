@@ -25,8 +25,7 @@ class secParticleSource : public G4VPrimaryGenerator
         //event generator.
         virtual void GeneratePrimaryVertex(G4Event* Evt) override;
         static G4double MuonWaitTime();
-        static G4double NoiseWaitTime();
-        
+        static G4double GenNoiseWaitTime( G4bool IsUpdate = false );        
     private:
         
         secRandGenFromFile* RandGenFile;
