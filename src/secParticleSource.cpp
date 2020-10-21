@@ -146,6 +146,7 @@ G4double secParticleSource::GenNoiseWaitTime(G4bool IsUpdate)
 {
     //generate noise particle's time stamp.
     static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
+    static G4bool HasBeenInitialized = false;
     static G4double* NoiseWaitTimeArr = nullptr;
     static std::atomic<size_t> NoiseIdx(0);
     //if the time stamp hasn't been generated, initialize.
@@ -160,7 +161,8 @@ G4double secParticleSource::GenNoiseWaitTime(G4bool IsUpdate)
             const G4double time =  CLHEP::RandFlat::shoot(0., NoiseNum / NoiseInten);
             NoiseWaitTimeArr[i] = time;
         }
+        HasBeenInitialized = true;
     }
-	while( !IsInit.test_and_set() );
+	while( !HasBeenInitialized ); //wait here.
     return ( IsUpdate ? NoiseWaitTimeArr[NoiseIdx++]*s : NoiseWaitTimeArr[NoiseIdx.load()]*s );
 }
