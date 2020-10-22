@@ -109,9 +109,7 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
         	EventWaitTime = secParticleSource::MuonWaitTime();
         
         if( IsNoise )
-		{
             EventWaitTime = secParticleSource::GenNoiseWaitTime();
-		}
 	}
 
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
@@ -406,15 +404,12 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
     const std::vector<unsigned int>& EntriesVect = histptr->bins_entries();    
 	unsigned sz = EntriesVect.size() - 2; // remove the underflow and overflow entries.
 	
-	TBranch* BranchArraySz = DataTree->GetBranch("ArraySize");
-    BranchArraySz->SetAddress( &sz );
-    TBranch* BranchEntries = DataTree->GetBranch("Entries");
-    BranchEntries->SetAddress( (unsigned*) &(EntriesVect[1]) );
+	DataTree->SetBranchAddress("ArraySize", &sz);
+    DataTree->SetBranchAddress("Entries", (unsigned*) &(EntriesVect[1]));
+    
 	if( !IsNoise )
-    {
-        TBranch* BranchTimeStamp = DataTree->GetBranch("TimeStamp");
-        BranchTimeStamp->SetAddress( &EventWaitTime );
-    }
+        DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
+        
 	//fill the entire tree here, you had better fill the extra branches at first.
 	DataTree->Fill();
 }
