@@ -34,7 +34,9 @@ secParticleSource::secParticleSource()
     RandGenFx   = secRandGenFromFx::GetInstance();
     
     //initialize noise WaitTime list. 
-    GenNoiseWaitTime(0, false, 100.);
+    static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
+    if( !IsInit.test_and_set() )
+        GenNoiseWaitTime(0, false, false, 100.);
 }
 
 secParticleSource::~secParticleSource()
@@ -127,8 +129,6 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
     PosVect.setZ( Z );
     
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
-    //G4double Dummy =  GenNoiseWaitTime( true ); // update noise WaitTime, ignore the compiler warnning.
-	//(void) Dummy;
 	auto PriPar = new G4PrimaryParticle( ParDef );
 
     PriPar->SetKineticEnergy( Eneg );
@@ -172,10 +172,10 @@ G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit,
 
     if( IsUpdate )
     {
-        //update the global wait time pointer.
+        //update the global wait time pointer. Invoked in GenNoiseBeta()
         LocalWaitTimePtr[ThreadID] = GlobalWaitTimePtr++;
         return -1;
     }
-    
+    //get the noise time stamp of this event, invoked in secSiPMSD::ProcessHits()
     return *( LocalWaitTimePtr[ThreadID] );
 }
