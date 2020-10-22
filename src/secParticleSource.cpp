@@ -15,6 +15,7 @@
 #include "G4Geantino.hh"
 #include "G4Event.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include "Randomize.hh"
 #include "globals.hh"
 
@@ -31,7 +32,9 @@ secParticleSource::secParticleSource()
     //random generators
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
-
+    
+    //initialize noise WaitTime list. 
+    GenNoiseWaitTime(0, false, 100.);
 }
 
 secParticleSource::~secParticleSource()
@@ -95,6 +98,9 @@ void secParticleSource::GenMuons(G4Event* Evt)
 
 void secParticleSource::GenNoiseBeta(G4Event* Evt)
 {
+    //update the noise wait time list
+    const G4int ThreadID = G4Threading::G4GetThreadId();
+    (void) GenNoiseWaitTime(ThreadID, true, true, -1.);
     G4ParticleDefinition* ParDef = G4Electron::Definition();
     //generate energy sample.
     G4double Eneg = RandGenFile->Shoot(1, secVRandGen::PDF_TYPE) * MeV;
@@ -142,27 +148,34 @@ G4double secParticleSource::MuonWaitTime()
     return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
 }
 
-G4double secParticleSource::GenNoiseWaitTime(G4bool IsUpdate)
+G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 
+                                              G4bool IsUpdate, G4double Inten )
 {
-    //generate noise particle's time stamp.
-    static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
-    static G4bool HasBeenInitialized = false;
-    static G4double* NoiseWaitTimeArr = nullptr;
-    static std::atomic<size_t> NoiseIdx(0);
-    //if the time stamp hasn't been generated, initialize.
-    if( ! IsInit.test_and_set() )
+    static constexpr size_t ArrSz = G4RunManager::GetRunManager()
+                                    ->GetNumberOfEventsToBeProcessed();
+    static constexpr size_t ThreadNum = G4MTRunManager::GetMasterRunManager()
+                                        ->GetNumberOfThreads();
+    static G4double NoiseWaitTimeArr[ArrSz];
+    static G4double* LocalWaitTimePtr[ThreadNum];
+
+    static const G4double NoiseInten = Inten;
+    static std::atomic<G4double*> GlobalWaitTimePtr;
+    //initialization part.
+    if( !IsInit )
     {
-		std::cout << "Noise WaitTime Initializing" << std::endl;
-        const size_t NoiseNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
-        NoiseWaitTimeArr = new G4double[NoiseNum]; // last until the program ends.
-        const G4double NoiseInten = 100; // Becquerel, Bq
-        for( size_t i = 0; i != NoiseNum; ++i )
-        {
-            const G4double time =  CLHEP::RandFlat::shoot(0., NoiseNum / NoiseInten);
-            NoiseWaitTimeArr[i] = time;
-        }
-        HasBeenInitialized = true;
+        GlobalWaitTimePtr = NoiseWaitTimeArr;
+        for( size_t i = 0; i != ArrSz; ++i )
+            NoiseWaitTimeArr[i] = CLHEP::RandFlat::shoot(0., ArrSz / NoiseInten);
+        return -1.
     }
-	while( !HasBeenInitialized ); //wait here.
-    return ( IsUpdate ? NoiseWaitTimeArr[NoiseIdx++]*s : NoiseWaitTimeArr[NoiseIdx.load()]*s );
+    //initialization completed.
+
+    if( IsUpdate )
+    {
+        //update the global wait time pointer.
+        LocalWaitTimePtr[ThreadID] = GlobalWaitTimePtr++;
+        return -1;
+    }
+    
+    return *( LocalWaitTimePtr[ThreadID] );
 }
