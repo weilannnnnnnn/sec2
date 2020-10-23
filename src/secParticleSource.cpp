@@ -147,36 +147,23 @@ G4double secParticleSource::MuonWaitTime()
 G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 
                                               G4bool IsUpdate, G4double Inten )
 {
-    static const size_t ArrSz = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+    static const size_t EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
     static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
-    static G4double* NoiseWaitTimeArr = new G4double[ArrSz];
-	static G4double** LocalWaitTimePtr = new G4double*[ThreadNum];
+	static G4double* LocalWaitTimePtr = new G4double[ThreadNum]; // save the wait time of each thread.
 	//static G4double NoiseWaitTimeArr[ArrSz];
     //static G4double* LocalWaitTimePtr[ThreadNum];
-
     static const G4double NoiseInten = Inten;
-    static std::atomic<G4double*> GlobalWaitTimePtr;
     //initialization part.
     if( !IsInit )
-    {
-		std::cout << "ArrSz = " << ArrSz << std::endl;
-	    std::cout << "ThreadNum = " << ThreadNum << std::endl;	
-		GlobalWaitTimePtr = NoiseWaitTimeArr;
-		for( size_t i = 0; i != ArrSz; ++i )
-		{   
-            NoiseWaitTimeArr[i] = CLHEP::RandFlat::shoot(0., ArrSz / NoiseInten);
-			std::cout << "NoiseWaitTimeArr = " << NoiseWaitTimeArr[i] << std::endl;
-		}
-		return -1.;
-    }
-    //initialization completed.
+        return -1.;
+        //initialization completed.
 
     if( IsUpdate )
     {
         //update the global wait time pointer. Invoked in GenNoiseBeta()
-        LocalWaitTimePtr[ThreadID] = GlobalWaitTimePtr++;
+        LocalWaitTimePtr[ThreadID] = CLHEP::RandFlat::shoot(0., EventNum / NoiseInten);
         return -1;
     }
     //get the noise time stamp of this event, invoked in secSiPMSD::ProcessHits()
-    return *( LocalWaitTimePtr[ThreadID] );
+    return ( LocalWaitTimePtr[ThreadID] );
 }
