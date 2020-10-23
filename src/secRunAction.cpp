@@ -7,6 +7,7 @@
 #include "G4Threading.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "secParticleSource.hh"
 #include "globals.hh"
 #include "TFile.h"
 #include <string.h>
@@ -37,6 +38,7 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 {
 	if( IsMaster() )
 	{
+	    (void) secParticleSource::GenNoiseWaitTime(0, false, false, 100.);
 		//ROOT file initialization
 		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
 		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
@@ -104,9 +106,9 @@ void secRunAction::MergeFile(G4String FileName)
     G4bool IsEmpty = FinalDataStrm.peek() == EOF;
     FinalDataStrm.close();
 
-    if(  IsEmpty )
-    {
-        remove(FileName.c_str());
-    }
+    //if(  IsEmpty )
+    //{
+        //remove(FileName.c_str());
+    //}
 }
 

@@ -32,11 +32,7 @@ secParticleSource::secParticleSource()
     //random generators
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
-    
     //initialize noise WaitTime list. 
-    static std::atomic_flag IsInit(ATOMIC_FLAG_INIT);
-    if( !IsInit.test_and_set() )
-        GenNoiseWaitTime(0, false, false, 100.);
 }
 
 secParticleSource::~secParticleSource()
@@ -151,22 +147,27 @@ G4double secParticleSource::MuonWaitTime()
 G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 
                                               G4bool IsUpdate, G4double Inten )
 {
-    static constexpr size_t ArrSz = G4RunManager::GetRunManager()
-                                    ->GetNumberOfEventsToBeProcessed();
-    static constexpr size_t ThreadNum = G4MTRunManager::GetMasterRunManager()
-                                        ->GetNumberOfThreads();
-    static G4double NoiseWaitTimeArr[ArrSz];
-    static G4double* LocalWaitTimePtr[ThreadNum];
+    static const size_t ArrSz = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+    static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
+    static G4double* NoiseWaitTimeArr = new G4double[ArrSz];
+	static G4double** LocalWaitTimePtr = new G4double*[ThreadNum];
+	//static G4double NoiseWaitTimeArr[ArrSz];
+    //static G4double* LocalWaitTimePtr[ThreadNum];
 
     static const G4double NoiseInten = Inten;
     static std::atomic<G4double*> GlobalWaitTimePtr;
     //initialization part.
     if( !IsInit )
     {
-        GlobalWaitTimePtr = NoiseWaitTimeArr;
-        for( size_t i = 0; i != ArrSz; ++i )
+		std::cout << "ArrSz = " << ArrSz << std::endl;
+	    std::cout << "ThreadNum = " << ThreadNum << std::endl;	
+		GlobalWaitTimePtr = NoiseWaitTimeArr;
+		for( size_t i = 0; i != ArrSz; ++i )
+		{   
             NoiseWaitTimeArr[i] = CLHEP::RandFlat::shoot(0., ArrSz / NoiseInten);
-        return -1.
+			std::cout << "NoiseWaitTimeArr = " << NoiseWaitTimeArr[i] << std::endl;
+		}
+		return -1.;
     }
     //initialization completed.
 

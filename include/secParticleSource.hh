@@ -26,7 +26,7 @@ class secParticleSource : public G4VPrimaryGenerator
         virtual void GeneratePrimaryVertex(G4Event* Evt) override;
         static G4double MuonWaitTime();
 
-        static G4double GenNoiseWaitTime( G4Int ThreadID, G4bool IsInit = true, 
+        static G4double GenNoiseWaitTime( G4int ThreadID, G4bool IsInit = true, 
                                           G4bool IsUpdate = false, G4double NoiseInten = 0. );  
         /*
             1. if IsInit = false, will create and initialize the static noise wait time array and return -1.

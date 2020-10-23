@@ -10,6 +10,7 @@
 #include "G4OpticalPhoton.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include "Randomize.hh"
 
 #include "TFile.h"
@@ -109,7 +110,7 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
         	EventWaitTime = secParticleSource::MuonWaitTime();
         
         if( IsNoise )
-            EventWaitTime = secParticleSource::GenNoiseWaitTime();
+            EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 	}
 
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
