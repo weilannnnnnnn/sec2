@@ -77,7 +77,11 @@ void secRunAction::EndOfRunAction(const G4Run* )
     {
         secSiPMSD::UpNoiseTree->Write();
         secSiPMSD::DownNoiseTree->Write();
-        secSiPMSD::pFile->Close();
+		secSiPMSD::UpDecayTree->Write();	
+		secSiPMSD::DownDecayTree->Write();
+		secSiPMSD::UpNormalTree->Write();
+		secSiPMSD::DownNormalTree->Write();
+		secSiPMSD::pFile->Close();
 		MergeFile("NoiseWaitTime.txt");
     }
 }

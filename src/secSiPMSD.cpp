@@ -54,15 +54,19 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     //read in the noise wait time file. 
     std::ifstream ifstrm;
     ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
-    if( ifstrm.is_open() )
+    
+	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
+	if( ifstrm.is_open() )
     {
         std::string line;
-        while( getline(ifstrm, line) )
+		while( getline(ifstrm, line) )
         {
             NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
         }
     }
-    ifstrm.close();
+	NoiseWaitTimeVect.push_back( INFINITY );
+    
+	ifstrm.close();
 }
 
 secSiPMSD::~secSiPMSD()
@@ -202,7 +206,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             if the a single normal muon event is coupled with a noise event, than this
             normal muon event will be saved. 
         */
-        G4bool IsPrint = false;
+        G4bool IsPrint = true;
+		//std::cout << "\nNoiseWaitTimeVectSize = " << NoiseWaitTimeVect.size() << std::endl;
         const size_t sz = NoiseWaitTimeVect.size();
 
         static thread_local unsigned idx = 0;

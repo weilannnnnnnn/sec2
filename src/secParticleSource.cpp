@@ -42,8 +42,8 @@ secParticleSource::~secParticleSource()
 void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
     //No generation option, which will be added in the future.
-    //GenMuons(Evt);
-    GenNoiseBeta(Evt);
+    GenMuons(Evt);
+    //GenNoiseBeta(Evt);
 }
 
 void secParticleSource::GenMuons(G4Event* Evt)
@@ -165,5 +165,5 @@ G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit,
         return -1;
     }
     //get the noise time stamp of this event, invoked in secSiPMSD::ProcessHits()
-    return ( LocalWaitTimePtr[ThreadID] );
+    return ( LocalWaitTimePtr[ThreadID]*s );
 }
