@@ -21,9 +21,6 @@ class secScintSD : public G4VSensitiveDetector
         virtual G4bool ProcessHits(G4Step *step, G4TouchableHistory *history);
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
 
-        G4bool IsMuon()  { return IsMuonEvent;  }
-        G4bool IsNoise() { return IsNoiseEvent; }
-
     private:
         void     Reset(void);//user should not invoke this method!!
 
@@ -35,11 +32,7 @@ class secScintSD : public G4VSensitiveDetector
         void     PrintData(G4String FileName, G4double val);
 
         G4bool   DecayFlagSiPM;
-        G4bool   DecayFlagScint;
-        G4bool   IsMuonEvent;
-        G4bool   IsNoiseEvent;
         G4int    DecayEventID;
-	    G4double DecayTime;
         G4int    PhotonsGenUp;
         G4int    PhotonsGenDown;
         G4double PhotonEnegUp;
@@ -57,8 +50,6 @@ class secScintSD : public G4VSensitiveDetector
 //reset the SD at the end of each event
 inline void secScintSD::Reset(void)
 {
-    IsMuonEvent = false;
-    IsNoiseEvent = false;
     PhotonsGenUp = 0;
     PhotonsGenDown = 0;
     PhotonEnegUp = 0.;

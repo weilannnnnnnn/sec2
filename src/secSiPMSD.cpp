@@ -38,7 +38,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     NormalResponseID(0),
     IsMuon(false),
     IsNoise(false),
-    HasEntered(false),
+    HasGenerated(false),
     EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
@@ -95,21 +95,28 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 {
     //the return value of this function is currently researved and
     //it may be used in the future update of Geant4 application.
+
+/*============================================================================
+    The case that other particles hit the sipm. Function will retrun and do 
+    nothing.
+==============================================================================*/
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();    
     if( *ParticleNow != *G4OpticalPhoton::Definition() )
     {
         //not an optical photon, return, DO NOT generate hit
         return false;
     }
-    //the case that an optical photon hits one of the SiPM
-    //the copy number of the UPPER SiPM is 1 and that of the lower one is 2!!
-    //generate the time stamp for each event!
-    IsMuon = pScintSD->IsMuon();
-    IsNoise = pScintSD->IsNoise();
+
+/*============================================================================    
+    The case that an optical photon hits one of the SiPM! the copy number of 
+    the UPPER SiPM is 1 and that of the lower one is 2!!
+===============================================================================*/
     
-    if( !HasEntered  )
+    //this is a hard coded version. may be changed in the future.
+    //generate the time stamp for each event!
+    if( !HasGenerated  )
     {
-        HasEntered = true;
+        HasGenerated = true;
 		if( IsMuon )
         	EventWaitTime = secParticleSource::MuonWaitTime();
         
@@ -138,7 +145,7 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     }
     else
     {
-        //do nothing.
+        //Do nothing, never reach here.
     }
     return true;
 }
@@ -206,10 +213,9 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             if the a single normal muon event is coupled with a noise event, than this
             normal muon event will be saved. 
         */
-        G4bool IsPrint = true;
+        G4bool IsPrint = false;
 		//std::cout << "\nNoiseWaitTimeVectSize = " << NoiseWaitTimeVect.size() << std::endl;
         const size_t sz = NoiseWaitTimeVect.size();
-
         static thread_local unsigned idx = 0;
 
         //locate the closest noise wait time
@@ -248,7 +254,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         
         if( IsPrint )
         {
-    
         //==========================================================================
                                   //Creating Normal Histograms
 
@@ -276,7 +281,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //=======================================
     //  reset the flag for generating the 
     //  time stamp at the end of every event!
-    HasEntered = false;
+    HasGenerated = false;
     //=======================================
 }
 

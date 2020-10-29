@@ -31,11 +31,7 @@ using CLHEP::RandExponential;
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
     DecayFlagSiPM(false),
-    DecayFlagScint(false),
-    IsMuonEvent(false),
-    IsNoiseEvent(false),
     DecayEventID(0),
-    DecayTime(0.),
     PhotonsGenUp(0),
     PhotonsGenDown(0),
     PhotonEnegUp(0.),
@@ -129,7 +125,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     else if( *ParticleNow == *G4MuonPlus::Definition() ||
              *ParticleNow == *G4MuonMinus::Definition() )
     {
-        IsMuonEvent = true;
         G4double aStepEdep = step->GetTotalEnergyDeposit();
         G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
@@ -153,57 +148,14 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             pMuonHCdown->insert(pMuonHitDown);
 
             if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
-            {
-                //is a decay event!!
-                DecayFlagScint = true;
-                DecayFlagSiPM  = true;
-                DecayTime = step->GetPostStepPoint()->GetGlobalTime();
-            }
+                DecayFlagSiPM  = true;//is a decay event!!
         }
     }
-    else
-    {
-        //noise event!!
-        IsNoiseEvent = true;
-	}
-    return true;
-    
+    return true;   
 }
 
 void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {  
-    
-    if( !pMuonHCup->GetSize()   || !pMuonHCdown->GetSize() || 
-        !pPhotonHCup->GetSize() || !pPhotonHCdown->GetSize() )
-    {
-	    return;
-    }
-    
-    if( DecayFlagScint )
-    {   
-        //reset the flag
-        DecayFlagScint = false;
-        DecayEventID++;
-
-        //fill the data in hit collections into 1-D histogram and print its edges and entries
-        PrintData("UpScintResponse.dat",      // file name
-                  pPhotonHCup,                // hits collection's pointer
-	              &secScintHit::GetGlobalTime,// data getter function's pointer
-                  8000, 0.*ns, 20000.*ns);    // number-of-bins, lower limit, upper limit
-
-        PrintData("DownScintResponse.dat", 
-                  pPhotonHCdown,
-		          &secScintHit::GetGlobalTime,
-                  8000, 0.*ns, 20000.*ns);
-
-        PrintData("DownMuonVelocity.dat",
-                  pMuonHCdown,
-                  &secScintHit::GetVelocity);
-
-        //print the decay time
-        PrintData("DecayTime.dat", DecayTime);
-    }
-
     Reset();
 }
 
