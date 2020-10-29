@@ -38,8 +38,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     NormalResponseID(0),
     IsMuon(false),
     IsNoise(false),
-    HasGenerated(false),
-    EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
     pHCdown(nullptr)
@@ -114,15 +112,6 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     
     //this is a hard coded version. may be changed in the future.
     //generate the time stamp for each event!
-    if( !HasGenerated  )
-    {
-        HasGenerated = true;
-		if( IsMuon )
-        	EventWaitTime = secParticleSource::MuonWaitTime();
-        
-        if( IsNoise )
-            EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
-	}
 
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     G4double aPhotonEneg = step->GetPreStepPoint()->GetKineticEnergy(); //MeV
@@ -153,6 +142,13 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {  
     //At the end of event, specify the type of the event and save the result
+    //generate time stamp.
+    G4double EventWaitTime = 0.;
+    if( IsMuon )
+        EventWaitTime = secParticleSource::MuonWaitTime();
+
+    else if( IsNoise )
+        EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
     const G4double BackTimeWindow = 20000*ns;
     const G4double FrontTimeWindow = 100*ns;
@@ -278,11 +274,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
         //print noise Wait Time
     }
-    //=======================================
-    //  reset the flag for generating the 
-    //  time stamp at the end of every event!
-    HasGenerated = false;
-    //=======================================
 }
 
 G4bool secSiPMSD::IsADecayEvent()
