@@ -38,6 +38,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     NormalResponseID(0),
     IsMuon(false),
     IsNoise(false),
+    EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
     pHCdown(nullptr)
@@ -143,7 +144,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {  
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
-    G4double EventWaitTime = 0.;
     if( IsMuon )
         EventWaitTime = secParticleSource::MuonWaitTime();
 

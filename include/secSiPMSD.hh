@@ -73,6 +73,7 @@ class secSiPMSD : public G4VSensitiveDetector
         G4int NormalResponseID;
         G4bool IsMuon;
         G4bool IsNoise;
+        G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
         
         secScintSD* pScintSD;
