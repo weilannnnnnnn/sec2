@@ -67,7 +67,10 @@ class secSiPMSD : public G4VSensitiveDetector
         
         //print the value generated in a single event.
         void PrintData(G4String FileName, G4double val);
-    
+
+        G4double GetMuonTS()  { return pScintSD->MuonTimeStamp; }
+        G4double GetNoiseIdx() { return pScintSD->NoiseIdx; }
+
         G4int DecayEventID;
         G4int NoiseResponseID;
         G4int NormalResponseID;

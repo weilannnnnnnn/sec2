@@ -141,7 +141,7 @@ G4double secParticleSource::MuonWaitTime()
     //generate muons events' wait time.
     static std::atomic<G4double> MuonWaitTime(0.);
     
-    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(0.5)*s );
+    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(1./385.04)*s );
 }
 
 G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 

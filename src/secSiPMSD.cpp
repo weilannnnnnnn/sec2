@@ -27,6 +27,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 
 //lock for saving data.
 std::mutex mtx;
@@ -50,22 +51,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     {
         collectionName.insert(str);
     }
-    //read in the noise wait time file. 
-    std::ifstream ifstrm;
-    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
-    
-	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
-	if( ifstrm.is_open() )
-    {
-        std::string line;
-		while( getline(ifstrm, line) )
-        {
-            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
-        }
-    }
-	NoiseWaitTimeVect.push_back( INFINITY );
-    
-	ifstrm.close();
 }
 
 secSiPMSD::~secSiPMSD()
@@ -145,7 +130,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
     if( IsMuon )
-        EventWaitTime = secParticleSource::MuonWaitTime();
+        EventWaitTime = GetMuonTS();
 
     else if( IsNoise )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
@@ -205,55 +190,12 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     }
     else // normal muon events
     {
-        /*
-            if the a single normal muon event is coupled with a noise event, than this
-            normal muon event will be saved. 
-        */
-        G4bool IsPrint = false;
-		//std::cout << "\nNoiseWaitTimeVectSize = " << NoiseWaitTimeVect.size() << std::endl;
-        const size_t sz = NoiseWaitTimeVect.size();
-        static thread_local unsigned idx = 0;
-
-        //locate the closest noise wait time
-        while( EventWaitTime - NoiseWaitTimeVect[idx] > 0 )
-        {
-            ++idx;
-            if( idx == sz )
-            {
-                break;
-            }
-        }
-        //after this loop, the EventWait time lies in: NoiseWaitTime[idx-1], EventWaitTime, NoiseWaitTime[idx]
-        //or at the very beginning or the very end of the NoiseWaitTimeVect.
-        //if the normal event is close enough to a noise event, than this normal event will be saved.
-        if( idx == 0 )
-        {
-            if( NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
-                IsPrint = true;
-        }
-        else if( idx == sz )
-        {
-            if( EventWaitTime - NoiseWaitTimeVect[sz-1] <= FrontTimeWindow )
-            {
-                IsPrint = true;
-            }
-        }
-        else if ( EventWaitTime - NoiseWaitTimeVect[idx-1] <= FrontTimeWindow ||
-                  NoiseWaitTimeVect[idx] - EventWaitTime <= BackTimeWindow )
-        {
-                IsPrint = true;
-        }
-        else
-        {
-            //do nothing, will never reach here.
-        }
         
-        if( IsPrint )
-        {
         //==========================================================================
                                   //Creating Normal Histograms
 
 			//NOTICE: fill the extra branches first, or you may run into nasty problems.
+            unsigned idx = GetNoiseIdx();
             mtx.lock();
 			tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
             TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
@@ -270,9 +212,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             G4Hist2TTree(&DownHist, DownNormalTree);
             mtx.unlock();
         //==========================================================================
-        }
-
-        //print noise Wait Time
     }
 }
 

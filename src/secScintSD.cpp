@@ -1,6 +1,8 @@
 #include "secScintSD.hh"
-#include "secAnalysis.hh"
+#include "secParticleSource.hh"
 
+#include "G4RunManager.hh"
+#include "G4MTRunManager.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
@@ -19,6 +21,7 @@
 #include "Randomize.hh"
 
 #include "tools/histo/h1d"
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,7 +33,11 @@ using CLHEP::RandExponential;
 
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
+    NoiseIdx(0),
+    MuonTimeStamp(0.),
+    IsMuonTimeStampGened(false),
     DecayFlagSiPM(false),
+    EventIsKept(false),
     DecayEventID(0),
     PhotonsGenUp(0),
     PhotonsGenDown(0),
@@ -49,6 +56,21 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     {
         collectionName.insert(str);
     }
+    //read in the noise wait time file. 
+    std::ifstream ifstrm;
+    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
+    
+	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
+	if( ifstrm.is_open() )
+    {
+        std::string line;
+		while( getline(ifstrm, line) )
+        {
+            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
+        }
+    }
+    std::sort(NoiseWaitTimeVect.begin()+1, NoiseWaitTimeVect.end());
+	NoiseWaitTimeVect.push_back( INFINITY );
 }
 
 secScintSD::~secScintSD()
@@ -95,6 +117,10 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 */
     if( *ParticleNow == *G4OpticalPhoton::Definition() )
     {
+        //IMPORTANT! the decay event and coupled event will be saved, others will be aborted!!!
+        if( !EventIsKept )
+            G4RunManager::GetRunManager()->AbortEvent();
+
         if( step->GetTrack()->GetTrackID() != FormerID )
         {
             const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
@@ -125,6 +151,14 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     else if( *ParticleNow == *G4MuonPlus::Definition() ||
              *ParticleNow == *G4MuonMinus::Definition() )
     {
+        if( !IsMuonTimeStampGened )
+        {
+            IsMuonTimeStampGened = true;
+            MuonTimeStamp = secParticleSource::MuonWaitTime();
+            NoiseIdx = GetCoupledIdx(MuonTimeStamp);
+            if( -1 != NoiseIdx )
+                EventIsKept = true;
+        }
         G4double aStepEdep = step->GetTotalEnergyDeposit();
         G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
@@ -148,7 +182,10 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             pMuonHCdown->insert(pMuonHitDown);
 
             if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
+            {
                 DecayFlagSiPM  = true;//is a decay event!!
+                EventIsKept = true;
+            }
         }
     }
     return true;   
@@ -252,4 +289,53 @@ void secScintSD::PrintData(G4String FileName, G4double val)
 
         std::ofstream fstrm(sstrm.str(), std::ofstream::app | std::ofstream::binary );
         fstrm << val << '\n';
+}
+
+G4int secScintSD::IsCoupledEvent(G4double MuonTS)
+{
+        /*
+            if the a single normal muon event is coupled with a noise event, than this
+            normal muon event will be saved. 
+        */
+        const G4double FrontTimeWindow = 20000*ns;
+        const G4double BackTimeWindow = 100*ns;
+        G4bool IsCoupled = false;
+		//std::cout << "\nNoiseWaitTimeVectSize = " << NoiseWaitTimeVect.size() << std::endl;
+        const size_t sz = NoiseWaitTimeVect.size();
+        static thread_local unsigned idx = 0;
+
+        //locate the closest noise wait time
+        while( MuonTS - NoiseWaitTimeVect[idx] > 0 )
+        {
+            ++idx;
+            if( idx == sz )
+            {
+                break;
+            }
+        }
+        //after this loop, the EventWait time lies in: NoiseWaitTime[idx-1], EventWaitTime, NoiseWaitTime[idx]
+        //or at the very beginning or the very end of the NoiseWaitTimeVect.
+        //if the normal event is close enough to a noise event, than this normal event will be saved.
+        if( idx == 0 )
+        {
+            if( NoiseWaitTimeVect[idx] - MuonTS <= BackTimeWindow )
+                IsCoupled = true;
+        }
+        else if( idx == sz )
+        {
+            if( MuonTS - NoiseWaitTimeVect[sz-1] <= FrontTimeWindow )
+            {
+                IsCoupled = true;
+            }
+        }
+        else if ( MuonTS - NoiseWaitTimeVect[idx-1] <= FrontTimeWindow ||
+                  NoiseWaitTimeVect[idx] - MuonTS <= BackTimeWindow )
+        {
+                IsCoupled = true;
+        }
+
+        if( !IsCoupled )
+            return -1;
+        
+        return idx;
 }

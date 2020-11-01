@@ -12,6 +12,8 @@ class secScintSD : public G4VSensitiveDetector
 {
     friend G4bool secSiPMSD::IsADecayEvent();
     friend void secSiPMSD::ResetDecayFlag();
+    friend G4double secSiPMSD::GetMuonTS();
+    friend G4double secSiPMSD::GetNoiseIdx();
 
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
@@ -31,7 +33,16 @@ class secScintSD : public G4VSensitiveDetector
 
         void     PrintData(G4String FileName, G4double val);
 
+        //for event saving
+        G4int    NoiseIdx;
+        G4double MuonTimeStamp;
+        G4int    GetCoupledIdx(G4double MuonTS);
+
+        G4bool   IsMuonTimeStampGened;
         G4bool   DecayFlagSiPM;
+        G4bool   EventIsKept;
+        std::vector<G4double> NoiseWaitTimeVect;
+
         G4int    DecayEventID;
         G4int    PhotonsGenUp;
         G4int    PhotonsGenDown;
@@ -50,6 +61,8 @@ class secScintSD : public G4VSensitiveDetector
 //reset the SD at the end of each event
 inline void secScintSD::Reset(void)
 {
+    EventIsKept = false;
+    IsMuonTimeStampGened = false;
     PhotonsGenUp = 0;
     PhotonsGenDown = 0;
     PhotonEnegUp = 0.;
