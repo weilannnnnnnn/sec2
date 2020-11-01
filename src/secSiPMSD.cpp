@@ -135,8 +135,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else if( IsNoise )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
-    const G4double BackTimeWindow = 20000*ns;
-    const G4double FrontTimeWindow = 100*ns;
     // empty HC, the PM haven't been triggered!
     if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) )
     {
@@ -219,11 +217,20 @@ G4bool secSiPMSD::IsADecayEvent()
 {
     return pScintSD->DecayFlagSiPM;    
 }
+
 void secSiPMSD::ResetDecayFlag()
 {
     pScintSD->DecayFlagSiPM = false;
 }
 
+G4double secSiPMSD::GetMuonTS()  
+{ 
+	return pScintSD->MuonTimeStamp; 
+}
+G4double secSiPMSD::GetNoiseIdx() 
+{ 
+	return pScintSD->NoiseIdx; 
+}
 void secSiPMSD::FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
 {
     for( size_t i = 0; i != pHC->GetSize(); ++i )

@@ -25,8 +25,8 @@
     create a region for setting cuts of the muons
 */
 #include "secDetectorConstruction.hh"
-#include "secScintSD.hh"
 #include "secSiPMSD.hh"
+#include "secScintSD.hh"
 
 #ifdef G4MULTITHREADED
     #include "G4MTRunManager.hh"
@@ -356,6 +356,7 @@ void secDetectorConstruction::ConstructOpticalScint(G4Material *& mat, G4Optical
 	mat->SetMaterialPropertiesTable(MPTscint);
 
 	mat->GetIonisation()->SetBirksConstant(0.15*mm/MeV);  
+
 }
 
 void secDetectorConstruction::ConstructOpticalFoil(G4Material *&, G4OpticalSurface *& surface)

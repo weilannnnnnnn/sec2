@@ -2,7 +2,6 @@
 #define secSiPMSD_hh
 
 #include "secSiPMHit.hh"
-
 #include "G4VSensitiveDetector.hh"
 #include "tools/histo/h1d"
 #include "globals.hh"
@@ -12,8 +11,8 @@
 #include <vector>
 #include <memory>
 
-class secScintSD;
 class G4Step;
+class secScintSD;
 class G4HCofThisEvent;
 class TH1D;
 class h1d;
@@ -35,7 +34,10 @@ class secSiPMSD : public G4VSensitiveDetector
         
         G4bool IsADecayEvent(void);
         void ResetDecayFlag(void);
-        static TFile* pFile;
+		G4double GetMuonTS();
+		G4double GetNoiseIdx();
+        
+		static TFile* pFile;
 
     private:
 
@@ -67,9 +69,6 @@ class secSiPMSD : public G4VSensitiveDetector
         
         //print the value generated in a single event.
         void PrintData(G4String FileName, G4double val);
-
-        G4double GetMuonTS()  { return pScintSD->MuonTimeStamp; }
-        G4double GetNoiseIdx() { return pScintSD->NoiseIdx; }
 
         G4int DecayEventID;
         G4int NoiseResponseID;
