@@ -135,8 +135,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else if( IsNoise )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
-    const G4double BackTimeWindow = 20000*ns;
-    const G4double FrontTimeWindow = 100*ns;
     // empty HC, the PM haven't been triggered!
     if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) )
     {
@@ -146,7 +144,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
     {
         ++NoiseResponseID;
-        //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different threads.
+        //using mutex lock, because CERN ROOT doesn't support handling multiple TFiles in different threads.
         // What a BAD feature !
     //=====================================================================
                        //Creating Noise Histograms
@@ -189,8 +187,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //====================================================================
     }
     else // normal muon events
-    {
-        
+    {      
         //==========================================================================
                                   //Creating Normal Histograms
 
