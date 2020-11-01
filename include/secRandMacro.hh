@@ -42,16 +42,7 @@ class secRandMacro : public G4UImessenger
         G4UIdirectory*      secRanddir;
         G4UIcmdWithAString* cmd_FuncType;
         G4UIcmdWithAString* cmd_FileName;
-
-        G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg; 
-        G4double AlphaEneg;
-
-        G4UIcmdWithADouble* cmd_BetaAlphaRatio;
-        G4double BetaAlphaRatio;
-
-        G4UIcmdWithAString* cmd_EventType; 
-        secParticleSource::secSourceGenType EventType;
-
+        
         secVRandGen::DistFuncType FuncType;
 };
 

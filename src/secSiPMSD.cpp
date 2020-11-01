@@ -1,6 +1,6 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
-#include "secAnalysis.hh"
+#include "secRunMacro.hh"
 #include "secParticleSource.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -36,8 +36,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     DecayEventID(0),
     NoiseResponseID(0),
     NormalResponseID(0),
-    IsMuon(false),
-    IsNoise(false),
     EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
@@ -46,6 +44,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
 /* register the names of the HCs to G4VSensitiveDetector object so
     that the HCids which are assigned by G4 Kenel could be assessed by
     G4SDManager object */
+    EventType = secRunMacro::GetInstance()->GetEventType();
     for(G4String str : SDHCnameVect)
     {
         collectionName.insert(str);
