@@ -1,3 +1,4 @@
+#include "secSiPMSD.hh"
 #include "secScintSD.hh"
 #include "secParticleSource.hh"
 
@@ -104,6 +105,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 //it may be used in the future update of Geant4 application.
     
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();
+	std::cout << "Name Is" << ParticleNow->GetParticleName() << std::endl;
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     //the case that a opticalphoton generated in the scintillator
 /*
@@ -118,8 +120,8 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     if( *ParticleNow == *G4OpticalPhoton::Definition() )
     {
         //IMPORTANT! the decay event and coupled event will be saved, others will be aborted!!!
-        if( !EventIsKept )
-            G4RunManager::GetRunManager()->AbortEvent();
+        //if( !EventIsKept )
+        //    G4RunManager::GetRunManager()->AbortEvent();
 
         if( step->GetTrack()->GetTrackID() != FormerID )
         {
@@ -185,6 +187,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             {
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
+				//std::cout << "Decayed!" << std::endl;
             }
         }
     }
@@ -291,7 +294,7 @@ void secScintSD::PrintData(G4String FileName, G4double val)
         fstrm << val << '\n';
 }
 
-G4int secScintSD::IsCoupledEvent(G4double MuonTS)
+G4int secScintSD::GetCoupledIdx(G4double MuonTS)
 {
         /*
             if the a single normal muon event is coupled with a noise event, than this

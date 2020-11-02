@@ -216,11 +216,20 @@ G4bool secSiPMSD::IsADecayEvent()
 {
     return pScintSD->DecayFlagSiPM;    
 }
+
 void secSiPMSD::ResetDecayFlag()
 {
     pScintSD->DecayFlagSiPM = false;
 }
 
+G4double secSiPMSD::GetMuonTS()  
+{ 
+	return pScintSD->MuonTimeStamp; 
+}
+G4double secSiPMSD::GetNoiseIdx() 
+{ 
+	return pScintSD->NoiseIdx; 
+}
 void secSiPMSD::FillRootHist(TH1D* pHist, secSiPMHitsCollection* pHC, secSiPMHit::DataGetter Getter)
 {
     for( size_t i = 0; i != pHC->GetSize(); ++i )

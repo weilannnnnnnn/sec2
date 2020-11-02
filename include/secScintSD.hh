@@ -2,16 +2,16 @@
 #define secScintSD_hh
 #include "G4VSensitiveDetector.hh"
 #include "secScintHit.hh"
-#include "secSiPMSD.hh"
 #include "globals.hh"
 
+class secSiPMSD;
 class G4Step;
 class G4HCofThisEvent;
 
 class secScintSD : public G4VSensitiveDetector
 {
-    friend G4bool secSiPMSD::IsADecayEvent();
-    friend void secSiPMSD::ResetDecayFlag();
+    friend G4bool   secSiPMSD::IsADecayEvent();
+    friend void     secSiPMSD::ResetDecayFlag();
     friend G4double secSiPMSD::GetMuonTS();
     friend G4double secSiPMSD::GetNoiseIdx();
 
@@ -71,5 +71,5 @@ inline void secScintSD::Reset(void)
     MuonEdepDown = 0.;
     FormerID = -1;
 }
-
 #endif
+
