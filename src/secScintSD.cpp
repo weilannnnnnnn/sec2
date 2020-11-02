@@ -105,7 +105,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 //it may be used in the future update of Geant4 application.
     
     auto ParticleNow = step->GetTrack()->GetParticleDefinition();
-	std::cout << "Name Is" << ParticleNow->GetParticleName() << std::endl;
     const G4int VolumeCpyNb = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     //the case that a opticalphoton generated in the scintillator
 /*
@@ -119,10 +118,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 */
     if( *ParticleNow == *G4OpticalPhoton::Definition() )
     {
-        //IMPORTANT! the decay event and coupled event will be saved, others will be aborted!!!
-        //if( !EventIsKept )
-        //    G4RunManager::GetRunManager()->AbortEvent();
-
         if( step->GetTrack()->GetTrackID() != FormerID )
         {
             const G4double aPhotonEneg = step->GetTrack()->GetKineticEnergy();
@@ -187,7 +182,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             {
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
-				//std::cout << "Decayed!" << std::endl;
+				std::cout << "Decayed!" << std::endl;
             }
         }
     }

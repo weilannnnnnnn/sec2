@@ -22,6 +22,7 @@ class secScintSD : public G4VSensitiveDetector
         virtual void Initialize(G4HCofThisEvent *hitCollection);
         virtual G4bool ProcessHits(G4Step *step, G4TouchableHistory *history);
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
+        G4bool IsKeptEvent() { return EventIsKept; }
 
     private:
         void     Reset(void);//user should not invoke this method!!

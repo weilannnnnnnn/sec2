@@ -4,6 +4,7 @@
 
 class G4Track;
 class secEventAction;
+class secScintSD;
 class G4VPhysicalVolume;
 
 class secTrackingAction : public G4UserTrackingAction
@@ -17,6 +18,6 @@ class secTrackingAction : public G4UserTrackingAction
 
     private:
         secEventAction* EventAction;
-
+        secScintSD* pScintSD;
 };
 #endif
