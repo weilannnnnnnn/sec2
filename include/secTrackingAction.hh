@@ -18,6 +18,5 @@ class secTrackingAction : public G4UserTrackingAction
 
     private:
         secEventAction* EventAction;
-        secScintSD* pScintSD;
 };
 #endif

@@ -2,8 +2,6 @@
 #include "secScintSD.hh"
 #include "secParticleSource.hh"
 
-#include "G4RunManager.hh"
-#include "G4MTRunManager.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
@@ -182,7 +180,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             {
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
-				std::cout << "Decayed!" << std::endl;
             }
         }
     }
