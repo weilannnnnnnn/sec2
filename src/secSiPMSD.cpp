@@ -181,7 +181,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         G4Hist2TTree(&UpHist, UpDecayTree);
 
         tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
-        FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
+        FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownDecayTree);
         mtx.unlock();
     //====================================================================
@@ -205,7 +205,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
             TBranch* BranchDownIdx = DownNormalTree->GetBranch("Coupled index");
             BranchDownIdx->SetAddress(&idx);
             BranchDownIdx->Fill();
-            FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &DownHist);
+            FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
             G4Hist2TTree(&DownHist, DownNormalTree);
             mtx.unlock();
         //==========================================================================
