@@ -1,46 +1,62 @@
-#include "secRunMacro.hh"
+#include "secSourceMacro.hh"
+#include "secParticleSource.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAString.hh"
 
-secRunMacro::secRunMacro() :
+secSourceMacro::secSourceMacro() :
     AlphaEneg(1*MeV),
     BetaAlphaRatio(1./3.),
     EventType(secParticleSource::Muons),
 {
-    cmd_AlphaEneg = new G4UIcmdWithADoubleAndUnit("/sec/Rand/AlphaEneg", this);
+    cmd_AlphaEneg = new G4UIcmdWithADoubleAndUnit("/sec/Source/AlphaEneg", this);
     cmd_AlphaEneg->SetGuidance("Specify the energy for alpha particle");
     cmd_AlphaEneg->SetParameterName("AlphaEneg", false);
     cmd_AlphaEneg->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    cmd_BetaAlphaRatio = new G4UIcmdWithADouble("/sec/Rand/BetaAlphaRatio", this);
+    cmd_BetaAlphaRatio = new G4UIcmdWithADouble("/sec/Source/BetaAlphaRatio", this);
     cmd_BetaAlphaRatio->SetGuidance("Specify the beta/alpha ratio");
     cmd_BetaAlphaRatio->SetParameterName("Beta/Alpha", false);
     cmd_BetaAlphaRatio->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 
-    cmd_EventType = new G4UIcmdWithAString("/sec/Rand/EventType", this);
+    cmd_EventType = new G4UIcmdWithAString("/sec/Source/EventType", this);
     cmd_EventType->SetGuidance("Specify the Event Type");
     cmd_EventType->SetParameterName("EventType", false);
     cmd_EventType->AvailableForStates(G4State_PreInit, G4State_Idle);
     cmd_EventType->SetCandidates("Muon NoiseBeta NoiseAll");
+
+    cmd_SourceCentre = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseCentre");
+    cmd_SourceCentre->SetGuidance("Specify the centre of the noise source");
+    cmd_SourceCentre->SetParameterName("SourceCentre", false);
+    cmd_SourceCentre->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+
+    cmd_SourceSize = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseSourceSize");
+    cmd_SourceSize->SetGuidance("Specify the half size of the noise source");
+    cmd_SourceSize->SetParameterName("SourceSize", false);
+    cmd_SourceSize->AvailableForStates(G4State_PreInit, G4State_Idle);
+
 }
 
-void secRunMacro::~secRunMacro()
+void secSourceMacro::~secSourceMacro()
 {
     //delete the commands
     delete cmd_AlphaEneg;
     delete cmd_BetaAlphaRatio;
     delete cmd_EventType;
+    delete cmd_SourceCentre;
+    delete cmd_SourceSize;
+
 }
 
-secRunMacro* secRunMacro::GetInstance()
+secSourceMacro* secSourceMacro::GetInstance()
 {
-    static secRunMacro Instance;
+    static secSourceMacro Instance;
     return &Instance;
 }
 
-void secRunMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
+void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
     if (cmd == cmd_AlphaEneg)
     {
@@ -68,9 +84,17 @@ void secRunMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
             EventType = secParticleSource::NoiseAll;
         }
     }
+    else if( cmd == cmd_SourceCentre )
+    {
+        SrcCentre = cmd->ConvertTo3Vector(NewVal);
+    }
+    else if( cmd == cmd_SourceSize )
+    {
+        SrcSz = cmd->ConvertTo3Vector(NewVal);
+    }
     
 }
-G4String secRunMacro::GetCurrentValue(G4UIcommand* cmd)
+G4String secSourceMacro::GetCurrentValue(G4UIcommand* cmd)
 {
     return "";
 }

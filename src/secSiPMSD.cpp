@@ -1,6 +1,6 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
-#include "secRunMacro.hh"
+#include "secSourceMacro.hh"
 #include "secParticleSource.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -44,7 +44,7 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
 /* register the names of the HCs to G4VSensitiveDetector object so
     that the HCids which are assigned by G4 Kenel could be assessed by
     G4SDManager object */
-    EventType = secRunMacro::GetInstance()->GetEventType();
+    EventType = secParticleSource::GetEventType();
     for(G4String str : SDHCnameVect)
     {
         collectionName.insert(str);
@@ -143,10 +143,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {  
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
-    if( IsMuon )
+    if( EventType == secParticleSource::Muons )
         EventWaitTime = secParticleSource::MuonWaitTime();
 
-    else if( IsNoise )
+    else if( EventType != secParticleSource::Muons )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
     const G4double BackTimeWindow = 20000*ns;
@@ -157,7 +157,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         ResetDecayFlag();
 	    return;//ignore the event that didn't trigger both of the SiPMs!
     }
-    else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
+    else if( EventType != secParticleSource::Muons ) // the PM is Triggered by Noise particle( mainly electrons )
     {
         ++NoiseResponseID;
         //using mutex lock, cause CERN ROOT doesn't support handling multiple TFiles in different threads.

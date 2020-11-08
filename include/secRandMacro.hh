@@ -32,10 +32,6 @@ class secRandMacro : public G4UImessenger
         virtual void SetNewValue(G4UIcommand* cmd, G4String NewVal) override;
         virtual G4String GetCurrentValue(G4UIcommand* cmd) override;
 
-        void SetSourceAlphaEneg(secParticleSource* pSrc) {pSrc->AlphaEneg      = this->AlphaEneg}
-        void SetBetaAlphaRatio(secParticleSource* pSrc)  {pSrc->BetaAlphaRatio = this->BetaAlphaRatio }
-        void SetSourceEventType(secParticleSource* pSrc) {pSrc->EventType      = this->EventType}
-
     private:
         
         secRandGenFromFile* Generator;

@@ -1,23 +1,26 @@
-#ifndef secRunMacro_hh
-#define secRunMacro_hh
+#ifndef secSourceMacro_hh
+#define secSourceMacro_hh
 
 #include "secParticleSource.hh"
 #include "G4UImessenger.hh"
+#include "G4ThreeVector.hh"
 #include "globals.hh"
 
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithADouble;
+class G4ThreeVector;
 
 //this is a singleton class
 //used to configure the runtime parameters
-class secRunMacro : public G4UImessenger
+class secSourceMacro : public G4UImessenger
 {
     public :
-        secRunMacro* GetInstance();
-        secRunMacro(secRunMacro const&) = delete;
-        void operator=(secRunMacro const&) = delete;
+        secSourceMacro* GetInstance();
+        secSourceMacro(secSourceMacro const&) = delete;
+        void operator=(secSourceMacro const&) = delete;
 
         virtual void SetNewValue(G4UIcommand* cmd, G4String NewVal) override;
         virtual G4String GetCurrentValue(G4UIcommand* cmd) override;
@@ -25,10 +28,12 @@ class secRunMacro : public G4UImessenger
         G4double GetAlphaEneg() { return AlphaEneg; }
         G4double GetBetaAlphaRatio() { return BetaAlphaRatio; }
         secParticleSource::secSourceGenType GetEventType() { return EventType; }
+        G4ThreeVector GetSourceCentre() { return SrcCentre; }
+        G4ThreeVector GetSourceSize()  {return SrcSz; }
 
     private :
-        secRunMacro();
-        virtual void ~secRunMacro();
+        secSourceMacro();
+        virtual void ~secSourceMacro();
                 
         G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg; 
         G4double AlphaEneg;
@@ -38,5 +43,13 @@ class secRunMacro : public G4UImessenger
 
         G4UIcmdWithAString* cmd_EventType; 
         secParticleSource::secSourceGenType EventType;
+
+        G4UIcmdWith3VectorAndUnit* cmd_SourceCentre;
+        G4ThreeVector SrcCentre;
+
+        G4UIcmdWith3VectorAndUnit* cmd_SourceSize;
+        G4ThreeVector SrcSz;
+
 };
+
 #endif

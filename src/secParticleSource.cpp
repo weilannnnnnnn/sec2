@@ -2,6 +2,7 @@
 #include "secRandGenFromFile.hh"
 #include "secRandGenFromFx.hh"
 #include "secRandMacro.hh"
+#include "secSourceMacro.hh"
 
 #include "G4RunManager.hh"
 #include "G4MTRunManager.hh"
@@ -34,9 +35,12 @@ secParticleSource::secParticleSource()
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
     //initialize noise WaitTime list. 
-    RandGenFile->GetRandMacro()->SetSourceAlphaEneg(this);
-    RandGenFile->GetRandMacro()->SetBetaAlphaRatio(this);
-    RandGenFile->GetRandMacro()->SetSourceEventType(this);
+    secSourceMacro* RunMac = secSourceMacro::GetIsntance();
+    AlphaEneg      = RunMac->GetAlphaEneg();
+    BetaAlphaRatio = RunMac->GetBetaAlphaRatio();
+    GenTypeNow     = RunMac->GetEventType();
+    SrcCentre      = RunMac->GetSourceCentre();
+    SrcSize        = RunMac->GetSourceSize();
 }
 
 secParticleSource::~secParticleSource()
@@ -119,30 +123,24 @@ void secParticleSource::GenMuons(G4Event* Evt)
 
     Evt->AddPrimaryVertex( vertex );
 }
-
+G4ThreeVector secParticleSource::GenNoisePos()
+{
+    const G4double X = (2 * G4UniformRand() - 1) * SrcSize.x() + SrcCentre.x();
+    const G4double Y = (2 * G4UniformRand() - 1) * SrcSize.y() + SrcCentre.y();
+    const G4double Z = (2 * G4UniformRand() - 1) * SrcSize.z() + SrcCentre.z();
+    return G4ThreeVector(X, Y, Z);
+}
 void secParticleSource::GenNoiseAlpha(G4Event* Evt, G4double AlphaEneg)
 {
     auto ParDef = G4Alpha::Definition();
     //generate direction
     G4ThreeVector DirVect(0, 1, 0);
-    G4ThreeVector PosVect(0, 1, 0);
+    G4ThreeVector PosVect = GenNoisePos();
     
     G4double Theta = G4UniformRand() * 3.141592653589793;
     G4double Phi   = G4UniformRand() * 3.141592653589793 * 2.;
     DirVect.setTheta( Theta );
     DirVect.setPhi( Phi );
-    
-    //generate position
-    //G4double X = G4UniformRand() * 20. * m - 10. * m;
-    G4double X = G4UniformRand() * m - 0.5 * m;
-    //G4double Y = G4UniformRand() * 20. * m - 10. * m;
-    G4double Y = G4UniformRand() * m - 0.5 * m;
-    //G4double Z = G4UniformRand() * 12. * m - 6. * m;
-    G4double Z = G4UniformRand() * m - 0.5*m + 1.528 * m;
-
-    PosVect.setX( X );
-    PosVect.setY( Y );
-    PosVect.setZ( Z );
 
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
 	auto PriPar = new G4PrimaryParticle( ParDef );
@@ -168,24 +166,12 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
 
     //generate direction
     G4ThreeVector DirVect(0, 1, 0);
-    G4ThreeVector PosVect(0, 1, 0);
+    G4ThreeVector PosVect = GenNoisePos();
     
     G4double Theta = G4UniformRand() * 3.141592653589793;
     G4double Phi   = G4UniformRand() * 3.141592653589793 * 2.;
     DirVect.setTheta( Theta );
     DirVect.setPhi( Phi );
-    
-    //generate position
-    //G4double X = G4UniformRand() * 20. * m - 10. * m;
-    G4double X = G4UniformRand() * m - 0.5 * m;
-    //G4double Y = G4UniformRand() * 20. * m - 10. * m;
-    G4double Y = G4UniformRand() * m - 0.5 * m;
-    //G4double Z = G4UniformRand() * 12. * m - 6. * m;
-    G4double Z = G4UniformRand() * m - 0.5*m + 1.528 * m;
-
-    PosVect.setX( X );
-    PosVect.setY( Y );
-    PosVect.setZ( Z );
     
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
 	auto PriPar = new G4PrimaryParticle( ParDef );

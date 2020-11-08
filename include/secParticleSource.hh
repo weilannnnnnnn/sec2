@@ -15,13 +15,12 @@ class secRandGenFromFx;
 class secVRandGen;
 class G4ParticleDefinition;
 class G4Event;
+class G4UIcommand;
+class G4ThreeVector;
 
 class secParticleSource : public G4VPrimaryGenerator
 {
-    friend void secRandMacro::SetSourceAlphaEneg(secParticleSource*);
-    friend void secRandMacro::SetBetaAlphaRatio(secParticleSource*);
-    friend void secRandMacro::SetSourceEventType(secParticleSource*);
-    
+    friend class secSourceMacro;
     public:
         //ctor and dtor
         secParticleSource();
@@ -32,19 +31,21 @@ class secParticleSource : public G4VPrimaryGenerator
         static G4double MuonWaitTime();
         static G4double GenNoiseWaitTime( G4int ThreadID, G4bool IsInit = true, 
                                           G4bool IsUpdate = false, G4double NoiseInten = 0. );  
+        
         /*
             1. if IsInit = false, will create and initialize the static noise wait time array and return -1.
             2. if IsInit = true, IsUpdate = true, will Update the Local WaitTime Pointer.
             3. if IsInit = false, IsUpdate = false, will just return the NoiseWaitTime that ThreadID own.
         */     
         //used to specify the generation type
+
         enum secSourceGenType
         {
             Muons,
             NoiseBeta,
             NoiseAll
         };
-
+        secSourceGenType GetEventType() { return GenTypeNow; }
     private:
         
         secRandGenFromFile* RandGenFile;
@@ -52,7 +53,10 @@ class secParticleSource : public G4VPrimaryGenerator
         G4double AlphaEneg;
         G4double BetaAlphaRatio;
         secSourceGenType GenTypeNow;
+        G4ThreeVector SrcCentre;
+        G4ThreeVector SrcSize;
 
+        G4ThreeVector GenNoisePos();
         void GenAnEvent(G4Event* Evt, secSourceGenType EventType);
 
         void GenMuons(G4Event* Evt);
