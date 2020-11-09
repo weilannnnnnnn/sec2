@@ -13,12 +13,14 @@ class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithADouble;
 class G4ThreeVector;
 
-//this is a singleton class
 //used to configure the runtime parameters
 class secSourceMacro : public G4UImessenger
 {
     public :
-        secSourceMacro* GetInstance();
+
+        secSourceMacro(secParticleSource* secSrc);
+        virtual ~secSourceMacro();
+
         secSourceMacro(secSourceMacro const&) = delete;
         void operator=(secSourceMacro const&) = delete;
 
@@ -34,21 +36,13 @@ class secSourceMacro : public G4UImessenger
     private :
         secSourceMacro();
         virtual void ~secSourceMacro();
-                
-        G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg; 
-        G4double AlphaEneg;
-
+        
+        secParticleSource* ptrSrc;
+        G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg;
         G4UIcmdWithADouble* cmd_BetaAlphaRatio;
-        G4double BetaAlphaRatio;
-
-        G4UIcmdWithAString* cmd_EventType; 
-        secParticleSource::secSourceGenType EventType;
-
+        G4UIcmdWithAString* cmd_EventType;
         G4UIcmdWith3VectorAndUnit* cmd_SourceCentre;
-        G4ThreeVector SrcCentre;
-
         G4UIcmdWith3VectorAndUnit* cmd_SourceSize;
-        G4ThreeVector SrcSz;
 
 };
 

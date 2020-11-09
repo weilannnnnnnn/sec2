@@ -20,7 +20,7 @@ class G4ThreeVector;
 
 class secParticleSource : public G4VPrimaryGenerator
 {
-    friend class secSourceMacro;
+    friend void secSourceMacro::SetNewValue(G4UIcommand*, G4String);
     public:
         //ctor and dtor
         secParticleSource();
@@ -31,7 +31,6 @@ class secParticleSource : public G4VPrimaryGenerator
         static G4double MuonWaitTime();
         static G4double GenNoiseWaitTime( G4int ThreadID, G4bool IsInit = true, 
                                           G4bool IsUpdate = false, G4double NoiseInten = 0. );  
-        
         /*
             1. if IsInit = false, will create and initialize the static noise wait time array and return -1.
             2. if IsInit = true, IsUpdate = true, will Update the Local WaitTime Pointer.
@@ -45,14 +44,15 @@ class secParticleSource : public G4VPrimaryGenerator
             NoiseBeta,
             NoiseAll
         };
-        secSourceGenType GetEventType() { return GenTypeNow; }
+        static secSourceGenType GetEventType() { return GenTypeNow; }
+
     private:
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
         G4double AlphaEneg;
         G4double BetaAlphaRatio;
-        secSourceGenType GenTypeNow;
+        static secSourceGenType GenTypeNow;
         G4ThreeVector SrcCentre;
         G4ThreeVector SrcSize;
 

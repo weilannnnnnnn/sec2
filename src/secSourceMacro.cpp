@@ -4,7 +4,8 @@
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAString.hh"
 
-secSourceMacro::secSourceMacro() :
+secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
+    ptrSrc(secSrc),
     AlphaEneg(1*MeV),
     BetaAlphaRatio(1./3.),
     EventType(secParticleSource::Muons),
@@ -50,27 +51,22 @@ void secSourceMacro::~secSourceMacro()
 
 }
 
-secSourceMacro* secSourceMacro::GetInstance()
-{
-    static secSourceMacro Instance;
-    return &Instance;
-}
-
 void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
     if (cmd == cmd_AlphaEneg)
     {
-        AlphaEneg = cmd->GetNewDoubleValue(NewVal);
+        ptrSrc->AlphaEneg = cmd->GetNewDoubleValue(NewVal);
     }
     else if (cmd == cmd_BetaAlphaRatio)
     {
-        BetaAlphaRatio = cmd->GetNewDoubleValue(NewVal);
+        ptrSrc->BetaAlphaRatio = cmd->GetNewDoubleValue(NewVal);
     }
     else if (cmd == cmd_EventType)
     {
         const G4double MuonName = "Muon";
         const G4double BetaName = "NoiseBeta";
         const G4double NoiseAllName = "NoiseAll";
+        secParticleSource::secSourceGenType EventType = 0;
         if( NewVal == MuonName )
         {
             EventType = secParticleSource::Muons;
@@ -83,14 +79,15 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         {
             EventType = secParticleSource::NoiseAll;
         }
+        secParticleSource::secSourceGenType secParticleSource::GenTypeNow = EventType;
     }
     else if( cmd == cmd_SourceCentre )
     {
-        SrcCentre = cmd->ConvertTo3Vector(NewVal);
+        ptrSrc->SrcCentre = cmd->ConvertTo3Vector(NewVal);
     }
     else if( cmd == cmd_SourceSize )
     {
-        SrcSz = cmd->ConvertTo3Vector(NewVal);
+        ptrSrc->SrcSize = cmd->ConvertTo3Vector(NewVal);
     }
     
 }

@@ -40,11 +40,11 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     pScintSD(pSD),
     pHCup(nullptr),
     pHCdown(nullptr)
-{    
+{
+    EventType = secParticleSource::GetEventType();
 /* register the names of the HCs to G4VSensitiveDetector object so
     that the HCids which are assigned by G4 Kenel could be assessed by
     G4SDManager object */
-    EventType = secParticleSource::GetEventType();
     for(G4String str : SDHCnameVect)
     {
         collectionName.insert(str);
@@ -52,7 +52,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     //read in the noise wait time file. 
     std::ifstream ifstrm;
     ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
-    
 	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
 	if( ifstrm.is_open() )
     {
@@ -63,7 +62,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
         }
     }
 	NoiseWaitTimeVect.push_back( INFINITY );
-    
 	ifstrm.close();
 }
 

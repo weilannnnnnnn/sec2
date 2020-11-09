@@ -29,18 +29,18 @@
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 
-secParticleSource::secParticleSource()
+secParticleSource::secParticleSource():
+    AlphaEneg(1*MeV),
+    BetaAlphaRatio(1./3.),
+    GenTypeNow(secSourceGenType::Muons),
+    SrcCentre(G4ThreeVector(0.,0.,0.)),
+    SrcSize(G4ThreeVector(0.,0.,0.))
 {
     //random generators
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
     //initialize noise WaitTime list. 
-    secSourceMacro* RunMac = secSourceMacro::GetIsntance();
-    AlphaEneg      = RunMac->GetAlphaEneg();
-    BetaAlphaRatio = RunMac->GetBetaAlphaRatio();
-    GenTypeNow     = RunMac->GetEventType();
-    SrcCentre      = RunMac->GetSourceCentre();
-    SrcSize        = RunMac->GetSourceSize();
+    secSourceMacro* RunMac = new secSourceMacro(this);
 }
 
 secParticleSource::~secParticleSource()
