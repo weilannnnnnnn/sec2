@@ -406,7 +406,7 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
 	DataTree->SetBranchAddress("ArraySize", &sz);
     DataTree->SetBranchAddress("Entries", (unsigned*) &(EntriesVect[1]));
     
-	if( !IsNoise )
+	if( EventType == secParticleSource::secSourceGenType::Muons )
         DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
         
 	//fill the entire tree here, you had better fill the extra branches at first.

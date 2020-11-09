@@ -1,14 +1,12 @@
 #include "secSourceMacro.hh"
 #include "secParticleSource.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithAString.hh"
 
 secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
-    ptrSrc(secSrc),
-    AlphaEneg(1*MeV),
-    BetaAlphaRatio(1./3.),
-    EventType(secParticleSource::Muons),
+    ptrSrc(secSrc)
 {
     cmd_AlphaEneg = new G4UIcmdWithADoubleAndUnit("/sec/Source/AlphaEneg", this);
     cmd_AlphaEneg->SetGuidance("Specify the energy for alpha particle");
@@ -27,20 +25,20 @@ secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
     cmd_EventType->AvailableForStates(G4State_PreInit, G4State_Idle);
     cmd_EventType->SetCandidates("Muon NoiseBeta NoiseAll");
 
-    cmd_SourceCentre = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseCentre");
+    cmd_SourceCentre = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseCentre", this);
     cmd_SourceCentre->SetGuidance("Specify the centre of the noise source");
-    cmd_SourceCentre->SetParameterName("SourceCentre", false);
+    cmd_SourceCentre->SetParameterName("X", "Y", "Z", false);
     cmd_SourceCentre->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 
-    cmd_SourceSize = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseSourceSize");
+    cmd_SourceSize = new G4UIcmdWith3VectorAndUnit("/sec/Source/NoiseSourceSize", this);
     cmd_SourceSize->SetGuidance("Specify the half size of the noise source");
-    cmd_SourceSize->SetParameterName("SourceSize", false);
+    cmd_SourceSize->SetParameterName("HalfX", "HalfY", "HalfZ", false);
     cmd_SourceSize->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 }
 
-void secSourceMacro::~secSourceMacro()
+secSourceMacro::~secSourceMacro()
 {
     //delete the commands
     delete cmd_AlphaEneg;
@@ -55,18 +53,18 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
     if (cmd == cmd_AlphaEneg)
     {
-        ptrSrc->AlphaEneg = cmd->GetNewDoubleValue(NewVal);
+        ptrSrc->AlphaEneg = G4UIcmdWithADoubleAndUnit::GetNewDoubleValue(NewVal);
     }
     else if (cmd == cmd_BetaAlphaRatio)
     {
-        ptrSrc->BetaAlphaRatio = cmd->GetNewDoubleValue(NewVal);
+        ptrSrc->BetaAlphaRatio = G4UIcmdWithADouble::GetNewDoubleValue(NewVal);
     }
     else if (cmd == cmd_EventType)
     {
-        const G4double MuonName = "Muon";
-        const G4double BetaName = "NoiseBeta";
-        const G4double NoiseAllName = "NoiseAll";
-        secParticleSource::secSourceGenType EventType = 0;
+        const G4String MuonName = "Muon";
+        const G4String BetaName = "NoiseBeta";
+        const G4String NoiseAllName = "NoiseAll";
+        secParticleSource::secSourceGenType EventType = secParticleSource::secSourceGenType::Muons;
         if( NewVal == MuonName )
         {
             EventType = secParticleSource::Muons;
@@ -79,7 +77,7 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
         {
             EventType = secParticleSource::NoiseAll;
         }
-        secParticleSource::secSourceGenType secParticleSource::GenTypeNow = EventType;
+        secParticleSource::GenTypeNow = EventType;
     }
     else if( cmd == cmd_SourceCentre )
     {
@@ -91,7 +89,7 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
     }
     
 }
-G4String secSourceMacro::GetCurrentValue(G4UIcommand* cmd)
+G4String secSourceMacro::GetCurrentValue(G4UIcommand* )
 {
     return "";
 }

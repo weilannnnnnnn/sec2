@@ -44,7 +44,7 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     pMuonHCup(nullptr),
     pMuonHCdown(nullptr)
 {
-    EventType = secSourceMacro::GetInstance()->GetEventType();
+    EventType = secParticleSource::GetEventType();
     //the arrive time for the first event
     for(G4String str : SDHCnameVect)
     {

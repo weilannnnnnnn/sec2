@@ -3,6 +3,7 @@
 
 #include "G4VPrimaryGenerator.hh"
 #include "G4ThreeVector.hh"
+#include "secSourceMacro.hh"
 #include <atomic>
 /*========================================================
     class description:
@@ -16,7 +17,6 @@ class secVRandGen;
 class G4ParticleDefinition;
 class G4Event;
 class G4UIcommand;
-class G4ThreeVector;
 
 class secParticleSource : public G4VPrimaryGenerator
 {
@@ -44,12 +44,14 @@ class secParticleSource : public G4VPrimaryGenerator
             NoiseBeta,
             NoiseAll
         };
-        static secSourceGenType GetEventType() { return GenTypeNow; }
+        static secSourceGenType GetEventType() { return secParticleSource::GenTypeNow; }
 
     private:
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
+	secSourceMacro* srcMac;
+
         G4double AlphaEneg;
         G4double BetaAlphaRatio;
         static secSourceGenType GenTypeNow;
@@ -68,5 +70,6 @@ class secParticleSource : public G4VPrimaryGenerator
         void GenNoiseAll(G4Event* Evt, G4double AlphaEneg, G4double Ratio);
 
 };
+
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef secScintSD_hh
 #define secScintSD_hh
 #include "G4VSensitiveDetector.hh"
+#include "G4ThreeVector.hh"
+#include "secSourceMacro.hh"
 #include "secParticleSource.hh"
 #include "secScintHit.hh"
 #include "secSiPMSD.hh"

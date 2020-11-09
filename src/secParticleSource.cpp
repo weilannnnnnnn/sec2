@@ -28,11 +28,11 @@
 
 class G4PrimaryVertex;
 class G4PrimaryParticle;
+secParticleSource::secSourceGenType secParticleSource::GenTypeNow = secParticleSource::secSourceGenType::Muons;
 
 secParticleSource::secParticleSource():
     AlphaEneg(1*MeV),
     BetaAlphaRatio(1./3.),
-    GenTypeNow(secSourceGenType::Muons),
     SrcCentre(G4ThreeVector(0.,0.,0.)),
     SrcSize(G4ThreeVector(0.,0.,0.))
 {
@@ -40,7 +40,7 @@ secParticleSource::secParticleSource():
     RandGenFile = secRandGenFromFile::GetInstance();
     RandGenFx   = secRandGenFromFx::GetInstance();
     //initialize noise WaitTime list. 
-    secSourceMacro* RunMac = new secSourceMacro(this);
+    srcMac = new secSourceMacro(this);
 }
 
 secParticleSource::~secParticleSource()
@@ -49,7 +49,7 @@ secParticleSource::~secParticleSource()
 
 void secParticleSource::GeneratePrimaryVertex(G4Event* Evt)
 {
-    GenAnEvent(Evt, GenTypeNow);
+    GenAnEvent(Evt, secParticleSource::GenTypeNow);
 }
 
 void secParticleSource::GenAnEvent(G4Event* pEvt, secSourceGenType GenType)
@@ -59,19 +59,22 @@ void secParticleSource::GenAnEvent(G4Event* pEvt, secSourceGenType GenType)
         case Muons : 
         {
             GenMuons(pEvt);
+	    break;
         }
         case NoiseBeta :
         {
             GenNoiseBeta(pEvt);
+	    break;
         }
         case NoiseAll :
         {
             //unfinished
             GenNoiseAll(pEvt, AlphaEneg, BetaAlphaRatio);
+	    break;
         }
-        case default :
+        default :
         {
-            GenMouns(pEvt);
+            GenMuons(pEvt);
         }
     }
 }
@@ -130,7 +133,7 @@ G4ThreeVector secParticleSource::GenNoisePos()
     const G4double Z = (2 * G4UniformRand() - 1) * SrcSize.z() + SrcCentre.z();
     return G4ThreeVector(X, Y, Z);
 }
-void secParticleSource::GenNoiseAlpha(G4Event* Evt, G4double AlphaEneg)
+void secParticleSource::GenNoiseAlpha(G4Event* Evt, G4double Eneg)
 {
     auto ParDef = G4Alpha::Definition();
     //generate direction
@@ -145,7 +148,7 @@ void secParticleSource::GenNoiseAlpha(G4Event* Evt, G4double AlphaEneg)
     auto vertex = new G4PrimaryVertex( PosVect, 0. );
 	auto PriPar = new G4PrimaryParticle( ParDef );
 
-    PriPar->SetKineticEnergy( AlphaEneg );
+    PriPar->SetKineticEnergy( Eneg );
     PriPar->SetMomentumDirection( DirVect.unit() );
     PriPar->SetMass( ParDef->GetPDGMass() );
     PriPar->SetCharge( ParDef->GetPDGCharge() );
@@ -185,16 +188,15 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
     Evt->AddPrimaryVertex( vertex );
 }
 
-void secParticleSource::GenNoiseAll(G4Event* Evt, G4double AlphaEneg, G4int BetaSpectrumIdx, 
-                                    secVRandGen::DistFuncType BetaFuncType, G4double BetaAlphaRatio)
+void secParticleSource::GenNoiseAll(G4Event* Evt, G4double Eneg, G4double BARatio)
 {
-    if( G4UniformRand() < 1. / (1. + BetaAlphaRatio) )
+    if( G4UniformRand() < 1. / (1. + BARatio) )
     {
         GenNoiseBeta(Evt);
     }
     else
     {
-        GenNoiseAlpha(Evt, AlphaEneg);
+        GenNoiseAlpha(Evt, Eneg);
     }    
 }
 
