@@ -1,10 +1,6 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
-<<<<<<< HEAD
 #include "secParticleSource.hh"
-=======
-#include "secSourceMacro.hh"
->>>>>>> secSourceMacro
 
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"

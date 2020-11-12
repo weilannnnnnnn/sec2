@@ -50,23 +50,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     {
         collectionName.insert(str);
     }
-<<<<<<< HEAD
-=======
-    //read in the noise wait time file. 
-    std::ifstream ifstrm;
-    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
-	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
-	if( ifstrm.is_open() )
-    {
-        std::string line;
-		while( getline(ifstrm, line) )
-        {
-            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
-        }
-    }
-	NoiseWaitTimeVect.push_back( INFINITY );
-	ifstrm.close();
->>>>>>> secSourceMacro
 }
 
 secSiPMSD::~secSiPMSD()
@@ -145,13 +128,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {  
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
-<<<<<<< HEAD
-    if( IsMuon )
-        EventWaitTime = GetMuonTS();
-=======
     if( EventType == secParticleSource::Muons )
         EventWaitTime = secParticleSource::MuonWaitTime();
->>>>>>> secSourceMacro
 
     else if( EventType != secParticleSource::Muons )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
