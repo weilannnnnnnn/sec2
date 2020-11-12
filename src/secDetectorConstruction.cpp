@@ -165,7 +165,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     conc_log->SetUserLimits(conc_limits);
 
     //physical volume
-    auto conc_phy = new G4PVPlacement(0, G4ThreeVector(0, 0, Conc_Z), conc_log, "conc_phy", world_log, false, 0, OverLapCheck);   
+    new G4PVPlacement(0, G4ThreeVector(0, 0, Conc_Z), conc_log, "conc_phy", world_log, false, 0, OverLapCheck);   
 
 //=======================================================================
 //Iron plate

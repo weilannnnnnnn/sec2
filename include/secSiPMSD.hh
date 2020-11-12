@@ -2,6 +2,10 @@
 #define secSiPMSD_hh
 
 #include "secSiPMHit.hh"
+<<<<<<< HEAD
+=======
+#include "secParticleSource.hh"
+>>>>>>> secSourceMacro
 #include "G4VSensitiveDetector.hh"
 #include "tools/histo/h1d"
 #include "globals.hh"
@@ -73,8 +77,8 @@ class secSiPMSD : public G4VSensitiveDetector
         G4int DecayEventID;
         G4int NoiseResponseID;
         G4int NormalResponseID;
-        G4bool IsMuon;
-        G4bool IsNoise;
+
+        secParticleSource::secSourceGenType EventType;
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
         

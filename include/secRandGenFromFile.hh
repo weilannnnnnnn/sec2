@@ -31,6 +31,7 @@ class secRandGenFromFile : public secVRandGen
 
         virtual G4double PDF(G4double X, size_t PDFidx);
         virtual G4double InverseCDF(G4double X, size_t CDFidx);
+        secRandMacro* GetRandMacro() { return RandMacro; }
         
     private:
         secRandGenFromFile();

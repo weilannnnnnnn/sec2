@@ -2,6 +2,8 @@
 #include "secRandGenFromFile.hh"
 #include "G4UIcommand.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithAnInteger.hh"
 #include "globals.hh"
 
 secRandMacro::secRandMacro(secRandGenFromFile* gen) : 
@@ -21,7 +23,7 @@ secRandMacro::secRandMacro(secRandGenFromFile* gen) :
     cmd_FileName->SetGuidance("Specify the file name of PDF / CDF");
     cmd_FileName->SetParameterName("FileName", false);
     cmd_FileName->AvailableForStates(G4State_PreInit, G4State_Idle);
-   
+
 }
 
 secRandMacro::~secRandMacro()
@@ -51,7 +53,7 @@ void secRandMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
     {
         //specify the file name.
         Generator->LoadFile(NewVal, FuncType);
-    }    
+    }
 }
 
 G4String secRandMacro::GetCurrentValue(G4UIcommand*)

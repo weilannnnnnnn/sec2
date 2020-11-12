@@ -1,6 +1,6 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
-#include "secAnalysis.hh"
+#include "secSourceMacro.hh"
 #include "secParticleSource.hh"
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -37,13 +37,12 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     DecayEventID(0),
     NoiseResponseID(0),
     NormalResponseID(0),
-    IsMuon(false),
-    IsNoise(false),
     EventWaitTime(0.),
     pScintSD(pSD),
     pHCup(nullptr),
     pHCdown(nullptr)
-{    
+{
+    EventType = secParticleSource::GetEventType();
 /* register the names of the HCs to G4VSensitiveDetector object so
     that the HCids which are assigned by G4 Kenel could be assessed by
     G4SDManager object */
@@ -51,6 +50,23 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     {
         collectionName.insert(str);
     }
+<<<<<<< HEAD
+=======
+    //read in the noise wait time file. 
+    std::ifstream ifstrm;
+    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
+	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
+	if( ifstrm.is_open() )
+    {
+        std::string line;
+		while( getline(ifstrm, line) )
+        {
+            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
+        }
+    }
+	NoiseWaitTimeVect.push_back( INFINITY );
+	ifstrm.close();
+>>>>>>> secSourceMacro
 }
 
 secSiPMSD::~secSiPMSD()
@@ -129,10 +145,15 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 {  
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
+<<<<<<< HEAD
     if( IsMuon )
         EventWaitTime = GetMuonTS();
+=======
+    if( EventType == secParticleSource::Muons )
+        EventWaitTime = secParticleSource::MuonWaitTime();
+>>>>>>> secSourceMacro
 
-    else if( IsNoise )
+    else if( EventType != secParticleSource::Muons )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
     // empty HC, the PM haven't been triggered!
@@ -141,7 +162,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         ResetDecayFlag();
 	    return;//ignore the event that didn't trigger both of the SiPMs!
     }
-    else if( IsNoise ) // the PM is Triggered by Noise particle( mainly electrons )
+    else if( EventType != secParticleSource::Muons ) // the PM is Triggered by Noise particle( mainly electrons )
     {
         ++NoiseResponseID;
         //using mutex lock, because CERN ROOT doesn't support handling multiple TFiles in different threads.
@@ -354,7 +375,7 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
 	DataTree->SetBranchAddress("ArraySize", &sz);
     DataTree->SetBranchAddress("Entries", (unsigned*) &(EntriesVect[1]));
     
-	if( !IsNoise )
+	if( EventType == secParticleSource::secSourceGenType::Muons )
         DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
         
 	//fill the entire tree here, you had better fill the extra branches at first.

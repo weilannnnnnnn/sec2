@@ -1,6 +1,10 @@
 #include "secSiPMSD.hh"
 #include "secScintSD.hh"
+<<<<<<< HEAD
 #include "secParticleSource.hh"
+=======
+#include "secSourceMacro.hh"
+>>>>>>> secSourceMacro
 
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -50,6 +54,7 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     pMuonHCup(nullptr),
     pMuonHCdown(nullptr)
 {
+    EventType = secParticleSource::GetEventType();
     //the arrive time for the first event
     for(G4String str : SDHCnameVect)
     {
