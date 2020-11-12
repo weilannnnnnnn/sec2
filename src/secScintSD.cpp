@@ -50,7 +50,6 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     pMuonHCup(nullptr),
     pMuonHCdown(nullptr)
 {
-    EventType = secParticleSource::GetEventType();
     //the arrive time for the first event
     for(G4String str : SDHCnameVect)
     {
@@ -78,8 +77,7 @@ secScintSD::~secScintSD()
 
 }
 void secScintSD::Initialize(G4HCofThisEvent* HC)
-{
-    
+{    
     auto SDmgr = G4SDManager::GetSDMpointer();
     pPhotonHCup   = new secScintHitsCollection(SensitiveDetectorName, collectionName[0]);
     pPhotonHCdown = new secScintHitsCollection(SensitiveDetectorName, collectionName[1]);
@@ -182,7 +180,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
             }
-        }
+        }	
     }
     return true;   
 }

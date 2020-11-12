@@ -131,6 +131,7 @@ G4ThreeVector secParticleSource::GenNoisePos()
     const G4double X = (2 * G4UniformRand() - 1) * SrcSize.x() + SrcCentre.x();
     const G4double Y = (2 * G4UniformRand() - 1) * SrcSize.y() + SrcCentre.y();
     const G4double Z = (2 * G4UniformRand() - 1) * SrcSize.z() + SrcCentre.z();
+
     return G4ThreeVector(X, Y, Z);
 }
 void secParticleSource::GenNoiseAlpha(G4Event* Evt, G4double Eneg)

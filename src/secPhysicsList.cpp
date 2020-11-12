@@ -57,9 +57,9 @@ secOpticalPhysics* secPhysicsList::OpticalPhysics_init()
 {
     auto pOptical = new secOpticalPhysics;
 
-    pOptical->SetTrackSecondariesFirst(kScintillation, true);
-    pOptical->SetTrackSecondariesFirst(kCerenkov,      true);
-    pOptical->SetTrackSecondariesFirst(kWLS,           true);
+    pOptical->SetTrackSecondariesFirst(kScintillation, false);
+    pOptical->SetTrackSecondariesFirst(kCerenkov,      false);
+    pOptical->SetTrackSecondariesFirst(kWLS,           false);
 
 //Scintillation
     pOptical->SetScintillationYieldFactor(1.);

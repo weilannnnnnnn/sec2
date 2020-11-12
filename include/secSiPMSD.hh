@@ -2,10 +2,8 @@
 #define secSiPMSD_hh
 
 #include "secSiPMHit.hh"
-<<<<<<< HEAD
-=======
 #include "secParticleSource.hh"
->>>>>>> secSourceMacro
+#include "secSourceMacro.hh"
 #include "G4VSensitiveDetector.hh"
 #include "tools/histo/h1d"
 #include "globals.hh"
