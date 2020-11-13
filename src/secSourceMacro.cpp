@@ -8,6 +8,16 @@
 secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
     ptrSrc(secSrc)
 {
+    cmd_MuonWaitTime = new G4UIcmdWithADoubleAndUnit("/sec/Source/MuonWaitTime", this);
+    cmd_MuonWaitTime->SetGuidance("Specify the muon events' wait time");
+    cmd_MuonWaitTime->SetParameterName("MuonWaitTime", false);
+    cmd_MuonWaitTime->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    cmd_NoiseInten = new G4UIcmdWithADoubleAndUnit("/sec/Source/NoiseIntensity", this);
+    cmd_NoiseInten->SetGuidance("Specify the noise intensity, in Becquerel, bq");
+    cmd_NoiseInten->SetParameterName("NoiseInten", false);
+    cmd_NoiseInten->AvailableForStates(G4State_PreInit, G4State_Idle);
+
     cmd_AlphaEneg = new G4UIcmdWithADoubleAndUnit("/sec/Source/AlphaEneg", this);
     cmd_AlphaEneg->SetGuidance("Specify the energy for alpha particle");
     cmd_AlphaEneg->SetParameterName("AlphaEneg", false);
@@ -17,7 +27,6 @@ secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
     cmd_BetaAlphaRatio->SetGuidance("Specify the beta/alpha ratio");
     cmd_BetaAlphaRatio->SetParameterName("Beta/Alpha", false);
     cmd_BetaAlphaRatio->AvailableForStates(G4State_PreInit, G4State_Idle);
-
 
     cmd_EventType = new G4UIcmdWithAString("/sec/Source/EventType", this);
     cmd_EventType->SetGuidance("Specify the Event Type");
@@ -41,6 +50,8 @@ secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
 secSourceMacro::~secSourceMacro()
 {
     //delete the commands
+    delete cmd_MuonWaitTime;
+    delete cmd_NoiseInten;
     delete cmd_AlphaEneg;
     delete cmd_BetaAlphaRatio;
     delete cmd_EventType;
@@ -51,7 +62,15 @@ secSourceMacro::~secSourceMacro()
 
 void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
 {
-    if (cmd == cmd_AlphaEneg)
+    if( cmd == cmd_MuonWaitTime )
+    {
+        ptrSrc->WaitTimeMu = G4UIcmdWithADoubleAndUnit::GetNewDoubleValue(NewVal);
+    }
+    else if( cmd == cmd_NoiseInten )
+    {
+        ptrSrc->NoiseInten = G4UIcmdWithADoubleAndUnit::GetNewDoubleValue(NewVal);
+    }
+    else if (cmd == cmd_AlphaEneg)
     {
         ptrSrc->AlphaEneg = G4UIcmdWithADoubleAndUnit::GetNewDoubleValue(NewVal);
     }

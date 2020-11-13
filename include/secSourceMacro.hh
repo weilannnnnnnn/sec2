@@ -29,6 +29,8 @@ class secSourceMacro : public G4UImessenger
     private :
         
 	secParticleSource* ptrSrc;
+        G4UIcmdWithADoubleAndUnit* cmd_MuonWaitTime;
+        G4UIcmdWithADoubleAndUnit* cmd_NoiseInten;
         G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg;
         G4UIcmdWithADouble* cmd_BetaAlphaRatio;
         G4UIcmdWithAString* cmd_EventType;
