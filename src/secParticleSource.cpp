@@ -29,8 +29,6 @@
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 secParticleSource::secSourceGenType secParticleSource::GenTypeNow = secParticleSource::secSourceGenType::Muons;
-G4double secParticleSource::WaitTimeMu = .5*s;
-G4double secParticleSource::NoiseInten = 100.;// Bq
 
 secParticleSource::secParticleSource():
     AlphaEneg(1*MeV),
@@ -165,7 +163,7 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
 {
     //update the noise wait time list
     const G4int ThreadID = G4Threading::G4GetThreadId();
-    (void) GenNoiseWaitTime(ThreadID, true, true);
+    (void) GenNoiseWaitTime(ThreadID, true, true, -1.);
     G4ParticleDefinition* ParDef = G4Electron::Definition();
     //generate energy sample.
     G4double Eneg = RandGenFile->Shoot(1, secVRandGen::PDF_TYPE) * MeV;
@@ -208,17 +206,18 @@ G4double secParticleSource::MuonWaitTime()
     //generate muons events' wait time.
     static std::atomic<G4double> MuonWaitTime(0.);
     
-    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot( WaitTimeMu );
+    return ( MuonWaitTime = MuonWaitTime + CLHEP::RandExponential::shoot(1./385.04)*s );
 }
 
 G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 
-                                              G4bool IsUpdate )
+                                              G4bool IsUpdate, G4double Inten )
 {
     static const size_t EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
     static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
 	static G4double* LocalWaitTimePtr = new G4double[ThreadNum]; // save the wait time of each thread.
 	//static G4double NoiseWaitTimeArr[ArrSz];
     //static G4double* LocalWaitTimePtr[ThreadNum];
+    static const G4double NoiseInten = Inten;
     //initialization part.
     if( !IsInit )
         return -1.;

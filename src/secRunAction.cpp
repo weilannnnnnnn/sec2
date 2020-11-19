@@ -38,7 +38,7 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 {
 	if( IsMaster() )
 	{
-	    (void) secParticleSource::GenNoiseWaitTime(0, false, false);//initialization of noise wait time 
+	    (void) secParticleSource::GenNoiseWaitTime(0, false, false, 100.);
 		//ROOT file initialization
 		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
 		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
