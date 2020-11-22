@@ -50,8 +50,9 @@ class secParticleSource : public G4VPrimaryGenerator
         
         secRandGenFromFile* RandGenFile;
         secRandGenFromFx*   RandGenFx;
-	secSourceMacro* srcMac;
+	    secSourceMacro* srcMac;
 
+        static G4double NoiseIntensity; //in Bq
         G4double AlphaEneg;
         G4double BetaAlphaRatio;
         static secSourceGenType GenTypeNow;

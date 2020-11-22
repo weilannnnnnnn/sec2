@@ -13,6 +13,11 @@ secSourceMacro::secSourceMacro(secParticleSource* secSrc) :
     cmd_AlphaEneg->SetParameterName("AlphaEneg", false);
     cmd_AlphaEneg->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+    cmd_NoiseIntensity = new G4UIcmdWithADouble();
+    cmd_NoiseIntensity->SetGuidance("Specify the activity of beta spectrum");
+    cmd_NoiseIntensity->SetParameterName("BetaActivity", false);
+    cmd_NoiseIntensity->AvailableForStates(G4State_PreInit, G4State_Idle);
+
     cmd_BetaAlphaRatio = new G4UIcmdWithADouble("/sec/Source/BetaAlphaRatio", this);
     cmd_BetaAlphaRatio->SetGuidance("Specify the beta/alpha ratio");
     cmd_BetaAlphaRatio->SetParameterName("Beta/Alpha", false);
@@ -42,6 +47,7 @@ secSourceMacro::~secSourceMacro()
 {
     //delete the commands
     delete cmd_AlphaEneg;
+    delete cmd_NoiseIntensity;
     delete cmd_BetaAlphaRatio;
     delete cmd_EventType;
     delete cmd_SourceCentre;
@@ -55,6 +61,11 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
     {
         ptrSrc->AlphaEneg = G4UIcmdWithADoubleAndUnit::GetNewDoubleValue(NewVal);
     }
+    else if ( cmd == cmd_NoiseIntensity )
+    {
+        secParticleSource::NoiseIntensity = G4UicmdWithAdouble::GetNewDoubleValue(NewVal);
+    }
+    
     else if (cmd == cmd_BetaAlphaRatio)
     {
         ptrSrc->BetaAlphaRatio = G4UIcmdWithADouble::GetNewDoubleValue(NewVal);

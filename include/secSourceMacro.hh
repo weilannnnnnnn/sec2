@@ -30,6 +30,7 @@ class secSourceMacro : public G4UImessenger
         
 	secParticleSource* ptrSrc;
         G4UIcmdWithADoubleAndUnit* cmd_AlphaEneg;
+        G4UIcmdWithADouble* cmd_NoiseIntensity;
         G4UIcmdWithADouble* cmd_BetaAlphaRatio;
         G4UIcmdWithAString* cmd_EventType;
         G4UIcmdWith3VectorAndUnit* cmd_SourceCentre;

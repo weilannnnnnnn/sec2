@@ -187,27 +187,27 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     }
     else // normal muon events
     {      
-        //==========================================================================
-                                  //Creating Normal Histograms
+    //==========================================================================
+                                //Creating Normal Histograms
 
-			//NOTICE: fill the extra branches first, or you may run into nasty problems.
-            unsigned idx = GetNoiseIdx();
-            mtx.lock();
-			tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
-            TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
-            BranchUpIdx->SetAddress(&idx);
-            BranchUpIdx->Fill();
-			FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
-            G4Hist2TTree(&UpHist, UpNormalTree);
-            
-			tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
-            TBranch* BranchDownIdx = DownNormalTree->GetBranch("Coupled index");
-            BranchDownIdx->SetAddress(&idx);
-            BranchDownIdx->Fill();
-            FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
-            G4Hist2TTree(&DownHist, DownNormalTree);
-            mtx.unlock();
-        //==========================================================================
+        //NOTICE: fill the extra branches first, or you may run into nasty problems.
+        unsigned idx = GetNoiseIdx();
+        mtx.lock();
+        tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
+        TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
+        BranchUpIdx->SetAddress(&idx);
+        BranchUpIdx->Fill();
+        FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
+        G4Hist2TTree(&UpHist, UpNormalTree);
+        
+        tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
+        TBranch* BranchDownIdx = DownNormalTree->GetBranch("Coupled index");
+        BranchDownIdx->SetAddress(&idx);
+        BranchDownIdx->Fill();
+        FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
+        G4Hist2TTree(&DownHist, DownNormalTree);
+        mtx.unlock();
+    //==========================================================================
     }
 }
 
@@ -352,9 +352,7 @@ void secSiPMSD::G4Hist2TTree(tools::histo::h1d* histptr,
 	
 	DataTree->SetBranchAddress("ArraySize", &sz);
     DataTree->SetBranchAddress("Entries", (unsigned*) &(EntriesVect[1]));
-    
-	if( EventType == secParticleSource::secSourceGenType::Muons )
-        DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
+    DataTree->SetBranchAddress("TimeStamp", &EventWaitTime);
         
 	//fill the entire tree here, you had better fill the extra branches at first.
 	DataTree->Fill();

@@ -42,9 +42,11 @@ void secRunAction::BeginOfRunAction(const G4Run* )
 		//ROOT file initialization
 		secSiPMSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
 		secSiPMSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+        secSiPMSD::UpNoiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");
 	
 		secSiPMSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
 		secSiPMSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+        secSiPMSD::DownNOiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");
 
 		secSiPMSD::UpDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
 		secSiPMSD::UpDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");

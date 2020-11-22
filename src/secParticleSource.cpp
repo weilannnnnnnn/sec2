@@ -215,10 +215,8 @@ G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit,
     static const size_t EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
     static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
 	static G4double* LocalWaitTimePtr = new G4double[ThreadNum]; // save the wait time of each thread.
-	//static G4double NoiseWaitTimeArr[ArrSz];
-    //static G4double* LocalWaitTimePtr[ThreadNum];
-    static const G4double NoiseInten = Inten;
-    //initialization part.
+    NoiseIntensity = Inten;
+    //initialization part, invoked in secRunAction::BeginOfRunAction()
     if( !IsInit )
         return -1.;
         //initialization completed.
@@ -226,7 +224,7 @@ G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit,
     if( IsUpdate )
     {
         //update the global wait time pointer. Invoked in GenNoiseBeta()
-        LocalWaitTimePtr[ThreadID] = CLHEP::RandFlat::shoot(0., EventNum / NoiseInten);
+        LocalWaitTimePtr[ThreadID] = CLHEP::RandFlat::shoot(0., EventNum / NoiseIntensity);
         return -1;
     }
     //get the noise time stamp of this event, invoked in secSiPMSD::ProcessHits()
