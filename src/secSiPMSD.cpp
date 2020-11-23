@@ -148,6 +148,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //=====================================================================
                        //Creating Noise Histograms
         //Up Histogram
+        if( pHCdown->GetSize() < 100 )
+        {//ignore the noise events with less than 100 photons' response.
+            return;
+        }
 		mtx.lock();
 		tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
 		FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
