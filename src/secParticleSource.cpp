@@ -29,6 +29,7 @@
 class G4PrimaryVertex;
 class G4PrimaryParticle;
 secParticleSource::secSourceGenType secParticleSource::GenTypeNow = secParticleSource::secSourceGenType::Muons;
+G4double secParticleSource::NoiseIntensity = 100.;
 
 secParticleSource::secParticleSource():
     AlphaEneg(1*MeV),
@@ -210,12 +211,11 @@ G4double secParticleSource::MuonWaitTime()
 }
 
 G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit, 
-                                              G4bool IsUpdate, G4double Inten )
+                                              G4bool IsUpdate )
 {
     static const size_t EventNum = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
     static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
 	static G4double* LocalWaitTimePtr = new G4double[ThreadNum]; // save the wait time of each thread.
-    NoiseIntensity = Inten;
     //initialization part, invoked in secRunAction::BeginOfRunAction()
     if( !IsInit )
         return -1.;
