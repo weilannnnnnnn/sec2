@@ -163,7 +163,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         G4Hist2TTree(&DownHist, DownNoiseTree);
     	mtx.unlock();
 	//=====================================================================
-    	PrintData("NoiseWaitTime.txt", EventWaitTime);
+    	//PrintData("NoiseWaitTime.txt", EventWaitTime);
 	}
     else if( IsADecayEvent() ) // a decay event
     {

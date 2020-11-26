@@ -164,7 +164,7 @@ void secParticleSource::GenNoiseBeta(G4Event* Evt)
 {
     //update the noise wait time list
     const G4int ThreadID = G4Threading::G4GetThreadId();
-    (void) GenNoiseWaitTime(ThreadID, true, true, -1.);
+    (void) GenNoiseWaitTime(ThreadID, true, true);
     G4ParticleDefinition* ParDef = G4Electron::Definition();
     //generate energy sample.
     G4double Eneg = RandGenFile->Shoot(1, secVRandGen::PDF_TYPE) * MeV;
