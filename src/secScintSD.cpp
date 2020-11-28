@@ -2,6 +2,10 @@
 #include "secScintSD.hh"
 #include "secParticleSource.hh"
 
+#include "TFile.h"
+#include "TTree.h"
+#include "TBranch.h"
+
 #include "G4SDManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
@@ -26,9 +30,9 @@
 #include <sstream>
 #include <cassert>
 #include <cmath>
+#include <mutex>
 
-using CLHEP::HepRandom;
-using CLHEP::RandExponential;
+std::mutex mtx_ScintSD;
 
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
@@ -55,21 +59,6 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     {
         collectionName.insert(str);
     }
-    //read in the noise wait time file. 
-    std::ifstream ifstrm;
-    ifstrm.open("NoiseWaitTime.dat", std::ifstream::in);
-    
-	NoiseWaitTimeVect.push_back( -INFINITY );//to prevent index overflow!
-	if( ifstrm.is_open() )
-    {
-        std::string line;
-		while( getline(ifstrm, line) )
-        {
-            NoiseWaitTimeVect.push_back( atof( line.c_str() ) );
-        }
-    }
-    std::sort(NoiseWaitTimeVect.begin()+1, NoiseWaitTimeVect.end());
-	NoiseWaitTimeVect.push_back( INFINITY );
 }
 
 secScintSD::~secScintSD()
@@ -93,7 +82,31 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID1, pPhotonHCdown);
     HC->AddHitsCollection(HCID2, pMuonHCup);
     HC->AddHitsCollection(HCID3, pMuonHCdown);
-    
+
+    //read in the noise wait time file. 
+    if( secParticleSource::Muons == secParticleSource::GetEventType() )
+    {
+        NoiseWaitTimeVect.push_back(-INFINITY);
+      //===================//
+        mtx_ScintSD.lock();//using locks here!
+      //===================//
+        TFile* NoiseData = new TFile("secData.root");
+        TTree* NoiseTree = NoiseData->Get<TTree*>("UpNoise");
+        G4double WaitTime = 0;
+        NoiseTree->SetBranchAddress("TimeStamp", &WaitTime);
+        const size_t SizeBr = NoiseTree->GetEntries();
+        for(size_t i = 0; i != SizeBr; ++i)
+        {
+            NoiseTree->GetEntry(i);
+            NoiseWaitTimeVect.push_back(WaitTime);
+        }
+        NoiseData->Close();
+      //=====================//
+        mtx_ScintSD.unlock();//unlocked!
+      //=====================//
+        std::sort(NoiseWaitTimeVect.begin()+1, NoiseWaitTimeVect.end());
+        NoiseWaitTimeVect.push_back(INFINITY);
+    }
 }
 
 G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)

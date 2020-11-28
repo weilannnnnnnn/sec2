@@ -30,7 +30,7 @@
 #include <cmath>
 
 //lock for saving data.
-std::mutex mtx;
+std::mutex mtx_SiPM;
 
 secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD) : 
     G4VSensitiveDetector(SDname),
@@ -129,7 +129,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
     if( EventType == secParticleSource::Muons )
-        EventWaitTime = secParticleSource::MuonWaitTime();
+        EventWaitTime = GetMuonTS();
 
     else if( EventType != secParticleSource::Muons )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
@@ -152,7 +152,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         {//ignore the noise events with less than 100 photons' response.
             return;
         }
-		mtx.lock();
+		mtx_SiPM.lock();
 		tools::histo::h1d UpHist("UpNoiseHist", 160, 0., 400.*ns);
 		FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpNoiseTree);
@@ -161,7 +161,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         tools::histo::h1d DownHist("DownNoiseHist", 160, 0., 400.*ns);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownNoiseTree);
-    	mtx.unlock();
+    	mtx_SiPM.unlock();
 	//=====================================================================
     	//PrintData("NoiseWaitTime.txt", EventWaitTime);
 	}
@@ -178,7 +178,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
     //====================================================================
                         //Creating Decay Histograms
-	    mtx.lock();
+	    mtx_SiPM.lock();
         tools::histo::h1d UpHist("UpDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, UpDecayTree);
@@ -186,7 +186,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         tools::histo::h1d DownHist("DownDecayHist", 8000, 0., 20000.*ns);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownDecayTree);
-        mtx.unlock();
+        mtx_SiPM.unlock();
     //====================================================================
     }
     else // normal muon events
@@ -196,7 +196,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
         //NOTICE: fill the extra branches first, or you may run into nasty problems.
         unsigned idx = GetNoiseIdx();
-        mtx.lock();
+        mtx_SiPM.lock();
         tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
         TBranch* BranchUpIdx = UpNormalTree->GetBranch("Coupled index");
         BranchUpIdx->SetAddress(&idx);
@@ -210,7 +210,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         BranchDownIdx->Fill();
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, DownNormalTree);
-        mtx.unlock();
+        mtx_SiPM.unlock();
     //==========================================================================
     }
 }
