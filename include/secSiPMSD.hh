@@ -18,12 +18,14 @@ class secScintSD;
 class G4HCofThisEvent;
 class TH1D;
 class h1d;
+class TFile;
 class TTree;
 class TBranch;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
-    friend class secRunAction;
+    friend void secRunAction::BeginOfRunAction(const G4Run*);
+    friend void secScintSD::Initialize(G4HCofThisEvent*);
     public:
         
         secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);

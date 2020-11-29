@@ -26,6 +26,7 @@ public:
 
 private:
     void MergeFile(G4String FileName);
+    void InitTrees();
 
 };
 

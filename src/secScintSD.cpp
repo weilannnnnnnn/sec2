@@ -90,8 +90,7 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
       //===================//
         mtx_ScintSD.lock();//using locks here!
       //===================//
-        TFile* NoiseData = new TFile("secData.root");
-        TTree* NoiseTree = NoiseData->Get<TTree*>("UpNoise");
+        TTree* NoiseTree = secSiPMSD::UpNoiseTree;
         G4double WaitTime = 0;
         NoiseTree->SetBranchAddress("TimeStamp", &WaitTime);
         const size_t SizeBr = NoiseTree->GetEntries();
