@@ -25,8 +25,8 @@
     create a region for setting cuts of the muons
 */
 #include "secDetectorConstruction.hh"
-#include "secSiPMSD.hh"
 #include "secScintSD.hh"
+#include "secSiPMSD.hh"
 
 #ifdef G4MULTITHREADED
     #include "G4MTRunManager.hh"

@@ -1,7 +1,7 @@
 #include "secTrackingAction.hh"
 #include "secEventAction.hh"
-#include "secSiPMSD.hh"
 #include "secScintSD.hh"
+#include "secSiPMSD.hh"
 #include "secParticleSource.hh"
 //#include "G4RunManager.hh"
 #include "G4MTRunManager.hh"

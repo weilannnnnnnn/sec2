@@ -14,18 +14,17 @@
 #include <memory>
 
 class G4Step;
-class secScintSD;
 class G4HCofThisEvent;
 class TH1D;
 class h1d;
 class TFile;
 class TTree;
 class TBranch;
+class secScintSD;
 
 class secSiPMSD : public G4VSensitiveDetector
 {
     friend void secRunAction::BeginOfRunAction(const G4Run*);
-    friend void secScintSD::Initialize(G4HCofThisEvent*);
     public:
         
         secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);
@@ -42,8 +41,14 @@ class secSiPMSD : public G4VSensitiveDetector
 		G4double GetNoiseIdx();
         
 		static TFile* pFile;
+    static TTree* UpNoiseTree;
+    static TTree* DownNoiseTree;
+    static TTree* UpDecayTree;
+    static TTree* DownDecayTree; 
+    static TTree* UpNormalTree;
+    static TTree* DownNormalTree;
 
-    private:
+  private:
 
         //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
@@ -86,12 +91,6 @@ class secSiPMSD : public G4VSensitiveDetector
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;
 
-        static TTree* UpNoiseTree;
-        static TTree* DownNoiseTree;
-        static TTree* UpDecayTree;
-        static TTree* DownDecayTree;
-        static TTree* UpNormalTree;
-        static TTree* DownNormalTree;
 };
 
 #endif

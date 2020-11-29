@@ -99,7 +99,6 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
             NoiseTree->GetEntry(i);
             NoiseWaitTimeVect.push_back(WaitTime);
         }
-        NoiseData->Close();
       //=====================//
         mtx_ScintSD.unlock();//unlocked!
       //=====================//

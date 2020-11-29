@@ -4,6 +4,7 @@
 #include "G4ThreeVector.hh"
 #include "secSourceMacro.hh"
 #include "secScintHit.hh"
+#include "secSiPMSD.hh"
 #include "globals.hh"
 
 class secSiPMSD;

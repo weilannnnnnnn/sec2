@@ -1,5 +1,5 @@
-#include "secSiPMSD.hh"
 #include "secScintSD.hh"
+#include "secSiPMSD.hh"
 #include "secSourceMacro.hh"
 #include "secParticleSource.hh"
 #include "G4SDManager.hh"

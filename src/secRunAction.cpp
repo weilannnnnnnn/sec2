@@ -1,7 +1,7 @@
+#include "secSiPMSD.hh"
 #include "secRunAction.hh"
 #include "secAnalysis.hh"
 #include "secParticleSource.hh"
-#include "secSiPMSD.hh"
 #include "G4RunManager.hh"
 #include "G4Run.hh"
 #include "G4Threading.hh"
@@ -17,7 +17,7 @@
 #include <cstdio>
 
 //create the file and initialize the trees
-TFile* secSiPMSD::pFile = new TFile("secData.root", "NEW");
+TFile* secSiPMSD::pFile = new TFile("secData.root", "UPDATE");
 TTree* secSiPMSD::UpNoiseTree    = nullptr;
 TTree* secSiPMSD::DownNoiseTree  = nullptr;
 TTree* secSiPMSD::UpDecayTree    = nullptr;
@@ -46,12 +46,13 @@ void secRunAction::BeginOfRunAction(const G4Run* )
         }
         else
         {
-            secSiPMSD::UpNoiseTree    = secSiPMSD::pFile->Get<TTree*>("UpNoise");
-            secSiPMSD::DownNoiseTree  = secSiPMSD::pFile->Get<TTree*>("DownNoise");
-            secSiPMSD::UpDecayTree    = secSiPMSD::pFile->Get<TTree*>("UpDecay");
-            secSiPMSD::DownDecayTree  = secSiPMSD::pFile->Get<TTree*>("DownDecay");  
-            secSiPMSD::UpNormalTree   = secSiPMSD::pFile->Get<TTree*>("UpNormal");
-            secSiPMSD::DownNormalTree = secSiPMSD::pFile->Get<TTree*>("DownNormal");
+            secSiPMSD::UpNoiseTree    = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("UpNoise"));
+            secSiPMSD::DownNoiseTree  = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("DownNoise"));
+            secSiPMSD::UpDecayTree    = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("UpDecay"));
+            secSiPMSD::DownDecayTree  = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("DownDecay"));  
+            secSiPMSD::UpNormalTree   = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("UpNormal"));
+            secSiPMSD::DownNormalTree = dynamic_cast<TTree*> (secSiPMSD::pFile->Get("DownNormal"));
+            std::cout << "UpNoiseTreeAddr = " << secSiPMSD::UpNoiseTree << std::endl;
             if( secSiPMSD::UpNoiseTree == nullptr )
             {
                 InitTrees();
@@ -108,6 +109,7 @@ void secRunAction::MergeFile(G4String FileName)
 
 void secRunAction::InitTrees()
 {
+    secSiPMSD::pFile->cd();
     secSiPMSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
     secSiPMSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
     secSiPMSD::UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
