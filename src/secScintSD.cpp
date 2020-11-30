@@ -92,7 +92,8 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID3, pMuonHCdown);
 
     InitDataFile();
-    //read in the noise wait time file. 
+    //read in the noise wait time file.
+    std::cout << "EventType ==" << secParticleSource::GetEventType() << std::endl;
     if( secParticleSource::Muons == secParticleSource::GetEventType() )
     {
         NoiseWaitTimeVect.push_back(-INFINITY);
@@ -357,7 +358,7 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
 void secScintSD::InitDataFile()
 {
     //ROOT file initialization
-    static IsInit = false;
+    static bool IsInit = false;
     if( IsInit )
         return;
 
@@ -371,7 +372,6 @@ void secScintSD::InitDataFile()
     {
         //second muon events, read trees from disk!
         ReadTrees();
-        std::cout << "UpNoiseTreeAddr = " << secScintSD::UpNoiseTree << std::endl;
         if( secScintSD::UpNoiseTree == nullptr )
         {
             //first noise event, create trees.
@@ -398,7 +398,7 @@ void secScintSD::InitTrees()
     secScintSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
     secScintSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
     secScintSD::UpNoiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");
-
+    
     secScintSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
     secScintSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
     secScintSD::DownNoiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");

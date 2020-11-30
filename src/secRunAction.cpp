@@ -1,4 +1,5 @@
 #include "secSiPMSD.hh"
+#include "secScintSD.hh"
 #include "secRunAction.hh"
 #include "secAnalysis.hh"
 #include "secParticleSource.hh"
@@ -37,12 +38,12 @@ void secRunAction::EndOfRunAction(const G4Run* )
     //use master thread to merge and close file.
     if( IsMaster() )
     {
-        secScintSD::UpNoiseTree->Write();
-        secScintSD::DownNoiseTree->Write();
-		secScintSD::UpDecayTree->Write();	
-		secScintSD::DownDecayTree->Write();
-		secScintSD::UpNormalTree->Write();
-		secScintSD::DownNormalTree->Write();
+        secScintSD::UpNoiseTree->Write("", TObject::kOverwrite);
+        secScintSD::DownNoiseTree->Write("", TObject::kOverwrite);
+		secScintSD::UpDecayTree->Write("", TObject::kOverwrite);	
+		secScintSD::DownDecayTree->Write("", TObject::kOverwrite);
+		secScintSD::UpNormalTree->Write("", TObject::kOverwrite);
+		secScintSD::DownNormalTree->Write("", TObject::kOverwrite);
 		secScintSD::pFile->Close();
 		MergeFile("NoiseWaitTime.txt");
     }
