@@ -27,29 +27,20 @@ class secSiPMSD : public G4VSensitiveDetector
     friend void secRunAction::BeginOfRunAction(const G4Run*);
     public:
         
-        secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);
-        virtual ~secSiPMSD();
+      secSiPMSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect, secScintSD* pSD);
+      virtual ~secSiPMSD();
 
-        //from G4VSensitiveDetector
-        virtual void Initialize(G4HCofThisEvent *hitCollection);
-        virtual G4bool ProcessHits(G4Step* step, G4TouchableHistory* history);
-        virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
+      //from G4VSensitiveDetector
+      virtual void Initialize(G4HCofThisEvent *hitCollection);
+      virtual G4bool ProcessHits(G4Step* step, G4TouchableHistory* history);
+      virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
         
-        G4bool IsADecayEvent(void);
-        void ResetDecayFlag(void);
-		G4double GetMuonTS();
-		G4double GetNoiseIdx();
-        
-		static TFile* pFile;
-    static TTree* UpNoiseTree;
-    static TTree* DownNoiseTree;
-    static TTree* UpDecayTree;
-    static TTree* DownDecayTree; 
-    static TTree* UpNormalTree;
-    static TTree* DownNormalTree;
-
-  private:
-
+      G4bool IsADecayEvent(void);
+      void ResetDecayFlag(void);
+      G4double GetMuonTS();
+		  G4double GetNoiseIdx();
+      
+    private:
         //print data in ASCII / Binary format
         //fill the values in the Hits into a histogram and print the histogram,
         //the empty bins will be ignored!

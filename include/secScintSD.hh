@@ -6,10 +6,15 @@
 #include "secScintHit.hh"
 #include "secSiPMSD.hh"
 #include "globals.hh"
+#include "TFile.h"
+#include "TTree.h"
 
 class secSiPMSD;
 class G4Step;
 class G4HCofThisEvent;
+class TFile;
+class TTree;
+class TBranch;
 
 class secScintSD : public G4VSensitiveDetector
 {
@@ -17,6 +22,7 @@ class secScintSD : public G4VSensitiveDetector
     friend void     secSiPMSD::ResetDecayFlag();
     friend G4double secSiPMSD::GetMuonTS();
     friend G4double secSiPMSD::GetNoiseIdx();
+    friend void     secSiPMSD::GetDataFile();
 
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
@@ -26,10 +32,20 @@ class secScintSD : public G4VSensitiveDetector
         virtual G4bool ProcessHits(G4Step *step, G4TouchableHistory *history);
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
         G4bool IsKeptEvent() { return EventIsKept; }
+    
+        static TFile* pFile;
+        static TTree* UpNoiseTree;
+        static TTree* DownNoiseTree;
+        static TTree* UpDecayTree;
+        static TTree* DownDecayTree; 
+        static TTree* UpNormalTree;
+        static TTree* DownNormalTree;
 
     private:
         void     Reset(void);//user should not invoke this method!!
-
+        static void InitDataFile();
+        static void InitTrees();
+        static void ReadTrees();
         void     PrintData(G4String FileName, secScintHitsCollection* pHC, secScintHit::DataGetter Getter, 
                          unsigned int nbins, G4double Xmin, G4double Mmax);
                          
@@ -56,7 +72,7 @@ class secScintSD : public G4VSensitiveDetector
         G4double MuonEdepDown;
 	    G4int    FormerID;
         
-	secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
+	    secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
         secScintHitsCollection *pPhotonHCdown; //photons's hitscollection in the lower scintillator
         secScintHitsCollection *pMuonHCup;     //Muon's HC up
         secScintHitsCollection *pMuonHCdown;   //Muon's HC down

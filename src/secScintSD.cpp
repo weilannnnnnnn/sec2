@@ -34,6 +34,14 @@
 
 std::mutex mtx_ScintSD;
 
+TFile* secScintSD::pFile = new TFile("secData.root", "UPDATE");
+TTree* secScintSD::UpNoiseTree    = nullptr;
+TTree* secScintSD::DownNoiseTree  = nullptr;
+TTree* secScintSD::UpDecayTree    = nullptr;
+TTree* secScintSD::DownDecayTree  = nullptr;    
+TTree* secScintSD::UpNormalTree   = nullptr;
+TTree* secScintSD::DownNormalTree = nullptr;
+
 secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCnameVect) :
     G4VSensitiveDetector(SDname),
     NoiseIdx(0),
@@ -83,6 +91,7 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID2, pMuonHCup);
     HC->AddHitsCollection(HCID3, pMuonHCdown);
 
+    InitDataFile();
     //read in the noise wait time file. 
     if( secParticleSource::Muons == secParticleSource::GetEventType() )
     {
@@ -90,7 +99,7 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
       //===================//
         mtx_ScintSD.lock();//using locks here!
       //===================//
-        TTree* NoiseTree = secSiPMSD::UpNoiseTree;
+        TTree* NoiseTree = secScintSD::UpNoiseTree;
         G4double WaitTime = 0;
         NoiseTree->SetBranchAddress("TimeStamp", &WaitTime);
         const size_t SizeBr = NoiseTree->GetEntries();
@@ -343,4 +352,85 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
             return -1;
         
         return idx;
+}
+
+void secScintSD::InitDataFile()
+{
+    //ROOT file initialization
+    static IsInit = false;
+    if( IsInit )
+        return;
+
+    int tID = G4Threading::G4GetThreadId();//avoid using locks
+    if( secParticleSource::GetEventType() != secParticleSource::Muons && 0 == tID )
+    {
+        //noise event first, create the trees and branches
+        InitTrees();
+    }
+    else if( secParticleSource::GetEventType() == secParticleSource::Muons && 0 == tID )
+    {
+        //second muon events, read trees from disk!
+        ReadTrees();
+        std::cout << "UpNoiseTreeAddr = " << secScintSD::UpNoiseTree << std::endl;
+        if( secScintSD::UpNoiseTree == nullptr )
+        {
+            //first noise event, create trees.
+            InitTrees();
+        }
+    }
+    else
+    {
+        return;
+    }
+    IsInit = true;
+} 
+
+void secScintSD::InitTrees()
+{
+    secScintSD::pFile->cd();
+    secScintSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
+    secScintSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
+    secScintSD::UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");
+    secScintSD::DownDecayTree  = new TTree("DownDecay", "Down Decay Response Tree");    
+    secScintSD::UpNormalTree   = new TTree("UpNormal", "Up Normal Event Response Tree");
+    secScintSD::DownNormalTree = new TTree("DownNormal", "Down Normal Event Response");
+
+    secScintSD::UpNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");		
+    secScintSD::UpNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::UpNoiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");
+
+    secScintSD::DownNoiseTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+    secScintSD::DownNoiseTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::DownNoiseTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D");
+
+    secScintSD::UpDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+    secScintSD::UpDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::UpDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+
+
+    secScintSD::DownDecayTree->Branch("ArraySize", (unsigned*) nullptr, "ArraySize/i");
+    secScintSD::DownDecayTree->Branch("Entries",   (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::DownDecayTree->Branch("TimeStamp", (double*) nullptr, "TimeStamp/D"); //in second.
+
+    
+    secScintSD::UpNormalTree->Branch("ArraySize",     (unsigned*) nullptr, "ArraySize/i");
+    secScintSD::UpNormalTree->Branch("Entries",       (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::UpNormalTree->Branch("TimeStamp",     (double*) nullptr, "TimeStamp/D"); //in second.
+    secScintSD::UpNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");
+
+
+    secScintSD::DownNormalTree->Branch("ArraySize",     (unsigned*) nullptr, "ArraySize/i");
+    secScintSD::DownNormalTree->Branch("Entries",       (unsigned*) nullptr, "Entries[ArraySize]/i");
+    secScintSD::DownNormalTree->Branch("TimeStamp",     (double*) nullptr, "TimeStamp/D"); //in second.
+    secScintSD::DownNormalTree->Branch("Coupled index", (unsigned*) nullptr, "idx/i");  
+}
+
+void secScintSD::ReadTrees()
+{
+    secScintSD::UpNoiseTree    = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpNoise"));
+    secScintSD::DownNoiseTree  = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownNoise"));
+    secScintSD::UpDecayTree    = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpDecay"));
+    secScintSD::DownDecayTree  = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownDecay"));  
+    secScintSD::UpNormalTree   = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpNormal"));
+    secScintSD::DownNormalTree = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownNormal"));
 }
