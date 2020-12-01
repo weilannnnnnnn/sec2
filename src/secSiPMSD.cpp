@@ -42,7 +42,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     pHCup(nullptr),
     pHCdown(nullptr)
 {
-    EventType = secParticleSource::GetEventType();
 /* register the names of the HCs to G4VSensitiveDetector object so
     that the HCids which are assigned by G4 Kenel could be assessed by
     G4SDManager object */
@@ -72,6 +71,7 @@ void secSiPMSD::Initialize(G4HCofThisEvent* HC)
 
     HC->AddHitsCollection(HCIDup, pHCup);
     HC->AddHitsCollection(HCIDdown, pHCdown);
+    EventType = secParticleSource::GetEventType();
 }
 
 G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
@@ -125,7 +125,7 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
 }
 
 void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
-{  
+{
     //At the end of event, specify the type of the event and save the result
     //generate time stamp.
     if( EventType == secParticleSource::Muons )

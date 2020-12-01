@@ -92,9 +92,15 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID2, pMuonHCup);
     HC->AddHitsCollection(HCID3, pMuonHCdown);
 
-    InitDataFile();
+    static std::atomic_flag IsInit = ATOMIC_FLAG_INIT;
+    static bool IsInitFinished = false;
+    if( !IsInit.test_and_set() )
+    {
+        InitDataFile();
+        IsInitFinished = true;
+    }
+    while(!IsInitFinished);
     //read in the noise wait time file.
-    std::cout << "EventType ==" << secParticleSource::GetEventType() << std::endl;
     if( secParticleSource::Muons == secParticleSource::GetEventType() )
     {
         NoiseWaitTimeVect.push_back(-INFINITY);
@@ -359,29 +365,28 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
 void secScintSD::InitDataFile()
 {
     //ROOT file initialization
-    static std::atomic_flag IsInit = ATOMIC_FLAG_INIT;
-    if( IsInit.test_and_set() )
-    {
-        if( secParticleSource::GetEventType() != secParticleSource::Muons)
-        {
-            //noise event first, create the trees and branches
-            InitTrees();
-        }
-        else if( secParticleSource::GetEventType() == secParticleSource::Muons)
-        {
-            //second muon events, read trees from disk!
-            ReadTrees();
-            if( secScintSD::UpNoiseTree == nullptr )
-            {
-                //first noise event, create trees.
-                InitTrees();
-            }
-        }
-    }
+
+	if( secParticleSource::GetEventType() != secParticleSource::Muons)
+	{
+	    //noise event first, create the trees and branches
+	    InitTrees();
+	}
+	else if( secParticleSource::GetEventType() == secParticleSource::Muons)
+	{
+	    //second muon events, read trees from disk!
+	    ReadTrees();
+	    if( secScintSD::UpNoiseTree == nullptr )
+	    {
+		//first noise event, create trees.
+		InitTrees();
+	    }
+	}
+
 } 
 
 void secScintSD::InitTrees()
 {
+    std::cout << "Init Trees" << std::endl;
     secScintSD::pFile->cd();
     secScintSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
     secScintSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
