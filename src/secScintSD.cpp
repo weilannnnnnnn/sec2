@@ -92,17 +92,19 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID2, pMuonHCup);
     HC->AddHitsCollection(HCID3, pMuonHCdown);
 
-    static std::atomic_flag IsInit = ATOMIC_FLAG_INIT;
-    static bool IsInitFinished = false;
-    if( !IsInit.test_and_set() )
+    static std::atomic_bool IsInit(false);
+    static thread_local bool IsWaitTimeRead = false;
+
+    if( !IsInit.load() )
     {
+        IsInit.store(true);
         InitDataFile();
-        IsInitFinished = true;
     }
-    while(!IsInitFinished);
+    while( IsInit.load() );
     //read in the noise wait time file.
-    if( secParticleSource::Muons == secParticleSource::GetEventType() )
+    if( secParticleSource::Muons == secParticleSource::GetEventType() && IsWaitTimeRead)
     {
+        IsWaitTimeRead = true;
         NoiseWaitTimeVect.push_back(-INFINITY);
       //===================//
         mtx_ScintSD.lock();//using locks here!
