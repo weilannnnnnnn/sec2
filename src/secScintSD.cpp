@@ -30,6 +30,7 @@
 #include <sstream>
 #include <cassert>
 #include <cmath>
+#include <atomic>
 #include <mutex>
 
 std::mutex mtx_ScintSD;
@@ -358,31 +359,25 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
 void secScintSD::InitDataFile()
 {
     //ROOT file initialization
-    static bool IsInit = false;
-    if( IsInit )
-        return;
-
-    int tID = G4Threading::G4GetThreadId();//avoid using locks
-    if( secParticleSource::GetEventType() != secParticleSource::Muons && 0 == tID )
+    static std::atomic_flag IsInit = ATOMIC_FLAG_INIT;
+    if( IsInit.test_and_set() )
     {
-        //noise event first, create the trees and branches
-        InitTrees();
-    }
-    else if( secParticleSource::GetEventType() == secParticleSource::Muons && 0 == tID )
-    {
-        //second muon events, read trees from disk!
-        ReadTrees();
-        if( secScintSD::UpNoiseTree == nullptr )
+        if( secParticleSource::GetEventType() != secParticleSource::Muons)
         {
-            //first noise event, create trees.
+            //noise event first, create the trees and branches
             InitTrees();
         }
+        else if( secParticleSource::GetEventType() == secParticleSource::Muons)
+        {
+            //second muon events, read trees from disk!
+            ReadTrees();
+            if( secScintSD::UpNoiseTree == nullptr )
+            {
+                //first noise event, create trees.
+                InitTrees();
+            }
+        }
     }
-    else
-    {
-        return;
-    }
-    IsInit = true;
 } 
 
 void secScintSD::InitTrees()
