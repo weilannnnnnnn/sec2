@@ -92,17 +92,11 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     HC->AddHitsCollection(HCID2, pMuonHCup);
     HC->AddHitsCollection(HCID3, pMuonHCdown);
 
-    static std::atomic_bool IsInit(false);
     static thread_local bool IsWaitTimeRead = false;
-
-    if( !IsInit.load() )
-    {
-        IsInit.store(true);
-        InitDataFile();
-    }
-    while( IsInit.load() );
+    static std::once_flag IsInit;
+    std::call_once(IsInit, InitDataFile); 
     //read in the noise wait time file.
-    if( secParticleSource::Muons == secParticleSource::GetEventType() && IsWaitTimeRead)
+    if( secParticleSource::Muons == secParticleSource::GetEventType() && !IsWaitTimeRead)
     {
         IsWaitTimeRead = true;
         NoiseWaitTimeVect.push_back(-INFINITY);
@@ -324,12 +318,11 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
         const G4double FrontTimeWindow = 20000*ns;
         const G4double BackTimeWindow = 100*ns;
         G4bool IsCoupled = false;
-		//std::cout << "\nNoiseWaitTimeVectSize = " << NoiseWaitTimeVect.size() << std::endl;
         const size_t sz = NoiseWaitTimeVect.size();
         static thread_local unsigned idx = 0;
 
         //locate the closest noise wait time
-        while( MuonTS - NoiseWaitTimeVect[idx] > 0 )
+	while( MuonTS - NoiseWaitTimeVect[idx] > 0 )
         {
             ++idx;
             if( idx == sz )
@@ -388,7 +381,6 @@ void secScintSD::InitDataFile()
 
 void secScintSD::InitTrees()
 {
-    std::cout << "Init Trees" << std::endl;
     secScintSD::pFile->cd();
     secScintSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
     secScintSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
@@ -429,10 +421,10 @@ void secScintSD::InitTrees()
 
 void secScintSD::ReadTrees()
 {
-    secScintSD::UpNoiseTree    = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpNoise"));
-    secScintSD::DownNoiseTree  = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownNoise"));
-    secScintSD::UpDecayTree    = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpDecay"));
-    secScintSD::DownDecayTree  = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownDecay"));  
-    secScintSD::UpNormalTree   = dynamic_cast<TTree*> (secScintSD::pFile->Get("UpNormal"));
-    secScintSD::DownNormalTree = dynamic_cast<TTree*> (secScintSD::pFile->Get("DownNormal"));
+    secScintSD::UpNoiseTree    = (TTree*) (secScintSD::pFile->Get("UpNoise"));
+    secScintSD::DownNoiseTree  = (TTree*) (secScintSD::pFile->Get("DownNoise"));
+    secScintSD::UpDecayTree    = (TTree*) (secScintSD::pFile->Get("UpDecay"));
+    secScintSD::DownDecayTree  = (TTree*) (secScintSD::pFile->Get("DownDecay"));  
+    secScintSD::UpNormalTree   = (TTree*) (secScintSD::pFile->Get("UpNormal"));
+    secScintSD::DownNormalTree = (TTree*) (secScintSD::pFile->Get("DownNormal"));
 }
