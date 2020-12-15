@@ -4,6 +4,7 @@
 #include "G4DecayPhysics.hh"
 #include "G4SpinDecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
+#include "G4EmPenelopePhysics.hh"
 #include "G4HadronElasticPhysics.hh"
 #include "G4IonPhysics.hh"
 #include "G4StepLimiterPhysics.hh"
@@ -22,23 +23,14 @@ secPhysicsList::secPhysicsList(void) :
 G4VModularPhysicsList()
 {
     auto pOptical = OpticalPhysics_init();
-    auto pDecay   = DecayPhysics_init();
-    auto pEm      = EmPhysics_init();
-    auto pHadron  = HadronElasticPhysics_init();
-    auto pIon     = IonPhysics_init();
-    auto pLimiter = StepLimiter_init();
-
     RegisterPhysics( pOptical );
 
     //G4SpinDecayPhysics depends on G4DecayPhysics.
-    RegisterPhysics( pDecay );
-    auto DecayWithSpin = new G4SpinDecayPhysics();
-    RegisterPhysics(DecayWithSpin);
-
-    RegisterPhysics( pEm );
-    RegisterPhysics( pHadron );
-    RegisterPhysics( pIon );
-    RegisterPhysics( pLimiter );
+    RegisterPhysics( new G4DecayPhysics() );
+    RegisterPhysics( new G4SpinDecayPhysics() );
+    RegisterPhysics( new G4EmStandardPhysics() );
+    RegisterPhysics( new G4EmPenelopePhysics() );
+    RegisterPhysics( new G4StepLimiterPhysics() );
 }
 
 //dtor
@@ -72,39 +64,4 @@ secOpticalPhysics* secPhysicsList::OpticalPhysics_init()
     pOptical->SetWLSTimeProfile("delta");
 
     return pOptical;
-}
-
-G4DecayPhysics* secPhysicsList::DecayPhysics_init(void)
-{
-    auto pDecay = new G4DecayPhysics;
-
-    return pDecay;
-}
-
-G4EmStandardPhysics* secPhysicsList::EmPhysics_init(void)
-{
-    auto pEm = new G4EmStandardPhysics;
-
-    return pEm;
-}
-
-G4HadronElasticPhysics* secPhysicsList::HadronElasticPhysics_init(void)
-{
-    auto pHadron = new G4HadronElasticPhysics;
-
-    return pHadron;
-}
-
-G4IonPhysics* secPhysicsList::IonPhysics_init(void)
-{
-    auto pIon = new G4IonPhysics;
-
-    return pIon;
-}
-
-G4StepLimiterPhysics* secPhysicsList::StepLimiter_init(void)
-{
-    auto pLimiter = new G4StepLimiterPhysics;
-
-    return pLimiter;
 }
