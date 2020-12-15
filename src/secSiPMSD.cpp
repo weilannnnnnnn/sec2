@@ -148,7 +148,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //=====================================================================
                        //Creating Noise Histograms
         //Up Histogram
-        if( pHCdown->GetSize() < 100 )
+        if( pHCdown->GetSize() < 800 )
         {//ignore the noise events with less than 100 photons' response.
             return;
         }

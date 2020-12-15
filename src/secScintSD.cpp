@@ -35,7 +35,7 @@
 
 std::mutex mtx_ScintSD;
 
-TFile* secScintSD::pFile = new TFile("secData.root", "UPDATE");
+TFile* secScintSD::pFile = nullptr;
 TTree* secScintSD::UpNoiseTree    = nullptr;
 TTree* secScintSD::DownNoiseTree  = nullptr;
 TTree* secScintSD::UpDecayTree    = nullptr;
@@ -364,11 +364,13 @@ void secScintSD::InitDataFile()
 	if( secParticleSource::GetEventType() != secParticleSource::Muons)
 	{
 	    //noise event first, create the trees and branches
+        secScintSD::pFile = new TFile("secData.root", "RECREATE");
 	    InitTrees();
 	}
 	else if( secParticleSource::GetEventType() == secParticleSource::Muons)
 	{
 	    //second muon events, read trees from disk!
+        secScintSD::pFile = new TFile("secData.root", "UPDATE");
 	    ReadTrees();
 	    if( secScintSD::UpNoiseTree == nullptr )
 	    {
@@ -381,7 +383,6 @@ void secScintSD::InitDataFile()
 
 void secScintSD::InitTrees()
 {
-    secScintSD::pFile->cd();
     secScintSD::UpNoiseTree    = new TTree("UpNoise", "Up Noise Response Tree");
     secScintSD::DownNoiseTree  = new TTree("DownNoise", "Down Noise Response Tree");
     secScintSD::UpDecayTree    = new TTree("UpDecay", "Up Decay Response Tree");

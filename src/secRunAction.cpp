@@ -38,14 +38,14 @@ void secRunAction::EndOfRunAction(const G4Run* )
     //use master thread to merge and close file.
     if( IsMaster() )
     {
+        secScintSD::pFile->cd();
         secScintSD::UpNoiseTree->Write("", TObject::kOverwrite);
         secScintSD::DownNoiseTree->Write("", TObject::kOverwrite);
-		secScintSD::UpDecayTree->Write("", TObject::kOverwrite);	
-		secScintSD::DownDecayTree->Write("", TObject::kOverwrite);
-		secScintSD::UpNormalTree->Write("", TObject::kOverwrite);
-		secScintSD::DownNormalTree->Write("", TObject::kOverwrite);
-		secScintSD::pFile->Close();
-		MergeFile("NoiseWaitTime.txt");
+		    secScintSD::UpDecayTree->Write("", TObject::kOverwrite);	
+		    secScintSD::DownDecayTree->Write("", TObject::kOverwrite);
+		    secScintSD::UpNormalTree->Write("", TObject::kOverwrite);
+		    secScintSD::DownNormalTree->Write("", TObject::kOverwrite);
+		    secScintSD::pFile->Close();
     }
 }
 
