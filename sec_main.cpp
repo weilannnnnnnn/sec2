@@ -12,6 +12,7 @@
 #include "Randomize.hh"
 #include "G4UIExecutive.hh"
 #include "G4VisExecutive.hh"
+#include <ctime>
 
 int main(int argc, char** argv)
 {
@@ -20,9 +21,11 @@ int main(int argc, char** argv)
     {
         ui = new G4UIExecutive(argc, argv);
     }
-    
+
     G4Random::setTheEngine(new CLHEP::RanecuEngine());
-   
+    G4long seed = time(NULL);
+    G4Random::setTheSeed(seed);
+    
 #ifdef G4MULTITHREADED
     G4MTRunManager* runManager = new G4MTRunManager;
 #else
