@@ -315,8 +315,8 @@ G4int secScintSD::GetCoupledIdx(G4double MuonTS)
             if the a single normal muon event is coupled with a noise event, than this
             normal muon event will be saved. 
         */
-        const G4double FrontTimeWindow = 20000*ns;
-        const G4double BackTimeWindow = 100*ns;
+        const G4double FrontTimeWindow = 100*ns;
+        const G4double BackTimeWindow = 20000*ns;
         G4bool IsCoupled = false;
         const size_t sz = NoiseWaitTimeVect.size();
         static thread_local unsigned idx = 0;
