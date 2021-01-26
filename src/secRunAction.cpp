@@ -46,6 +46,7 @@ void secRunAction::EndOfRunAction(const G4Run* )
 		    secScintSD::UpNormalTree->Write("", TObject::kOverwrite);
 		    secScintSD::DownNormalTree->Write("", TObject::kOverwrite);
 		    secScintSD::pFile->Close();
+        MergeFile("NumberOfNoise.dat");
     }
 }
 
