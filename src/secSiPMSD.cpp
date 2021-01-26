@@ -198,16 +198,18 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         unsigned idx = GetNoiseIdx();
         mtx_SiPM.lock();
         tools::histo::h1d UpHist("UpNormalHist", 160, 0., 400.*ns);
-        TBranch* BranchUpIdx = secScintSD::UpNormalTree->GetBranch("Coupled index");
-        BranchUpIdx->SetAddress(&idx);
-        BranchUpIdx->Fill();
+        //TBranch* BranchUpIdx = secScintSD::UpNormalTree->GetBranch("Coupled index");
+        //BranchUpIdx->SetAddress(&idx);
+        secScintSD::UpNormalTree->SetBranchAddress("Coupled index", &idx);
+        //BranchUpIdx->Fill();
         FillG4Hist(pHCup, &secSiPMHit::GetGlobalTime, &UpHist);
         G4Hist2TTree(&UpHist, secScintSD::UpNormalTree);
         
         tools::histo::h1d DownHist("DownNormalHist", 160, 0., 400.*ns);
-        TBranch* BranchDownIdx = secScintSD::DownNormalTree->GetBranch("Coupled index");
-        BranchDownIdx->SetAddress(&idx);
-        BranchDownIdx->Fill();
+        //TBranch* BranchDownIdx = secScintSD::DownNormalTree->GetBranch("Coupled index");
+        //BranchDownIdx->SetAddress(&idx);
+        secScintSD::DownNormalTree->SetBranchAddress("Coupled index", &idx);
+        //BranchDownIdx->Fill();
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownHist);
         G4Hist2TTree(&DownHist, secScintSD::DownNormalTree);
         mtx_SiPM.unlock();
