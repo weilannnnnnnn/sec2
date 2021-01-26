@@ -409,7 +409,7 @@ void secDetectorConstruction::ConstructSDandField()
     G4SDManager::GetSDMpointer()->AddNewDetector(ScintSD);
     SetSensitiveDetector("sci_log", ScintSD, true);
 
-    std::vector<G4String> SiPMHCnameVect = {"Upper SiPM HC1", "Upper SiPM HC2", "Lower SiPM HC1", "Lower SiPM HC2"};
+    std::vector<G4String> SiPMHCnameVect = {"Upper SiPM HC", "Lower SiPM HC"};
     auto SiPMSD = new secSiPMSD("SiPMSD", SiPMHCnameVect, ScintSD);
     G4SDManager::GetSDMpointer()->AddNewDetector(SiPMSD);
     SetSensitiveDetector("pm_log", SiPMSD, true);

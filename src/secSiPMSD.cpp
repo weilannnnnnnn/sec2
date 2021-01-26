@@ -103,14 +103,14 @@ G4bool secSiPMSD::ProcessHits(G4Step* step, G4TouchableHistory* )
     G4double GlobalTime  = step->GetTrack()->GetGlobalTime() ;          //ns
     //the photons is absorbed by the SiPM, so the track must be killed
     step->GetTrack()->SetTrackStatus(fStopAndKill);
-    if( VolumeCpyNb == 1 || VolumeCpyNb == 2)
+    if( VolumeCpyNb == 1 )
     {
         //upper SiPM!!
 	    auto newHitUp = new secSiPMHit();
         (*newHitUp).SetPhotonEneg(aPhotonEneg).SetGlobalTime(GlobalTime);
         pHCup->insert(newHitUp);
     }
-    else if( VolumeCpyNb == 3 || VolumeCpyNb == 4 )
+    else if( VolumeCpyNb == 2 )
     {
         //lower SiPM!!
         auto newHitDown = new secSiPMHit();
