@@ -8,6 +8,7 @@
 #include "G4HadronElasticPhysics.hh"
 #include "G4IonPhysics.hh"
 #include "G4StepLimiterPhysics.hh"
+#include "G4StoppingPhysics.hh"
 
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
@@ -31,6 +32,7 @@ G4VModularPhysicsList()
     RegisterPhysics( new G4EmStandardPhysics() );
     RegisterPhysics( new G4EmPenelopePhysics() );
     RegisterPhysics( new G4StepLimiterPhysics() );
+    RegisterPhysics( new G4StoppingPhysics() );
 }
 
 //dtor

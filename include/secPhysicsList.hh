@@ -9,6 +9,7 @@ class G4EmStandardPhysics;
 class G4EmPenelopePhysics;
 class G4SpinDecayPhysics;
 class G4StepLimiterPhysics;
+class G4StoppingPhysics;
 
 class secPhysicsList : public G4VModularPhysicsList
 {
