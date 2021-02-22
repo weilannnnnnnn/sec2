@@ -28,8 +28,10 @@ secRunAction::~secRunAction()
 void secRunAction::BeginOfRunAction(const G4Run* )
 {
 	if( IsMaster() )
-	{
+	{   
+        // initialization of the wait time stamp generators
         (void) secParticleSource::GenNoiseWaitTime(0, false, false);
+        (void) secParticleSource::MuonWaitTimeMT(-1);
 	}
 }
 
