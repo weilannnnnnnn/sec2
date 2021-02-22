@@ -47,9 +47,12 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     G4VSensitiveDetector(SDname),
     NoiseIdx(0),
     MuonTimeStamp(0.),
+    MuonTimeStampNext(-1.),
+    DoubleBangDeltaT(0),
     IsMuonTimeStampGened(false),
     DecayFlagSiPM(false),
     EventIsKept(false),
+    IsDoubleBang(false),
     DecayEventID(0),
     PhotonsGenUp(0),
     PhotonsGenDown(0),
@@ -99,7 +102,7 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
     if( secParticleSource::Muons == secParticleSource::GetEventType() && !IsWaitTimeRead)
     {
         IsWaitTimeRead = true;
-        NoiseWaitTimeVect.push_back(-INFINITY);
+        std::vector<double> AllNoiseTimeStamp;
       //===================//
         mtx_ScintSD.lock();//using locks here!
       //===================//
@@ -110,13 +113,28 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
         for(size_t i = 0; i != SizeBr; ++i)
         {
             NoiseTree->GetEntry(i);
-            NoiseWaitTimeVect.push_back(WaitTime);
+            AllNoiseTimeStamp.push_back(WaitTime);
         }
       //=====================//
         mtx_ScintSD.unlock();//unlocked!
       //=====================//
-        std::sort(NoiseWaitTimeVect.begin()+1, NoiseWaitTimeVect.end());
-        NoiseWaitTimeVect.push_back(INFINITY);
+        std::sort(AllNoiseTimeStamp.begin(), AllNoiseTimeStamp.end());
+
+        // start allocating local noise time stamp;
+        // using separated local time axes.
+        const size_t NoiseNb = AllNoiseTimeStamp.size();
+        const double GlobalRunTime = NoiseNb / secParticleSource::GetMuonIntensity();
+        const double LocalRunTime  = GlobalRunTime / G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
+        const int ThisThreadNb = G4Threading::G4GetThreadId();
+        NoiseWaitTimeVect.push_back(-INFINITY);
+        for( int i = 0; i != NoiseNb; ++i )
+        {
+            const G4double LeftBound  = ThisThreadNb * LocalRunTime;
+            const G4double RightBound = (ThisThreadNb + 1) * LocalRunTime;
+            if( AllNoiseTimeStamp[i] >= LeftBound && AllNoiseTimeStamp[i] < RightBound )
+                NoiseWaitTimeVect.push_back(AllNoiseTimeStamp[i] - LeftBound);
+        }
+        NoiseWaitTImeVect.push_back(INFINITY);
     }
 }
 
@@ -172,8 +190,18 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         if( !IsMuonTimeStampGened )
         {
             IsMuonTimeStampGened = true;
-            MuonTimeStamp = secParticleSource::MuonWaitTime();
+            const G4int ThreadID = G4Threading::G4GetThreadId();
+            if( MuonTimeStampNext == -1. ) MuonTimeStampNext = secParticleSource::MuonWaitTimeMT(ThreadID);
+
+            MuonTimeStamp = MuonTimeStampNext;
+            MuonTimeStampNext = secParticleSource::MuonWaitTimeMT(ThreadID);
             NoiseIdx = GetCoupledIdx(MuonTimeStamp);
+            if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns )
+            {
+                DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
+                EventIsKept = true;
+                IsDoubleBang = true;
+            }
             if( -1 != NoiseIdx )
                 EventIsKept = true;
         }
@@ -211,8 +239,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
 void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {  
-    if( pMuonHCup->GetSize() && pMuonHCdown->GetSize() )
-        PrintData("NumberOfNoise.dat", 3.14);
     Reset();
 }
 

@@ -36,7 +36,9 @@ class secSiPMSD : public G4VSensitiveDetector
       virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
         
       G4bool IsADecayEvent(void);
+      G4bool IsADoubleBang(void);
       void ResetDecayFlag(void);
+      void ResetDoubleBangFlag(void);
       G4double GetMuonTS();
 		  G4double GetNoiseIdx();
       
@@ -51,7 +53,11 @@ class secSiPMSD : public G4VSensitiveDetector
         void FillG4Hist(secSiPMHitsCollection* pHC, 
                         secSiPMHit::DataGetter Getter,
                         tools::histo::h1d* histptr);
-
+        
+        void FillG4HistDoubleBang(secSiPMHitsCollection* pHC, 
+                                  secSiPMHit::DataGetter Getter,
+                                  tools::histo::h1d* histptr,
+                                  const G4double DeltaT);
         //this retrives the data from h1d, and fill them into a tree's branch.
         void G4Hist2TTree(tools::histo::h1d* histptr,
                           TTree* DataTree);
@@ -70,14 +76,17 @@ class secSiPMSD : public G4VSensitiveDetector
         //print the value generated in a single event.
         void PrintData(G4String FileName, G4double val);
 
-        G4int DecayEventID;
-        G4int NoiseResponseID;
-        G4int NormalResponseID;
+        G4int  DecayEventID;
+        G4int  NoiseResponseID;
+        G4int  NormalResponseID;
 
         secParticleSource::secSourceGenType EventType;
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
-        
+        G4bool IsFirstMuonInDoubleBang;
+        tools::histo::h1d UpDoubleBangHist;
+        tools::histo::h1d DownDoubleBangHist;
+
         secScintSD* pScintSD;
         secSiPMHitsCollection *pHCup;
         secSiPMHitsCollection *pHCdown;

@@ -19,7 +19,9 @@ class TBranch;
 class secScintSD : public G4VSensitiveDetector
 {
     friend G4bool   secSiPMSD::IsADecayEvent();
+    friend G4bool   secSiPMSD::IsADoubleBang();
     friend void     secSiPMSD::ResetDecayFlag();
+    friend void     secSiPMSD::ResetDoubleBangFlag();
     friend G4double secSiPMSD::GetMuonTS();
     friend G4double secSiPMSD::GetNoiseIdx();
     
@@ -31,6 +33,7 @@ class secScintSD : public G4VSensitiveDetector
         virtual G4bool ProcessHits(G4Step *step, G4TouchableHistory *history);
         virtual void EndOfEvent(G4HCofThisEvent *hitCollection);
         G4bool IsKeptEvent() { return EventIsKept; }
+        G4double GetDoubleBangDeltaT() { return DoubleBangDeltaT; }
     
         static TFile* pFile;
         static TTree* UpNoiseTree;
@@ -55,10 +58,13 @@ class secScintSD : public G4VSensitiveDetector
         //for event saving
         G4int    NoiseIdx;
         G4double MuonTimeStamp;
+        G4double MuonTimeStampNext;
+        G4double DoubleBangDeltaT;
         G4int    GetCoupledIdx(G4double MuonTS);
 
         G4bool   IsMuonTimeStampGened;
         G4bool   DecayFlagSiPM;
+        G4bool   IsDoubleBang;
         G4bool   EventIsKept;
         std::vector<G4double> NoiseWaitTimeVect;
 
