@@ -179,7 +179,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             }
             //update the id
             FormerID = step->GetTrack()->GetTrackID();
-            //step->GetTrack()->SetTrackStatus(fStopAndKill);
+            step->GetTrack()->SetTrackStatus(fStopAndKill);
             return false;
         }
     }
@@ -208,8 +208,12 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         G4double aStepEdep = step->GetTotalEnergyDeposit();
         G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
+		G4String CaptureProcessName = "muMinusCaptureAtRest";
         
-        if( VolumeCpyNb == 1 )
+		if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == CaptureProcessName )
+			std::cout << "Muon Captured!" << std::endl;
+        
+		if( VolumeCpyNb == 1 )
         {
             //get energy disposit
             MuonEdepUp += aStepEdep;
@@ -226,9 +230,9 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitDown = new secScintHit();
             pMuonHitDown->SetGlobalTime(GlobalTime).SetVelocity(MuonVelocity);
             pMuonHCdown->insert(pMuonHitDown);
-
-            if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
+			if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType() == G4ProcessType::fDecay )
             {
+				std::cout << "Muon Decayed!" << std::endl;
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
             }

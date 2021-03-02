@@ -32,7 +32,7 @@ G4VModularPhysicsList()
     RegisterPhysics( new G4EmStandardPhysics() );
     RegisterPhysics( new G4EmPenelopePhysics() );
     RegisterPhysics( new G4StepLimiterPhysics() );
-    RegisterPhysics( new G4StoppingPhysics() );
+	RegisterPhysics( new G4StoppingPhysics() );
 }
 
 //dtor

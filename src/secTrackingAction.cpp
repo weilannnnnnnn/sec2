@@ -38,8 +38,10 @@ void secTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     if( 1 == aTrack->GetTrackID() && EventType == secParticleSource::Muons ) //muon track
     {   
         if( !pScintSD->IsKeptEvent() )
-	{    
+		{    
             G4MTRunManager::GetRunManager()->AbortEvent();
-	}
+		}
+		else
+			std::cout << "Event Saved!" << std::endl;
     }
 }
