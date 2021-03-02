@@ -92,11 +92,13 @@ void secSourceMacro::SetNewValue(G4UIcommand* cmd, G4String NewVal)
     }
     else if( cmd == cmd_SourceCentre )
     {
-        ptrSrc->SrcCentre = cmd->ConvertTo3Vector(NewVal);
+        G4double unit = G4UIcmdWith3VectorAndUnit::GetNewUnitValue(NewVal);
+        ptrSrc->SrcCentre = cmd->ConvertTo3Vector(NewVal) * unit;
     }
     else if( cmd == cmd_SourceSize )
     {
-        ptrSrc->SrcSize = cmd->ConvertTo3Vector(NewVal);
+        G4double unit = G4UIcmdWith3VectorAndUnit::GetNewUnitValue(NewVal);
+        ptrSrc->SrcSize = cmd->ConvertTo3Vector(NewVal) * unit;
     }
     
 }
