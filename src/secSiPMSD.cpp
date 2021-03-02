@@ -216,7 +216,10 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         //=================================================================
                             //Creating double-bang histogram
             mtx_SiPM.lock();
-            G4Hist2TTree(&UpDoubleBangHist,   secScintSD::UpNormalTree);
+			unsigned idx = 0;
+        	secScintSD::UpNormalTree->SetBranchAddress("Coupled index", &idx);
+        	secScintSD::DownNormalTree->SetBranchAddress("Coupled index", &idx);
+			G4Hist2TTree(&UpDoubleBangHist,   secScintSD::UpNormalTree);
             G4Hist2TTree(&DownDoubleBangHist, secScintSD::DownNormalTree);
             mtx_SiPM.unlock();
         //=================================================================
@@ -277,7 +280,7 @@ G4double secSiPMSD::GetMuonTS()
 { 
 	return pScintSD->MuonTimeStamp; 
 }
-G4double secSiPMSD::GetNoiseIdx() 
+G4int secSiPMSD::GetNoiseIdx() 
 { 
 	return pScintSD->NoiseIdx; 
 }

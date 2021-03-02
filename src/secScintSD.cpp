@@ -7,6 +7,8 @@
 #include "TBranch.h"
 
 #include "G4SDManager.hh"
+#include "G4RunManager.hh"
+#include "G4MTRunManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
@@ -51,8 +53,8 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     DoubleBangDeltaT(0),
     IsMuonTimeStampGened(false),
     DecayFlagSiPM(false),
-    EventIsKept(false),
     IsDoubleBang(false),
+    EventIsKept(false),
     DecayEventID(0),
     PhotonsGenUp(0),
     PhotonsGenDown(0),
@@ -127,14 +129,14 @@ void secScintSD::Initialize(G4HCofThisEvent* HC)
         const double LocalRunTime  = GlobalRunTime / G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
         const int ThisThreadNb = G4Threading::G4GetThreadId();
         NoiseWaitTimeVect.push_back(-INFINITY);
-        for( int i = 0; i != NoiseNb; ++i )
+        for( size_t i = 0; i != NoiseNb; ++i )
         {
             const G4double LeftBound  = ThisThreadNb * LocalRunTime;
             const G4double RightBound = (ThisThreadNb + 1) * LocalRunTime;
             if( AllNoiseTimeStamp[i] >= LeftBound && AllNoiseTimeStamp[i] < RightBound )
                 NoiseWaitTimeVect.push_back(AllNoiseTimeStamp[i] - LeftBound);
         }
-        NoiseWaitTImeVect.push_back(INFINITY);
+        NoiseWaitTimeVect.push_back(INFINITY);
     }
 }
 
@@ -196,7 +198,9 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             MuonTimeStamp = MuonTimeStampNext;
             MuonTimeStampNext = secParticleSource::MuonWaitTimeMT(ThreadID);
             NoiseIdx = GetCoupledIdx(MuonTimeStamp);
-            if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns )
+
+            if( IsDoubleBang ) EventIsKept = true;// 2nd muon in the double bang event.
+			if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns ) // 1st muon in the double bang event
             {
                 DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
                 EventIsKept = true;

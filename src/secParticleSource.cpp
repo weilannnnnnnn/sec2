@@ -231,14 +231,15 @@ G4double secParticleSource::GenNoiseWaitTime( G4int ThreadID, G4bool IsInit,
     return ( LocalWaitTimePtr[ThreadID]*s );
 }
 
-G4double secParticleSource::MuonWaitTImeMT( G4int ThreadID )
+G4double secParticleSource::MuonWaitTimeMT( G4int ThreadID )
 {
     static const size_t ThreadNum = G4MTRunManager::GetMasterRunManager()->GetNumberOfThreads();
     static G4double* LocalTimeStamp = new G4double[ThreadNum];
     if( ThreadID == -1 ) // function initialization, for creating the static variables.
     {
-        for( int i = 0; i != ThreadNum; ++i ) LocalTimeStamp[i] = 0.;
+        for( size_t i = 0; i != ThreadNum; ++i ) LocalTimeStamp[i] = 0.;
         return -1.;
     }
     return (LocalTimeStamp[ThreadID] += CLHEP::RandExponential::shoot(1./MuonIntensity) * s);
 }
+

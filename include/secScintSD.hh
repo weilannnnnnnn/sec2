@@ -23,7 +23,7 @@ class secScintSD : public G4VSensitiveDetector
     friend void     secSiPMSD::ResetDecayFlag();
     friend void     secSiPMSD::ResetDoubleBangFlag();
     friend G4double secSiPMSD::GetMuonTS();
-    friend G4double secSiPMSD::GetNoiseIdx();
+    friend G4int     secSiPMSD::GetNoiseIdx();
     
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
