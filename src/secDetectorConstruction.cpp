@@ -127,10 +127,10 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 
     //the interval between the scintillator and the iron plate
     //const G4double Scint_Plate_Interval = 4.*cm;
-    const G4double Plate_Z = Scint1_Z - Foil_Size[2] - 2.*cm;
+    const G4double Plate_Z = Scint1_Z - Foil_Size[2] - 3.*cm;
 
     //the Z value of down scintillator
-    const G4double Scint2_Z = Plate_Z - 2.*cm - Foil_Size[2];
+    const G4double Scint2_Z = Plate_Z - 3.*cm - Foil_Size[2];
 
     //the XYZ value of down SiPM
     const G4double SiPM2_X = SiPM1_X;
@@ -153,7 +153,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 
 //=======================================================================
  //concrete cylinder
-
+/*
     //material
     auto conc_mat = nist->FindOrBuildMaterial("G4_CONCRETE");
 
@@ -184,7 +184,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     plate_log->SetUserLimits(plate_limit);
     //physical volume
     new G4PVPlacement(0, G4ThreeVector(0, 0, Plate_Z), plate_log, "plate_phy", world_log, false, 0, OverLapCheck);
-    
+*/    
 //=======================================================================
 
 //Detector
