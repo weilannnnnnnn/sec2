@@ -40,6 +40,7 @@ void secTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
         if( !pScintSD->IsKeptEvent() )
 		{    
             G4MTRunManager::GetRunManager()->AbortEvent();
+            pScintSD->Reset();
 		}
 		else
 			std::cout << "Event Saved!" << std::endl;

@@ -5,6 +5,7 @@
 #include "secSourceMacro.hh"
 #include "secScintHit.hh"
 #include "secSiPMSD.hh"
+#include "secTrackingAction.hh"
 #include "globals.hh"
 #include "TFile.h"
 #include "TTree.h"
@@ -23,7 +24,8 @@ class secScintSD : public G4VSensitiveDetector
     friend void     secSiPMSD::ResetDecayFlag();
     friend void     secSiPMSD::ResetDoubleBangFlag();
     friend G4double secSiPMSD::GetMuonTS();
-    friend G4int     secSiPMSD::GetNoiseIdx();
+    friend G4int    secSiPMSD::GetNoiseIdx();
+    friend void     secTrackingAction::PostUserTrackingAction(const G4Track* );
     
     public:
         secScintSD(const G4String &SDname, const std::vector<G4String> SDHCnameVect);
