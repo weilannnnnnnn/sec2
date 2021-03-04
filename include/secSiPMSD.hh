@@ -40,7 +40,7 @@ class secSiPMSD : public G4VSensitiveDetector
       void ResetDecayFlag(void);
       void ResetDoubleBangFlag(void);
       G4double GetMuonTS();
-	  G4int GetNoiseIdx();
+	    G4int GetNoiseIdx();
       
     private:
         //print data in ASCII / Binary format

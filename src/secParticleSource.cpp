@@ -30,7 +30,7 @@ class G4PrimaryVertex;
 class G4PrimaryParticle;
 secParticleSource::secSourceGenType secParticleSource::GenTypeNow = secParticleSource::secSourceGenType::Muons;
 G4double secParticleSource::NoiseIntensity = 100.;
-G4double secParticleSource::MuonIntensity = 2.5;
+G4double secParticleSource::MuonIntensity = 4.501384653090488;
 secParticleSource::secParticleSource():
     AlphaEneg(1*MeV),
     BetaAlphaRatio(1./3.),

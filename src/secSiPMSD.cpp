@@ -142,6 +142,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     {
         ResetDecayFlag();
         ResetDoubleBangFlag();
+        UpDoubleBangHist.reset();
+        DownDoubleBangHist.reset();
 	    return;//ignore the event that didn't trigger both of the SiPMs!
     }
     else if( EventType != secParticleSource::Muons ) // the PM is Triggered by Noise particle( mainly electrons )
@@ -200,6 +202,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         if( !(pHCup->GetSize()) || !(pHCdown->GetSize()) )
         {
             ResetDoubleBangFlag();
+            UpDoubleBangHist.reset();
+            DownDoubleBangHist.reset();
             return;
         }
         if( IsFirstMuonInDoubleBang )
@@ -212,6 +216,12 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         {
             IsFirstMuonInDoubleBang = true; // reset for next double-bang event.
             ResetDoubleBangFlag();
+            if( !pHCdown->GetSize() )
+            {
+                UpDoubleBangHist.reset();
+                DownDoubleBangHist.reset();
+                return;
+            }
             const double DeltaT = pScintSD->GetDoubleBangDeltaT();
             FillG4HistDoubleBang(pHCup,   &secSiPMHit::GetGlobalTime, &UpDoubleBangHist,   DeltaT);
             FillG4HistDoubleBang(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist, DeltaT);

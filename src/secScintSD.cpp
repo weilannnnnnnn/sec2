@@ -51,6 +51,8 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     MuonTimeStamp(0.),
     MuonTimeStampNext(-1.),
     DoubleBangDeltaT(0),
+    HitUp(false),
+    HitDown(false),
     IsMuonTimeStampGened(false),
     DecayFlagSiPM(false),
     IsDoubleBang(false),
@@ -198,24 +200,12 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             MuonTimeStamp = MuonTimeStampNext;
             MuonTimeStampNext = secParticleSource::MuonWaitTimeMT(ThreadID);
             NoiseIdx = GetCoupledIdx(MuonTimeStamp);
-
-            if( IsDoubleBang ) EventIsKept = true;// 2nd muon in the double bang event.
-			if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns ) // 1st muon in the double bang event
-            {
-                DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
-                EventIsKept = true;
-                IsDoubleBang = true;
-            }
             if( -1 != NoiseIdx )
                 EventIsKept = true;
         }
         G4double aStepEdep = step->GetTotalEnergyDeposit();
         G4double GlobalTime = step->GetPostStepPoint()->GetGlobalTime();
         G4double MuonVelocity = step->GetPreStepPoint()->GetVelocity();
-		G4String CaptureProcessName = "muMinusCaptureAtRest";
-        
-		if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == CaptureProcessName )
-			std::cout << "Muon Captured!" << std::endl;
         
 		if( VolumeCpyNb == 1 )
         {
@@ -225,9 +215,11 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             auto pMuonHitUp = new secScintHit();
             pMuonHitUp->SetGlobalTime(GlobalTime).SetVelocity(MuonVelocity);
             pMuonHCup->insert(pMuonHitUp);
+            HitUp = true;
         }
         else if( VolumeCpyNb == 2 )
         {
+            HitDown = true;
             //get energy deposit
             MuonEdepDown += aStepEdep;
             //save to hits collection
@@ -240,14 +232,30 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
                 DecayFlagSiPM  = true;//is a decay event!!
                 EventIsKept = true;
             }
-        }	
+            G4String CaptureProcessName = "muMinusCaptureAtRest";
+		    if( step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName() == CaptureProcessName )
+            {
+                std::cout << "Muon Captured!" << std::endl;
+                DecayFlagSiPM = true;
+                EventIsKept = true;
+            }
+        }
+        
+        if( IsDoubleBang ) EventIsKept = true;// 2nd muon in the double bang event.
+        if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns && HitUp && HitDown ) // 1st muon in the double bang event
+        {
+            std::cout << "Double-bang" << std::endl;
+            DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
+            EventIsKept = true;
+            IsDoubleBang = true;
+        }
     }
     return true;   
 }
 
 void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {  
-    
+    Reset();
 }
 
 

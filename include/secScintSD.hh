@@ -62,6 +62,8 @@ class secScintSD : public G4VSensitiveDetector
         G4double DoubleBangDeltaT;
         G4int    GetCoupledIdx(G4double MuonTS);
 
+        G4bool   HitUp;
+        G4bool   HitDown;
         G4bool   IsMuonTimeStampGened;
         G4bool   DecayFlagSiPM;
         G4bool   IsDoubleBang;
@@ -86,6 +88,8 @@ class secScintSD : public G4VSensitiveDetector
 //reset the SD at the end of each event
 inline void secScintSD::Reset(void)
 {
+    HitUp = false;
+    HitDown = false;
     EventIsKept = false;
     IsMuonTimeStampGened = false;
     PhotonsGenUp = 0;
