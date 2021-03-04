@@ -80,6 +80,8 @@ class secScintSD : public G4VSensitiveDetector
         G4double MuonEdepUp;
         G4double MuonEdepDown;
 	    G4int    FormerID;
+        long long int FormerMuonID;
+        long long int MuonIDNow;
         
 	    secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
         secScintHitsCollection *pPhotonHCdown; //photons's hitscollection in the lower scintillator

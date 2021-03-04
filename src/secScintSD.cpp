@@ -65,6 +65,8 @@ secScintSD::secScintSD(const G4String& SDname, const std::vector<G4String> SDHCn
     MuonEdepUp(0.),
     MuonEdepDown(0.),
     FormerID(-1),
+    FormerMuonID(-1),
+    MuonIDNow(-1),
     pPhotonHCup(nullptr),
     pPhotonHCdown(nullptr),
     pMuonHCup(nullptr),
@@ -193,6 +195,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     {
         if( !IsMuonTimeStampGened )
         {
+            FormerMuonID = MuonIDNow++;
             IsMuonTimeStampGened = true;
             const G4int ThreadID = G4Threading::G4GetThreadId();
             if( MuonTimeStampNext == -1. ) MuonTimeStampNext = secParticleSource::MuonWaitTimeMT(ThreadID);
@@ -241,10 +244,14 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             }
         }
         
-        if( IsDoubleBang ) EventIsKept = true;// 2nd muon in the double bang event.
-        if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns && HitUp && HitDown ) // 1st muon in the double bang event
+        if( IsDoubleBang && MuonIDNow == FormerMuonID + 1 ) // 2nd muon in the double bang event.
         {
             std::cout << "Double-bang" << std::endl;
+            EventIsKept = true;
+        }
+        
+        if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns && HitUp && HitDown ) // 1st muon in the double bang event
+        {
             DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
             EventIsKept = true;
             IsDoubleBang = true;
