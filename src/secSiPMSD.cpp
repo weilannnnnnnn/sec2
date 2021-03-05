@@ -206,7 +206,8 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     {
         FillG4Hist(pHCup,   &secSiPMHit::GetGlobalTime,   &UpDoubleBangHist);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist);
-    else if( IsDoubleBangSecond() )
+	}
+	else if( IsDoubleBangSecond() )
     {
         ResetDoubleBangFlag();
         const double DeltaT = pScintSD->GetDoubleBangDeltaT();
@@ -224,7 +225,6 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     //=================================================================
         UpDoubleBangHist.reset();
         DownDoubleBangHist.reset();
-        }
     }
     else // normal muon events
     {      
@@ -269,7 +269,7 @@ G4bool secSiPMSD::IsDoubleBangSecond()
 }
 G4bool secSiPMSD::IsDoubleBangAbort()
 {
-    return pScintSD->IsDoubleBangAbort;
+    return pScintSD->DoubleBangAbortFlag;
 }
 
 void secSiPMSD::ResetDecayFlag()

@@ -247,7 +247,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         {
             if( HitDown )
             {
-                std::cout << "Double-bang" << std::endl;
+                //std::cout << "Double-bang" << std::endl;
                 EventIsKept = true;
                 DoubleBangAbortFlag = false;
             }
@@ -258,9 +258,10 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             
         }
         
-        if( MuonTimeStampNext - MuonTimeStamp < 20000. * ns  && !DoubleBangFirstFlag && HitUp && HitDown ) // 1st muon in the double bang event
+        if( MuonTimeStampNext - MuonTimeStamp < 20000*ns  && !DoubleBangFirstFlag && HitUp && HitDown ) // 1st muon in the double bang event
         {
-            DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
+			//std::cout << "DoubleBangFirst!" << std::endl;
+			DoubleBangDeltaT = MuonTimeStampNext - MuonTimeStamp;
             EventIsKept = true;
             DoubleBangFirstFlag = true;
         }
@@ -272,6 +273,7 @@ void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {  
     if( DoubleBangFirstFlag )
     {
+		//std::cout << "Double Bang First!" << std::endl;
         DoubleBangSecondFlag = true;
     }
     Reset();

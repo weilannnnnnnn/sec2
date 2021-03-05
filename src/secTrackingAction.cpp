@@ -44,6 +44,8 @@ void secTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
             pScintSD->DoubleBangSecondFlag = false;
 		}
 		else
+		{
 			std::cout << "Event Saved!" << std::endl;
+		}
     }
 }

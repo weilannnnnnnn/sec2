@@ -207,7 +207,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 
     //setting user limits
     //only the charged particle will be limited!
-    auto sci_limits = new G4UserLimits(0.1*mm);
+    auto sci_limits = new G4UserLimits(0.5*mm);
     sci_log1->SetUserLimits(sci_limits);
     sci_log2->SetUserLimits(sci_limits);
 
