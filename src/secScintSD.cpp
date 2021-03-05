@@ -271,11 +271,6 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
 void secScintSD::EndOfEvent(G4HCofThisEvent*)
 {  
-    if( DoubleBangFirstFlag )
-    {
-		//std::cout << "Double Bang First!" << std::endl;
-        DoubleBangSecondFlag = true;
-    }
     Reset();
 }
 

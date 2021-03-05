@@ -24,8 +24,9 @@ class secScintSD : public G4VSensitiveDetector
     friend G4bool   secSiPMSD::IsDoubleBangSecond();
     friend G4bool   secSiPMSD::IsDoubleBangAbort();
     friend void     secSiPMSD::ResetDecayFlag();
-    friend void     secSiPMSD::ResetDoubleBangFlags();
     friend void     secSiPMSD::ResetDoubleBangFirstFlag();
+    friend void     secSiPMSD::ResetDoubleBangSecondFlag();
+    friend void     secSiPMSD::ResetDoubleBangAbortFlag();
     friend G4double secSiPMSD::GetMuonTS();
     friend G4int    secSiPMSD::GetNoiseIdx();
     friend void     secTrackingAction::PostUserTrackingAction(const G4Track* );

@@ -41,6 +41,8 @@ class secSiPMSD : public G4VSensitiveDetector
       G4bool IsDoubleBangAbort(void);
       void   ResetDecayFlag(void);
       void   ResetDoubleBangFirstFlag(void);
+      void   ResetDoubleBangSecondFlag(void);
+      void   ResetDoubleBangAbortFlag(void);
       void   ResetDoubleBangFlags(void);
       G4double GetMuonTS();
 	    G4int GetNoiseIdx();

@@ -138,7 +138,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
     if( IsDoubleBangAbort() )
     {
-        ResetDoubleBangFlags();
+        ResetDoubleBangAbortFlag();
         UpDoubleBangHist.reset();
         DownDoubleBangHist.reset();
     }
@@ -273,21 +273,32 @@ G4bool secSiPMSD::IsDoubleBangAbort()
     return pScintSD->DoubleBangAbortFlag;
 }
 
-void secSiPMSD::ResetDecayFlag()
-{
-    pScintSD->DecayFlagSiPM = false;
-}
-
 void secSiPMSD::ResetDoubleBangFirstFlag()
 {
     pScintSD->DoubleBangFirstFlag = false;
 }
 
+void secSiPMSD::ResetDoubleBangSecondFlag()
+{
+    pScintSD->DoubleBangSecondFlag = false;
+}
+
+void secSiPMSD::ResetDoubleBangAbortFlag()
+{
+    pScintSD->DoubleBangAbortFlag = false;
+}
+
 void secSiPMSD::ResetDoubleBangFlags()
 {
-    pScintSD->DoubleBangFirstFlag = false;
-    pScintSD->DoubleBangSecondFlag = false;
-    pScintSD->DoubleBangAbortFlag = false;
+    ResetDoubleBangFirstFlag();
+    ResetDoubleBangSecondFlag();
+    ResetDoubleBangAbortFlag();
+
+}
+
+void secSiPMSD::ResetDecayFlag()
+{
+    pScintSD->DecayFlagSiPM = false;
 }
 
 G4double secSiPMSD::GetMuonTS()  
