@@ -245,7 +245,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
         
         if( DoubleBangSecondFlag ) // 2nd muon in the double bang event.
         {
-            if( HitDown )
+            if( HitDown && !DecayFlagSiPM )
             {
                 //std::cout << "Double-bang" << std::endl;
                 EventIsKept = true;
