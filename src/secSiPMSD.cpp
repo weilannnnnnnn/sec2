@@ -138,7 +138,7 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
 
     if( IsDoubleBangAbort() )
     {
-        ResetDoubleBangFlag();
+        ResetDoubleBangFlags();
         UpDoubleBangHist.reset();
         DownDoubleBangHist.reset();
     }
@@ -204,12 +204,13 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     }
     else if( IsDoubleBangFirst() )
     {
+        ResetDoubleBangFirstFlag();
         FillG4Hist(pHCup,   &secSiPMHit::GetGlobalTime,   &UpDoubleBangHist);
         FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist);
 	}
 	else if( IsDoubleBangSecond() )
     {
-        ResetDoubleBangFlag();
+        ResetDoubleBangFlags();
         const double DeltaT = pScintSD->GetDoubleBangDeltaT();
         FillG4HistDoubleBang(pHCup,   &secSiPMHit::GetGlobalTime, &UpDoubleBangHist,   DeltaT);
         FillG4HistDoubleBang(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist, DeltaT);
@@ -277,7 +278,12 @@ void secSiPMSD::ResetDecayFlag()
     pScintSD->DecayFlagSiPM = false;
 }
 
-void secSiPMSD::ResetDoubleBangFlag()
+void secSiPMSD::ResetDoubleBangFirstFlag()
+{
+    pScintSD->DoubleBangFirstFlag = false;
+}
+
+void secSiPMSD::ResetDoubleBangFlags()
 {
     pScintSD->DoubleBangFirstFlag = false;
     pScintSD->DoubleBangSecondFlag = false;
