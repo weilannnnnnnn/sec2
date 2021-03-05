@@ -253,7 +253,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             }
             else
             {
-                DoubleBangAbortFalg = true;
+                DoubleBangAbortFlag = true;
             }
             
         }

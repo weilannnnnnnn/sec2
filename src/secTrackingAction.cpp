@@ -41,7 +41,7 @@ void secTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
 		{    
             G4MTRunManager::GetRunManager()->AbortEvent();
             pScintSD->DoubleBangFirstFlag = false;
-            pScintSD->DoubleBangSecondFalg = false;
+            pScintSD->DoubleBangSecondFlag = false;
 		}
 		else
 			std::cout << "Event Saved!" << std::endl;

@@ -20,7 +20,9 @@ class TBranch;
 class secScintSD : public G4VSensitiveDetector
 {
     friend G4bool   secSiPMSD::IsADecayEvent();
-    friend G4bool   secSiPMSD::IsADoubleBang();
+    friend G4bool   secSiPMSD::IsDoubleBangFirst();
+    friend G4bool   secSiPMSD::IsDoubleBangSecond();
+    friend G4bool   secSiPMSD::IsDoubleBangAbort();
     friend void     secSiPMSD::ResetDecayFlag();
     friend void     secSiPMSD::ResetDoubleBangFlag();
     friend G4double secSiPMSD::GetMuonTS();
