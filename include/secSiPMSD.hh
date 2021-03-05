@@ -36,9 +36,11 @@ class secSiPMSD : public G4VSensitiveDetector
       virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
         
       G4bool IsADecayEvent(void);
-      G4bool IsADoubleBang(void);
-      void ResetDecayFlag(void);
-      void ResetDoubleBangFlag(void);
+      G4bool IsDoubleBangFirst(void);
+      G4bool IsDoubleBangSecond(void);
+      G4bool IsDoubleBangAbort(void);
+      void   ResetDecayFlag(void);
+      void   ResetDoubleBangFlag(void);
       G4double GetMuonTS();
 	    G4int GetNoiseIdx();
       
@@ -83,7 +85,6 @@ class secSiPMSD : public G4VSensitiveDetector
         secParticleSource::secSourceGenType EventType;
         G4double EventWaitTime;
         std::vector<G4double> NoiseWaitTimeVect;
-        G4bool IsFirstMuonInDoubleBang;
         tools::histo::h1d UpDoubleBangHist;
         tools::histo::h1d DownDoubleBangHist;
 

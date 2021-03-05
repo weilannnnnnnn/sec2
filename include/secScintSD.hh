@@ -66,9 +66,11 @@ class secScintSD : public G4VSensitiveDetector
 
         G4bool   HitUp;
         G4bool   HitDown;
+        G4bool   DoubleBangFirstFlag;
+        G4bool   DoubleBangSecondFlag;
+        G4bool   DoubleBangAbortFlag;
         G4bool   IsMuonTimeStampGened;
         G4bool   DecayFlagSiPM;
-        G4bool   IsDoubleBang;
         G4bool   EventIsKept;
         std::vector<G4double> NoiseWaitTimeVect;
 
@@ -80,9 +82,7 @@ class secScintSD : public G4VSensitiveDetector
         G4double MuonEdepUp;
         G4double MuonEdepDown;
 	    G4int    FormerID;
-        long long int FormerMuonID;
-        long long int MuonIDNow;
-        
+
 	    secScintHitsCollection *pPhotonHCup;   //photon's hitscollection in the upper scintillator
         secScintHitsCollection *pPhotonHCdown; //photons's hitscollection in the lower scintillator
         secScintHitsCollection *pMuonHCup;     //Muon's HC up

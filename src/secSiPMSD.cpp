@@ -38,7 +38,6 @@ secSiPMSD::secSiPMSD(const G4String &SDname, const std::vector<G4String> SDHCnam
     NoiseResponseID(0),
     NormalResponseID(0),
     EventWaitTime(0.),
-    IsFirstMuonInDoubleBang(true),
     UpDoubleBangHist("UpDoubleBangHist", 8000, 0., 20000.*ns),
     DownDoubleBangHist("DownDoubleBangHist", 8000, 0., 20000.*ns),
     pScintSD(pSD),
@@ -137,11 +136,17 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
     else if( EventType != secParticleSource::Muons )
         EventWaitTime = secParticleSource::GenNoiseWaitTime( G4Threading::G4GetThreadId() );
 
+    if( IsDoubleBangAbort() )
+    {
+        ResetDoubleBangFlag();
+        UpDoubleBangHist.reset();
+        DownDoubleBangHist.reset();
+    }
+
     // empty HC, the PM haven't been triggered!
     if( !(pHCup->GetSize()) && !(pHCdown->GetSize()) )
     {
         ResetDecayFlag();
-        ResetDoubleBangFlag();
         UpDoubleBangHist.reset();
         DownDoubleBangHist.reset();
 	    return;//ignore the event that didn't trigger both of the SiPMs!
@@ -197,48 +202,29 @@ void secSiPMSD::EndOfEvent(G4HCofThisEvent*)
         mtx_SiPM.unlock();
     //====================================================================
     }
-    else if( IsADoubleBang() )
+    else if( IsDoubleBangFirst() )
     {
-        if( !(pHCup->GetSize()) || !(pHCdown->GetSize()) )
-        {
-            ResetDoubleBangFlag();
-            UpDoubleBangHist.reset();
-            DownDoubleBangHist.reset();
-            return;
+        FillG4Hist(pHCup,   &secSiPMHit::GetGlobalTime,   &UpDoubleBangHist);
+        FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist);
+    else if( IsDoubleBangSecond() )
+    {
+        ResetDoubleBangFlag();
+        const double DeltaT = pScintSD->GetDoubleBangDeltaT();
+        FillG4HistDoubleBang(pHCup,   &secSiPMHit::GetGlobalTime, &UpDoubleBangHist,   DeltaT);
+        FillG4HistDoubleBang(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist, DeltaT);
+    //=================================================================
+                        //Creating double-bang histogram
+        mtx_SiPM.lock();
+        unsigned idx = 0;
+        secScintSD::UpNormalTree->SetBranchAddress("Coupled index", &idx);
+        secScintSD::DownNormalTree->SetBranchAddress("Coupled index", &idx);
+        G4Hist2TTree(&UpDoubleBangHist,   secScintSD::UpNormalTree);
+        G4Hist2TTree(&DownDoubleBangHist, secScintSD::DownNormalTree);
+        mtx_SiPM.unlock();
+    //=================================================================
+        UpDoubleBangHist.reset();
+        DownDoubleBangHist.reset();
         }
-        if( IsFirstMuonInDoubleBang )
-        {
-            IsFirstMuonInDoubleBang = false;
-            FillG4Hist(pHCup,   &secSiPMHit::GetGlobalTime,   &UpDoubleBangHist);
-            FillG4Hist(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist);
-        }
-        else
-        {
-            IsFirstMuonInDoubleBang = true; // reset for next double-bang event.
-            ResetDoubleBangFlag();
-            if( !pHCdown->GetSize() )
-            {
-                UpDoubleBangHist.reset();
-                DownDoubleBangHist.reset();
-                return;
-            }
-            const double DeltaT = pScintSD->GetDoubleBangDeltaT();
-            FillG4HistDoubleBang(pHCup,   &secSiPMHit::GetGlobalTime, &UpDoubleBangHist,   DeltaT);
-            FillG4HistDoubleBang(pHCdown, &secSiPMHit::GetGlobalTime, &DownDoubleBangHist, DeltaT);
-        //=================================================================
-                            //Creating double-bang histogram
-            mtx_SiPM.lock();
-			unsigned idx = 0;
-        	secScintSD::UpNormalTree->SetBranchAddress("Coupled index", &idx);
-        	secScintSD::DownNormalTree->SetBranchAddress("Coupled index", &idx);
-			G4Hist2TTree(&UpDoubleBangHist,   secScintSD::UpNormalTree);
-            G4Hist2TTree(&DownDoubleBangHist, secScintSD::DownNormalTree);
-            mtx_SiPM.unlock();
-        //=================================================================
-            UpDoubleBangHist.reset();
-            DownDoubleBangHist.reset();
-        }
-        
     }
     else // normal muon events
     {      
@@ -273,9 +259,17 @@ G4bool secSiPMSD::IsADecayEvent()
     return pScintSD->DecayFlagSiPM;    
 }
 
-G4bool secSiPMSD::IsADoubleBang()
+G4bool secSiPMSD::IsDoubleBangFirst()
 {
-    return pScintSD->IsDoubleBang;
+    return pScintSD->DoubleBangFirstFlag;
+}
+G4bool secSiPMSD::IsDoubleBangSecond()
+{
+    return pScintSD->DoubleBangSecondFlag;
+}
+G4bool secSiPMSD::IsDoubleBangAbort()
+{
+    return pScintSD->IsDoubleBangAbort;
 }
 
 void secSiPMSD::ResetDecayFlag()
@@ -285,7 +279,9 @@ void secSiPMSD::ResetDecayFlag()
 
 void secSiPMSD::ResetDoubleBangFlag()
 {
-    pScintSD->IsDoubleBang = false;
+    pScintSD->DoubleBangFirstFlag = false;
+    pScintSD->DoubleBangSecondFlag = false;
+    pScintSD->DoubleBangAbortFlag = false;
 }
 
 G4double secSiPMSD::GetMuonTS()  
