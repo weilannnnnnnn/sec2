@@ -239,7 +239,7 @@ G4bool secScintSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             {
                 std::cout << "Muon Captured!" << std::endl;
                 DecayFlagSiPM = true;
-                EventIsKept = true;
+                //EventIsKept = true;
             }
         }
         

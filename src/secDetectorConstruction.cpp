@@ -101,11 +101,11 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
     const G4double World_Size[3] = {10.*m, 10.*m, 6.*m};
     const G4double  Conc_Size[3] = {0.*m, 4.*m, 1.*m}; //inner radius,outer radius and half height
     //const G4double Scint_Size[3] = {5.*cm, 5*cm, 0.5*cm};
-    const G4double Scint_Size[3] = {50.*cm, 5.*cm, 5.*cm};
-    const G4double Plate_Size[3] = {50.*cm, 5.*cm, 1.*cm};
+    const G4double Scint_Size[3] = {30.*cm, 5.*cm, 5.*cm};
+    const G4double Plate_Size[3] = {30.*cm, 5.*cm, 1.*cm};
     //const G4double  Foil_Size[3] = {5.1*cm, 5.1*cm, 0.6*cm};
-    const G4double Foil_Size[3] = {50.1*cm, 5.1*cm, 5.1*cm}; 
-    const G4double SiPM_Size[3] = {0.5*mm, 4.*mm, 4.*mm};
+    const G4double Foil_Size[3] = {30.1*cm, 5.1*cm, 5.1*cm}; 
+    const G4double SiPM_Size[3] = {0.5*mm, 3.*mm, 3.*mm};
 
 //the position of each volume
 
@@ -153,7 +153,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 
 //=======================================================================
  //concrete cylinder
-/*
+
     //material
     auto conc_mat = nist->FindOrBuildMaterial("G4_CONCRETE");
 
@@ -169,7 +169,7 @@ G4VPhysicalVolume* secDetectorConstruction::Construct(void)
 
 //=======================================================================
 //Iron plate
-
+/*
     //material
     auto plate_mat = new G4Material("Iron", 7.87*g/cm3, 2, kStateSolid);
     plate_mat->AddElement(Fe_ele, 0.99);
